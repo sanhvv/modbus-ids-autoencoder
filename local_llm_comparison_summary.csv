@@ -1,0 +1,5 @@
+model,success_rate_%,format_compliance_%,avg_latency_sec,p95_latency_sec,avg_risk_score_stddev,avg_completion_tokens
+phi4-mini,100.0,100.0,3.73,7.7,0.82,30.2
+deepseek-r1:8b,100.0,75.0,67.04,89.28,1.08,381.7
+qwen3:8b,100.0,100.0,115.97,213.84,0.98,664.6
+qwen3:4b,20.8,80.0,227.41,286.29,,1972.8

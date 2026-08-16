@@ -1,0 +1,204 @@
+model,attack_type,attack_specific,repeat,output,risk_score,format_ok_has_score,format_ok_length,latency_sec,prompt_tokens,completion_tokens,error,timestamp
+phi4-mini,address scan,1,1,"The packet flow rate exceeds normal thresholds, indicating potential malicious behavior or misconfiguration.
+Risk Score: 7/10",7.0,True,True,8.97,257.0,24.0,,2026-08-15T22:27:06
+phi4-mini,address scan,1,2,"The packet flow rate is significantly higher than normal, indicating potential malicious traffic or misconfiguration.
+Risk Score: 8/10",8.0,True,True,2.27,257.0,26.0,,2026-08-15T22:27:08
+phi4-mini,address scan,1,3,"The packet flow rate exceeds normal levels, indicating potential malicious traffic or misconfiguration.
+Risk Score: 7/10",7.0,True,True,2.11,257.0,24.0,,2026-08-15T22:27:10
+phi4-mini,function code scan,2,1,"The high packet flow rate (38 packets/s) significantly exceeds normal levels, indicating potential malicious traffic or misconfiguration.
+Risk Score: 8/10",8.0,True,True,4.87,256.0,31.0,,2026-08-15T22:27:15
+phi4-mini,function code scan,2,2,"The high packet flow rate (38 packets/s) significantly exceeds normal levels, indicating potential malicious traffic or misconfiguration.
+Risk Score: 8/10",8.0,True,True,2.69,256.0,31.0,,2026-08-15T22:27:18
+phi4-mini,function code scan,2,3,"The high packet flow rate (38 packets/s) significantly exceeds normal levels, indicating potential malicious traffic or misconfiguration.
+Risk Score: 8/10",8.0,True,True,2.9,256.0,31.0,,2026-08-15T22:27:21
+phi4-mini,device identification attack,3,1,"The packet flow rate is significantly lower than expected, indicating potential network congestion or misconfiguration rather than an attack.
+Risk Score: 2/10",2.0,True,True,4.44,228.0,30.0,,2026-08-15T22:27:25
+phi4-mini,device identification attack,3,2,"The packet flow rate is significantly lower than expected, indicating potential inactivity or misconfiguration rather than malicious intent.
+Risk Score: 2/10",2.0,True,True,2.56,228.0,29.0,,2026-08-15T22:27:28
+phi4-mini,device identification attack,3,3,"The packet flow rate is significantly lower than expected, indicating potential network issues or reduced device communication rather than an intrusion attempt.
+
+Risk Score: 1/10",1.0,True,True,2.81,228.0,32.0,,2026-08-15T22:27:30
+phi4-mini,naive sensor read,4,1,"The observed packet flow rate is significantly higher than normal, indicating potential malicious behavior or misconfiguration.
+Risk Score: 8/10",8.0,True,True,8.09,416.0,27.0,,2026-08-15T22:27:39
+phi4-mini,naive sensor read,4,2,"The packet flow rate is significantly higher than normal, indicating potential malicious traffic or misconfiguration.
+Risk Score: 8/10",8.0,True,True,2.26,416.0,26.0,,2026-08-15T22:27:41
+phi4-mini,naive sensor read,4,3,"The packet flow rate is significantly higher than normal, indicating potential malicious traffic or misconfiguration.
+Risk Score: 8/10",8.0,True,True,2.32,416.0,26.0,,2026-08-15T22:27:43
+phi4-mini,sporadic sensor measurement injection,5,1,"The packet flow rate is significantly higher than normal, indicating potential malicious traffic or misconfiguration.
+Risk Score: 8/10",8.0,True,True,4.88,252.0,26.0,,2026-08-15T22:27:48
+phi4-mini,sporadic sensor measurement injection,5,2,"The high packet flow rate (70 pps) significantly exceeds normal levels, indicating potential malicious traffic or misconfiguration.
+Risk Score: 8/10",8.0,True,True,2.72,252.0,31.0,,2026-08-15T22:27:51
+phi4-mini,sporadic sensor measurement injection,5,3,"The high flow rate (70 packets/s) compared with normal levels (>15 packets/s). Function Code and PDU suggest legitimate Modbus traffic, but elevated packet frequency may indicate a Denial-of-Service attack or misconfiguration. 
+
+Risk Score: 7/10",7.0,True,True,4.51,252.0,54.0,,2026-08-15T22:27:55
+phi4-mini,force listen mode,6,1,"The packet flow rate is slightly above normal, but not significantly so; no immediate threat detected.
+Risk Score: 2/10",2.0,True,True,4.36,228.0,27.0,,2026-08-15T22:28:00
+phi4-mini,force listen mode,6,2,"The packet flow rate is significantly higher than normal, indicating potential malicious traffic or misconfiguration.
+Risk Score: 8/10",8.0,True,True,2.32,228.0,26.0,,2026-08-15T22:28:02
+phi4-mini,force listen mode,6,3,"The packet flow rate is significantly higher than normal, indicating potential malicious behavior or misconfiguration.
+Risk Score: 8/10",8.0,True,True,2.27,228.0,26.0,,2026-08-15T22:28:04
+phi4-mini,restart communication,7,1,"The high packet flow rate (12 packets/s) is significantly lower than expected (>15). No immediate threat detected, but unusual traffic warrants monitoring.
+
+Risk Score: 2/10",2.0,True,True,5.43,249.0,37.0,,2026-08-15T22:28:10
+phi4-mini,restart communication,7,2,"The high packet flow rate (12 packets/s) exceeds normal thresholds, indicating potential malicious traffic or misconfiguration.
+Risk Score: 7/10",7.0,True,True,2.62,249.0,30.0,,2026-08-15T22:28:12
+phi4-mini,restart communication,7,3,"The high packet flow rate (12 packets/s) compared to normal levels suggests unusual traffic, possibly indicating an attack or misconfiguration.
+
+Risk Score: 7/10",7.0,True,True,2.92,249.0,34.0,,2026-08-15T22:28:15
+phi4-mini,data flood attack,8,1,"The high packet flow rate (10795 packets/s) significantly exceeds normal levels, indicating potential malicious traffic or misconfiguration.
+
+Risk Score: 9/10",9.0,True,True,5.52,257.0,32.0,,2026-08-15T22:28:21
+phi4-mini,data flood attack,8,2,"The high packet flow rate (10795 packets/s) significantly exceeds normal levels, indicating potential malicious traffic or misconfiguration.
+
+Risk Score: 9/10",9.0,True,True,2.83,257.0,32.0,,2026-08-15T22:28:24
+phi4-mini,data flood attack,8,3,"The high packet flow rate (10795.25 packets/s) significantly exceeds normal levels, indicating potential malicious traffic or misconfiguration.
+
+Risk Score: 9/10",9.0,True,True,2.92,257.0,34.0,,2026-08-15T22:28:27
+qwen3:4b,address scan,1,1,,,False,False,300.1,,,Request timed out.,2026-08-15T22:33:27
+qwen3:4b,address scan,1,2,,,False,False,300.1,,,Request timed out.,2026-08-15T22:38:27
+qwen3:4b,address scan,1,3,,,False,False,300.1,,,Request timed out.,2026-08-15T22:43:27
+qwen3:4b,function code scan,2,1,,,False,False,300.1,,,Request timed out.,2026-08-15T22:48:27
+qwen3:4b,function code scan,2,2,Non-standard MODBUS function code (100) and empty PDU (0x00000000) detected. Flow rate 38 pps > 15.07. Risk Score: 8/10,8.0,True,True,288.44,295.0,2691.0,,2026-08-15T22:53:16
+qwen3:4b,function code scan,2,3,,,False,False,300.1,,,Request timed out.,2026-08-15T22:58:16
+qwen3:4b,device identification attack,3,1,,,False,False,300.1,,,Request timed out.,2026-08-15T23:03:16
+qwen3:4b,device identification attack,3,2,,,False,False,300.1,,,Request timed out.,2026-08-15T23:08:16
+qwen3:4b,device identification attack,3,3,,,False,False,300.1,,,Request timed out.,2026-08-15T23:13:16
+qwen3:4b,naive sensor read,4,1,,,False,False,300.1,,,Request timed out.,2026-08-15T23:18:16
+qwen3:4b,naive sensor read,4,2,,,False,False,82.98,0.0,0.0,,2026-08-15T23:19:39
+qwen3:4b,naive sensor read,4,3,Modbus PDU all zeros indicates malformed request. Flow rate 15.75 pps (slightly above 15.07) but not critical. Risk Score: 7/10,7.0,True,True,277.71,790.0,2492.0,,2026-08-15T23:24:17
+qwen3:4b,sporadic sensor measurement injection,5,1,Packet flow rate (70 pps) exceeds threshold (15.07 pps). Risk Score: 7/10,7.0,True,True,214.97,295.0,2124.0,,2026-08-15T23:27:52
+qwen3:4b,sporadic sensor measurement injection,5,2,,,False,False,300.1,,,Request timed out.,2026-08-15T23:32:52
+qwen3:4b,sporadic sensor measurement injection,5,3,,,False,False,300.1,,,Request timed out.,2026-08-15T23:37:52
+qwen3:4b,force listen mode,6,1,,,False,False,300.1,,,Request timed out.,2026-08-15T23:42:52
+qwen3:4b,force listen mode,6,2,,,False,False,300.1,,,Request timed out.,2026-08-15T23:47:53
+qwen3:4b,force listen mode,6,3,,,False,False,300.1,,,Request timed out.,2026-08-15T23:52:53
+qwen3:4b,restart communication,7,1,Modbus PDU empty for function 8 indicates malformed packet. Flow rate 12.25 pps < 15.07 threshold. Risk Score: 4/10,4.0,True,True,272.93,288.0,2557.0,,2026-08-15T23:57:26
+qwen3:4b,restart communication,7,2,,,False,False,300.1,,,Request timed out.,2026-08-16T00:02:26
+qwen3:4b,restart communication,7,3,,,False,False,300.1,,,Request timed out.,2026-08-16T00:07:26
+qwen3:4b,data flood attack,8,1,,,False,False,300.1,,,Request timed out.,2026-08-16T00:12:26
+qwen3:4b,data flood attack,8,2,,,False,False,300.1,,,Request timed out.,2026-08-16T00:17:26
+qwen3:4b,data flood attack,8,3,,,False,False,300.11,,,Request timed out.,2026-08-16T00:22:26
+qwen3:8b,address scan,1,1,Anomalous flow rate (17.75 > 15.07) suggests potential scanning or flooding. Modbus function code 43 (Mask Write Register) is valid but unusual in rate. Risk Score: 7/10,7.0,True,True,199.54,293.0,1096.0,,2026-08-16T00:25:46
+qwen3:8b,address scan,1,2,"The packet shows a slightly elevated flow rate (17.75 vs. 15.07) and a very short time delta, suggesting potential scanning or flooding. The non-standard Modbus function code 43.0 raises suspicion. Risk Score: 6/10",6.0,True,True,217.79,293.0,1242.0,,2026-08-16T00:29:24
+qwen3:8b,address scan,1,3,"The packet flow rate (17.75 packets/sec) exceeds the threshold (15.07), indicating potential high-traffic anomalies. Modbus Function Code 43 (Read Input Registers) is valid but combined with the elevated flow rate raises suspicion. Risk Score: 8/10",8.0,True,True,109.05,293.0,642.0,,2026-08-16T00:31:13
+qwen3:8b,function code scan,2,1,"The packet flow rate of 38 packets/sec exceeds the threshold, indicating potential scanning or flooding. While Modbus function code 100 (read coil status) is valid, the zero PDU and high rate raise suspicion. Risk Score: 6/10",6.0,True,True,99.66,295.0,556.0,,2026-08-16T00:32:53
+qwen3:8b,function code scan,2,2,"High packet flow rate (38 pps) exceeds the 15.07 threshold, indicating potential scanning or flooding. MODBUS function code 100 is valid but PDU zero may suggest abnormal data requests. Risk Score: 8/10",8.0,True,True,102.7,295.0,609.0,,2026-08-16T00:34:35
+qwen3:8b,function code scan,2,3,"High packet flow rate (38 pps) exceeds threshold, non-standard Modbus function code (100.0), and zero PDU suggest potential exploit or DoS. Risk Score: 8/10",8.0,True,True,75.07,295.0,450.0,,2026-08-16T00:35:50
+qwen3:8b,device identification attack,3,1,"The Modbus function code 43.0 is outside standard ranges (0x03/0x04 for reads), suggesting potential exploitation or malformed traffic. Flow rate (12 pps) is below the anomalous threshold (15.07), but the function code anomaly is critical.  
+
+Risk Score: 7/10",7.0,True,True,126.32,261.0,712.0,,2026-08-16T00:37:57
+qwen3:8b,device identification attack,3,2,"The Modbus function code 43.0 is non-standard, indicating potential malicious activity. While the flow rate (12 pps) is below the anomalous threshold (15.07 pps), the function code suggests a high-risk exploit. Risk Score: 8/10",8.0,True,True,124.67,261.0,739.0,,2026-08-16T00:40:01
+qwen3:8b,device identification attack,3,3,"The Modbus function code 43.0 is non-standard, indicating potential malicious activity. While the flow rate (12 packets/sec) is below the anomalous threshold, the unusual function code raises significant concerns. Risk Score: 8/10",8.0,True,True,216.36,261.0,1252.0,,2026-08-16T00:43:38
+qwen3:8b,naive sensor read,4,1,"The Modbus Function Code 2 (Read Input Registers) is legitimate, but the excessively long PDU and high IP Length suggest potential data exfiltration or buffer overflow. Risk Score: 6/10",6.0,True,True,94.45,790.0,442.0,,2026-08-16T00:45:12
+qwen3:8b,naive sensor read,4,2,"The Modbus PDU is excessively long and malformed, suggesting potential buffer overflow or exploit attempts. While flow rate is slightly above normal, the PDU anomaly poses higher risk. Risk Score: 8/10",8.0,True,True,89.1,790.0,527.0,,2026-08-16T00:46:41
+qwen3:8b,naive sensor read,4,3,"The Modbus PDU contains an unusually long sequence of zeros, suggesting a malformed or potentially malicious payload. While the flow rate is slightly above the threshold, the PDU anomaly indicates a higher risk. Risk Score: 8/10",8.0,True,True,86.61,790.0,501.0,,2026-08-16T00:48:08
+qwen3:8b,sporadic sensor measurement injection,5,1,High packet flow rate (70 pps) and suspicious Modbus PDU (0x00090000) suggest potential DoS or malformed request. Risk Score: 9/10,9.0,True,True,100.55,295.0,568.0,,2026-08-16T00:49:49
+qwen3:8b,sporadic sensor measurement injection,5,2,High packet rate (70pps) and Modbus function code 5 (write) suggest potential exploitation. Risk Score: 8/10,8.0,True,True,137.74,295.0,788.0,,2026-08-16T00:52:06
+qwen3:8b,sporadic sensor measurement injection,5,3,"The packet flow rate of 70 pps exceeds the threshold of 15.07 pps, indicating potential DoS or scanning activity. While Modbus function code 5 (Write Single Register) is legitimate, the high rate suggests abnormal behavior. Risk Score: 8/10.",8.0,True,True,66.89,295.0,402.0,,2026-08-16T00:53:13
+qwen3:8b,force listen mode,6,1,"The Modbus function code 8.0 indicates an exception response, suggesting potential malformed traffic or denial-of-service attempts. Combined with a packet rate exceeding the threshold, this signals suspicious activity. Risk Score: 8/10",8.0,True,True,79.41,257.0,438.0,,2026-08-16T00:54:33
+qwen3:8b,force listen mode,6,2,"The Modbus function code 8.0 indicates an exception response, suggesting potential malicious activity. Combined with a flow rate exceeding the threshold, this signals a possible denial-of-service or exploit attempt. Risk Score: 7/10",7.0,True,True,80.45,257.0,478.0,,2026-08-16T00:55:53
+qwen3:8b,force listen mode,6,3,"The packet shows a Modbus function code 8 (diagnostic request) with zero PDU, possibly indicating a scan or probe. Flow rate (17 pps) slightly exceeds the threshold, but not extremely high. Risk Score: 4/10",4.0,True,True,146.22,257.0,862.0,,2026-08-16T00:58:19
+qwen3:8b,restart communication,7,1,"The MODBUS function code 8.0 is a diagnostic request, often associated with malicious activity. While flow rate (12.25 pps) is below the anomalous threshold (15.07), the function code alone raises concerns. Risk Score: 7/10.",7.0,True,True,117.34,288.0,654.0,,2026-08-16T01:00:17
+qwen3:8b,restart communication,7,2,"The packet flow rate (12.25 packets/sec) is below the anomalous threshold (15.07). MODBUS function code 8.0 is normal, but incomplete PDU (0x) suggests potential data corruption. Risk Score: 4/10",4.0,True,True,114.49,288.0,679.0,,2026-08-16T01:02:11
+qwen3:8b,restart communication,7,3,The Modbus function code 8.0 (Diagnostic Register Read) is non-standard and may indicate reconnaissance. Flow rate (12.25 pps) is below the anomalous threshold (15.07 pps). Risk Score: 2/10,2.0,True,True,122.24,288.0,719.0,,2026-08-16T01:04:13
+qwen3:8b,data flood attack,8,1,"High packet flow rate (10,795/sec) and unusual Modbus PDU suggest potential DDoS or scanning activity. Risk Score: 9/10",9.0,True,True,97.15,307.0,538.0,,2026-08-16T01:05:51
+qwen3:8b,data flood attack,8,2,"The packet flow rate of 10,795 packets per second far exceeds the normal threshold, indicating a potential denial-of-service or scanning attack. MODBUS traffic at such a high rate is highly suspicious. Risk Score: 10/10",10.0,True,True,113.76,307.0,667.0,,2026-08-16T01:07:44
+qwen3:8b,data flood attack,8,3,"High packet flow rate (10,795/sec) and abnormal Modbus PDU suggest potential DDoS or exploit attempts. Risk Score: 9/10",9.0,True,True,65.64,307.0,390.0,,2026-08-16T01:08:50
+deepseek-r1:8b,address scan,1,1,"
+High packet flow rate (17.75 pps) exceeds the normal threshold of 15.07 pps, indicating a possible attack vector. Function Code 43 is unusual for typical device communication and may suggest reconnaissance or configuration probing.
+
+Risk Score: 8/10",8.0,True,True,72.73,287.0,355.0,,2026-08-16T01:10:03
+deepseek-r1:8b,address scan,1,2,"
+Unusual MODBUS Function Code (43.0) combined with high packet flow rate (>15). Potential DoS or scanning activity.
+
+Risk Score: 8/10",8.0,True,True,43.13,287.0,260.0,,2026-08-16T01:10:46
+deepseek-r1:8b,address scan,1,3,"
+The IP addresses and protocol (MODBUS) appear standard. The small Frame Time Delta suggests rapid local communication is possible. However, Function Code 43.0 is unusual or potentially unstandardized. The high flow rate combined with this non-standard code warrants scrutiny for potential reconnaissance or attack.
+
+Risk Score: 5/10",5.0,True,False,81.35,287.0,478.0,,2026-08-16T01:12:07
+deepseek-r1:8b,function code scan,2,1,"
+The packet shows a non-standard MODBUS function code (100.0) with an empty PDU and a high flow rate of 38 pps compared to the threshold (15.07). This combination suggests probing or abnormal traffic, increasing suspicion.
+
+Risk Score: 6/10",6.0,True,True,62.46,289.0,338.0,,2026-08-16T01:13:10
+deepseek-r1:8b,function code scan,2,2,"
+The Modbus Function Code 100.0 and PDU 0x00000000 are non-standard values, indicating potential malformed or malicious packet crafting. The high packet flow rate of 38 pps (vs normal threshold) suggests abnormal traffic intensity.
+
+Risk Score: 7/10",7.0,True,True,70.93,289.0,413.0,,2026-08-16T01:14:21
+deepseek-r1:8b,function code scan,2,3,"
+The IP addresses are on the same subnet (Source: 192.168.0.1, Dest: 192.168.0.31), which may be normal for internal communication if expected.
+
+However, the MODBUS function code **100.0** is highly unusual and not part of standard MODBUS protocols (e.g., RTU/ASCII/TCP). This strongly suggests malformed or potentially malicious traffic attempting non-standard operations.
+
+The packet flow rate of 38 pps exceeds typical thresholds for normal operation but may be lower than the user's specified anomalous example. The combination indicates suspicious activity, likely severe if targeting critical systems.
+
+Risk Score: 7/10",7.0,True,False,103.56,289.0,606.0,,2026-08-16T01:16:04
+deepseek-r1:8b,device identification attack,3,1,"
+The MODBUS function code 43 with PDU `0x0e0100` combined with the high packet flow rate (12 pps) exceeding normal thresholds warrants attention. The short frame time delta suggests rapid transmission.
+
+Risk Score: 7/10",7.0,True,True,68.11,255.0,377.0,,2026-08-16T01:17:12
+deepseek-r1:8b,device identification attack,3,2,"
+The MODBUS TCP packet shows normal IP/Frame data but unusual Modbus PDU (0x0e0100) and Function Code (43). Flow rate is within expected limits. Risk Score: 2/10",2.0,True,True,45.4,255.0,268.0,,2026-08-16T01:17:58
+deepseek-r1:8b,device identification attack,3,3,"
+Unusual MODBUS Function Code (43) detected, combined with a high packet flow rate (>15 PPS). This could indicate protocol misuse or an attack.
+
+Risk Score: 7/10",7.0,True,True,60.55,255.0,362.0,,2026-08-16T01:18:58
+deepseek-r1:8b,naive sensor read,4,1,"
+The MODBUS PDU length is suspiciously large and unusual for typical control system traffic (appears to be a string of zeros). The high packet flow rate (15.75 pps) combined with this anomaly indicates potentially malicious activity.
+
+Risk Score: 6/10",6.0,True,True,89.68,784.0,422.0,,2026-08-16T01:20:28
+deepseek-r1:8b,naive sensor read,4,2,"
+Unusual MODBUS function code (2.0) with internal IP addresses but highly suspicious empty Modbus PDU fields. Elevated packet flow rate suggests potential scripted activity or reconnaissance, though not extreme. Risk Score: 5/10",5.0,True,True,37.81,784.0,228.0,,2026-08-16T01:21:06
+deepseek-r1:8b,naive sensor read,4,3,"
+Unusual MODBUS function code (likely malformed) combined with an elevated packet flow rate. This could indicate reconnaissance or probing activity targeting this device.
+
+Risk Score: 6/10",6.0,True,True,76.34,784.0,442.0,,2026-08-16T01:22:22
+deepseek-r1:8b,sporadic sensor measurement injection,5,1,"
+High packet flow rate (70pps) on a local subnet targeting critical device (192.168.0.1). Function code 5 is potentially dangerous. Risk Score: 7/10",7.0,True,True,66.16,289.0,366.0,,2026-08-16T01:23:28
+deepseek-r1:8b,sporadic sensor measurement injection,5,2,"
+The MODBUS Function Code 5 request (Get Device Identification) appears standard for device interrogation or diagnostics. However, the high packet flow rate of 70 pps is unusual and warrants investigation.
+
+Risk Score: 3/10",3.0,True,True,62.78,289.0,382.0,,2026-08-16T01:24:31
+deepseek-r1:8b,sporadic sensor measurement injection,5,3,"
+This packet shows a MODBUS function code 5 (whois) query with a high IP/TCP length and low RTT, suggesting a potentially fast response or unusual activity.
+
+The flow rate of 70 pps significantly exceeds the normal threshold of 15.07 pps, indicating abnormal traffic density.
+
+This could represent reconnaissance or an attempt to overwhelm the system.
+
+Risk Score: 8/10",8.0,True,False,63.08,289.0,382.0,,2026-08-16T01:25:34
+deepseek-r1:8b,force listen mode,6,1,"
+The MODBUS function code 8.0 (file upload/download) combined with a high packet flow rate could indicate unusual activity or potential denial-of-service attempts if not part of normal operations.
+
+Risk Score: Insufficient data to determine severity",,False,True,69.28,251.0,381.0,,2026-08-16T01:26:44
+deepseek-r1:8b,force listen mode,6,2,"
+The MODBUS packet shows Function Code 8 (file record) with PDU 0x0000, indicating a self-query request with no parameters – highly unusual and potentially malicious behavior.
+
+Risk Score: 5/10",5.0,True,True,53.93,251.0,321.0,,2026-08-16T01:27:38
+deepseek-r1:8b,force listen mode,6,3,"
+The MODBUS packet shows Function Code 8.0 (whois request), which is normal. The PDU length being zero suggests an empty query or request without data payload. Packet flow rate at 17pps slightly exceeds the threshold of 15.07, but given other parameters appear standard for a whois request, no immediate high-severity threat is indicated.
+
+Risk Score: 4/10",4.0,True,False,79.47,251.0,469.0,,2026-08-16T01:28:57
+deepseek-r1:8b,restart communication,7,1,"
+This MODBUS packet shows an unusual Function Code (8) in the extended range (16-32767), which is uncommon for standard operations. The very low latency suggests rapid communication or potential scanning activity.
+
+Risk Score: 5/10",5.0,True,True,69.61,282.0,377.0,,2026-08-16T01:30:07
+deepseek-r1:8b,restart communication,7,2,"
+The IP addresses and protocol (MODBUS) appear normal. The packet flow rate is below the stated anomalous threshold (12.25 vs 15.07+). However, MODBUS function code 8 resets devices – a single occurrence might be benign but warrants investigation due to potential high-impact.
+
+Risk Score: 6/10",6.0,True,False,58.67,282.0,351.0,,2026-08-16T01:31:05
+deepseek-r1:8b,restart communication,7,3,"
+This MODBUS packet with Function Code 8 (Reset Device) shows potential misuse due to abnormal TCP ACK RTT and Bytes In Flight. The flow rate comparison seems irrelevant here as it pertains to multiple packets.
+
+Risk Score: 7/10",7.0,True,True,55.61,282.0,332.0,,2026-08-16T01:32:01
+deepseek-r1:8b,data flood attack,8,1,"
+The packet flow rate is extremely high (over 10k pps) compared to the stated normal threshold. The MODBUS PDU and function code appear unusual, suggesting potential scanning or probing activity.
+
+Risk Score: 9/10",9.0,True,True,87.01,301.0,481.0,,2026-08-16T01:33:28
+deepseek-r1:8b,data flood attack,8,2,"
+The extremely high packet flow rate (10795.25 pps) far exceeds normal thresholds and is highly suspicious for denial-of-service activity, especially given the MODBUS protocol context.
+
+Risk Score: 8/10",8.0,True,True,54.9,301.0,321.0,,2026-08-16T01:34:23
+deepseek-r1:8b,data flood attack,8,3,"
+The extremely high packet flow rate (10795 pps) compared to normal thresholds is highly anomalous for an Industrial Control System, indicating potential network flooding or malicious activity overwhelming legitimate traffic.
+
+Risk Score: 8/10",8.0,True,True,76.43,301.0,449.0,,2026-08-16T01:35:39
