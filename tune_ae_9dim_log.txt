@@ -1,0 +1,92 @@
+/home/23532764/local-llms/modbus-ids-autoencoder/tune_ae_9dim.py:21: DeprecationWarning: 
+Pyarrow will become a required dependency of pandas in the next major release of pandas (pandas 3.0),
+(to allow more performant data types, such as the Arrow string type, and better interoperability with other libraries)
+but was not found to be installed on your system.
+If this would cause problems for you,
+please provide us feedback at https://github.com/pandas-dev/pandas/issues/54466
+        
+  import pandas as pd
+===================================
+Dataset: Intelligent Electronic Device
+Shape: (262589, 19)
+Column Names: Index(['ip_len', 'ip_frag_offset', 'ip_id', 'ip_ttl', 'ip_proto',
+       'tcp_window_size', 'tcp_ack', 'tcp_seq', 'tcp_len',
+       'tcp_urgent_pointer', 'tcp_flags', 'tcp_analysis_ack_rtt',
+       'tcp_analysis_push_bytes_sent', 'tcp_analysis_bytes_in_flight',
+       'frame_time_delta', 'attack_specific', 'modbus_func_code',
+       'ip_flags_df', 'ip_flags_mf'],
+      dtype='object')
+===================================
+Dataset: Smart Grid
+Shape: (58847, 19)
+Column Names: Index(['ip_len', 'ip_frag_offset', 'ip_id', 'ip_ttl', 'ip_proto',
+       'tcp_window_size', 'tcp_ack', 'tcp_seq', 'tcp_len',
+       'tcp_urgent_pointer', 'tcp_flags', 'tcp_analysis_ack_rtt',
+       'tcp_analysis_push_bytes_sent', 'tcp_analysis_bytes_in_flight',
+       'frame_time_delta', 'attack_specific', 'modbus_func_code',
+       'ip_flags_df', 'ip_flags_mf'],
+      dtype='object')
+===================================
+Dataset: Water Bottle Factory
+Shape: (186482, 19)
+Column Names: Index(['ip_len', 'ip_frag_offset', 'ip_id', 'ip_ttl', 'ip_proto',
+       'tcp_window_size', 'tcp_ack', 'tcp_seq', 'tcp_len',
+       'tcp_urgent_pointer', 'tcp_flags', 'tcp_analysis_ack_rtt',
+       'tcp_analysis_push_bytes_sent', 'tcp_analysis_bytes_in_flight',
+       'frame_time_delta', 'attack_specific', 'modbus_func_code',
+       'ip_flags_df', 'ip_flags_mf'],
+      dtype='object')
+=========================================
+Tuning dataset: Intelligent Electronic Device
+[1/12] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.0005, 'activation': 'gelu'} -> f1_attack=0.9227, precision_attack=0.9473, recall_attack=0.8992, time=280.41s
+[2/12] {'epochs': 10, 'batch_size': 32, 'learning_rate': 0.0005, 'activation': 'relu'} -> f1_attack=0.8498, precision_attack=0.9394, recall_attack=0.7757, time=89.99s
+[3/12] {'epochs': 10, 'batch_size': 128, 'learning_rate': 0.0005, 'activation': 'elu'} -> f1_attack=0.9221, precision_attack=0.9473, recall_attack=0.8982, time=36.15s
+[4/12] {'epochs': 10, 'batch_size': 32, 'learning_rate': 0.01, 'activation': 'leaky_relu'} -> f1_attack=0.8894, precision_attack=0.9439, recall_attack=0.8409, time=93.47s
+[5/12] {'epochs': 20, 'batch_size': 64, 'learning_rate': 0.0005, 'activation': 'elu'} -> f1_attack=0.9304, precision_attack=0.9481, recall_attack=0.9134, time=133.03s
+[6/12] {'epochs': 20, 'batch_size': 64, 'learning_rate': 0.001, 'activation': 'leaky_relu'} -> f1_attack=0.8373, precision_attack=0.9380, recall_attack=0.7561, time=141.95s
+[7/12] {'epochs': 10, 'batch_size': 64, 'learning_rate': 0.01, 'activation': 'relu'} -> f1_attack=0.9251, precision_attack=0.9476, recall_attack=0.9037, time=68.75s
+[8/12] {'epochs': 10, 'batch_size': 64, 'learning_rate': 0.0005, 'activation': 'leaky_relu'} -> f1_attack=0.8089, precision_attack=0.9345, recall_attack=0.7131, time=71.13s
+[9/12] {'epochs': 10, 'batch_size': 128, 'learning_rate': 0.0005, 'activation': 'relu'} -> f1_attack=0.8661, precision_attack=0.9413, recall_attack=0.8020, time=27.80s
+[10/12] {'epochs': 10, 'batch_size': 128, 'learning_rate': 0.01, 'activation': 'elu'} -> f1_attack=0.9419, precision_attack=0.9492, recall_attack=0.9346, time=35.27s
+[11/12] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.01, 'activation': 'relu'} -> f1_attack=0.8338, precision_attack=0.9376, recall_attack=0.7507, time=165.76s
+[12/12] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.01, 'activation': 'elu'} -> f1_attack=0.8553, precision_attack=0.9401, recall_attack=0.7845, time=175.37s
+Dataset Intelligent Electronic Device tuning total time: 1319.07s
+Best config for Intelligent Electronic Device: {'epochs': 10, 'batch_size': 128, 'learning_rate': 0.01, 'activation': 'elu', 'f1_attack': 0.9418762917779906, 'precision_attack': 0.9492214291157568, 'recall_attack': 0.9346439558790426, 'f1_weighted': 0.9423192022829586, 'trial_time_s': 35.26982831954956}
+=========================================
+Tuning dataset: Smart Grid
+[1/12] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.0005, 'activation': 'gelu'} -> f1_attack=0.9160, precision_attack=0.9466, recall_attack=0.8873, time=333.22s
+[2/12] {'epochs': 10, 'batch_size': 32, 'learning_rate': 0.0005, 'activation': 'relu'} -> f1_attack=0.9164, precision_attack=0.9467, recall_attack=0.8881, time=87.73s
+[3/12] {'epochs': 10, 'batch_size': 128, 'learning_rate': 0.0005, 'activation': 'elu'} -> f1_attack=0.9364, precision_attack=0.9486, recall_attack=0.9245, time=33.42s
+[4/12] {'epochs': 10, 'batch_size': 32, 'learning_rate': 0.01, 'activation': 'leaky_relu'} -> f1_attack=0.9202, precision_attack=0.9470, recall_attack=0.8948, time=91.68s
+[5/12] {'epochs': 20, 'batch_size': 64, 'learning_rate': 0.0005, 'activation': 'elu'} -> f1_attack=0.9107, precision_attack=0.9461, recall_attack=0.8779, time=129.85s
+[6/12] {'epochs': 20, 'batch_size': 64, 'learning_rate': 0.001, 'activation': 'leaky_relu'} -> f1_attack=0.9412, precision_attack=0.9491, recall_attack=0.9334, time=127.87s
+[7/12] {'epochs': 10, 'batch_size': 64, 'learning_rate': 0.01, 'activation': 'relu'} -> f1_attack=0.9120, precision_attack=0.9462, recall_attack=0.8802, time=72.02s
+[8/12] {'epochs': 10, 'batch_size': 64, 'learning_rate': 0.0005, 'activation': 'leaky_relu'} -> f1_attack=0.9229, precision_attack=0.9473, recall_attack=0.8996, time=72.04s
+[9/12] {'epochs': 10, 'batch_size': 128, 'learning_rate': 0.0005, 'activation': 'relu'} -> f1_attack=0.9248, precision_attack=0.9475, recall_attack=0.9031, time=35.22s
+[10/12] {'epochs': 10, 'batch_size': 128, 'learning_rate': 0.01, 'activation': 'elu'} -> f1_attack=0.9416, precision_attack=0.9492, recall_attack=0.9342, time=36.31s
+[11/12] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.01, 'activation': 'relu'} -> f1_attack=0.9126, precision_attack=0.9463, recall_attack=0.8813, time=186.30s
+[12/12] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.01, 'activation': 'elu'} -> f1_attack=0.9284, precision_attack=0.9479, recall_attack=0.9097, time=177.92s
+Dataset Smart Grid tuning total time: 1383.60s
+Best config for Smart Grid: {'epochs': 10, 'batch_size': 128, 'learning_rate': 0.01, 'activation': 'elu', 'f1_attack': 0.9416396279472204, 'precision_attack': 0.949154020582592, 'recall_attack': 0.9342432826852091, 'f1_weighted': 0.9420944615610213, 'trial_time_s': 36.31213068962097}
+=========================================
+Tuning dataset: Water Bottle Factory
+[1/12] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.0005, 'activation': 'gelu'} -> f1_attack=0.8887, precision_attack=0.9438, recall_attack=0.8398, time=305.40s
+[2/12] {'epochs': 10, 'batch_size': 32, 'learning_rate': 0.0005, 'activation': 'relu'} -> f1_attack=0.7999, precision_attack=0.9333, recall_attack=0.6998, time=94.33s
+[3/12] {'epochs': 10, 'batch_size': 128, 'learning_rate': 0.0005, 'activation': 'elu'} -> f1_attack=0.8358, precision_attack=0.9378, recall_attack=0.7539, time=35.13s
+[4/12] {'epochs': 10, 'batch_size': 32, 'learning_rate': 0.01, 'activation': 'leaky_relu'} -> f1_attack=0.9481, precision_attack=0.9498, recall_attack=0.9463, time=89.31s
+[5/12] {'epochs': 20, 'batch_size': 64, 'learning_rate': 0.0005, 'activation': 'elu'} -> f1_attack=0.9595, precision_attack=0.9509, recall_attack=0.9683, time=141.76s
+[6/12] {'epochs': 20, 'batch_size': 64, 'learning_rate': 0.001, 'activation': 'leaky_relu'} -> f1_attack=0.8635, precision_attack=0.9410, recall_attack=0.7978, time=130.28s
+[7/12] {'epochs': 10, 'batch_size': 64, 'learning_rate': 0.01, 'activation': 'relu'} -> f1_attack=0.8463, precision_attack=0.9390, recall_attack=0.7703, time=72.56s
+[8/12] {'epochs': 10, 'batch_size': 64, 'learning_rate': 0.0005, 'activation': 'leaky_relu'} -> f1_attack=0.8458, precision_attack=0.9389, recall_attack=0.7695, time=63.21s
+[9/12] {'epochs': 10, 'batch_size': 128, 'learning_rate': 0.0005, 'activation': 'relu'} -> f1_attack=0.7426, precision_attack=0.9253, recall_attack=0.6201, time=35.06s
+[10/12] {'epochs': 10, 'batch_size': 128, 'learning_rate': 0.01, 'activation': 'elu'} -> f1_attack=0.9292, precision_attack=0.9479, recall_attack=0.9113, time=35.82s
+[11/12] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.01, 'activation': 'relu'} -> f1_attack=0.9244, precision_attack=0.9475, recall_attack=0.9024, time=186.19s
+[12/12] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.01, 'activation': 'elu'} -> f1_attack=0.6094, precision_attack=0.9019, recall_attack=0.4601, time=182.28s
+Dataset Water Bottle Factory tuning total time: 1371.33s
+Best config for Water Bottle Factory: {'epochs': 20, 'batch_size': 64, 'learning_rate': 0.0005, 'activation': 'elu', 'f1_attack': 0.9595001391313147, 'precision_attack': 0.950864878415643, 'recall_attack': 0.9682936791585827, 'f1_weighted': 0.9591255365483692, 'trial_time_s': 141.76417231559753}
+=========================================
+Best configs:
+  Intelligent Electronic Device: {'epochs': 10, 'batch_size': 128, 'learning_rate': 0.01, 'activation': 'elu', 'f1_attack': 0.9418762917779906, 'precision_attack': 0.9492214291157568, 'recall_attack': 0.9346439558790426, 'f1_weighted': 0.9423192022829586, 'trial_time_s': 35.26982831954956}
+  Smart Grid: {'epochs': 10, 'batch_size': 128, 'learning_rate': 0.01, 'activation': 'elu', 'f1_attack': 0.9416396279472204, 'precision_attack': 0.949154020582592, 'recall_attack': 0.9342432826852091, 'f1_weighted': 0.9420944615610213, 'trial_time_s': 36.31213068962097}
+  Water Bottle Factory: {'epochs': 20, 'batch_size': 64, 'learning_rate': 0.0005, 'activation': 'elu', 'f1_attack': 0.9595001391313147, 'precision_attack': 0.950864878415643, 'recall_attack': 0.9682936791585827, 'f1_weighted': 0.9591255365483692, 'trial_time_s': 141.76417231559753}
+Total time consumed for all datasets: 4074.01s

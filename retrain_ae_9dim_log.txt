@@ -1,0 +1,199 @@
+/home/23532764/local-llms/modbus-ids-autoencoder/retrain_ae_9dim.py:20: DeprecationWarning: 
+Pyarrow will become a required dependency of pandas in the next major release of pandas (pandas 3.0),
+(to allow more performant data types, such as the Arrow string type, and better interoperability with other libraries)
+but was not found to be installed on your system.
+If this would cause problems for you,
+please provide us feedback at https://github.com/pandas-dev/pandas/issues/54466
+        
+  import pandas as pd
+===================================
+Dataset: Intelligent Electronic Device
+Shape: (262589, 19)
+Column Names: Index(['ip_len', 'ip_frag_offset', 'ip_id', 'ip_ttl', 'ip_proto',
+       'tcp_window_size', 'tcp_ack', 'tcp_seq', 'tcp_len',
+       'tcp_urgent_pointer', 'tcp_flags', 'tcp_analysis_ack_rtt',
+       'tcp_analysis_push_bytes_sent', 'tcp_analysis_bytes_in_flight',
+       'frame_time_delta', 'attack_specific', 'modbus_func_code',
+       'ip_flags_df', 'ip_flags_mf'],
+      dtype='object')
+===================================
+Dataset: Smart Grid
+Shape: (58847, 19)
+Column Names: Index(['ip_len', 'ip_frag_offset', 'ip_id', 'ip_ttl', 'ip_proto',
+       'tcp_window_size', 'tcp_ack', 'tcp_seq', 'tcp_len',
+       'tcp_urgent_pointer', 'tcp_flags', 'tcp_analysis_ack_rtt',
+       'tcp_analysis_push_bytes_sent', 'tcp_analysis_bytes_in_flight',
+       'frame_time_delta', 'attack_specific', 'modbus_func_code',
+       'ip_flags_df', 'ip_flags_mf'],
+      dtype='object')
+===================================
+Dataset: Water Bottle Factory
+Shape: (186482, 19)
+Column Names: Index(['ip_len', 'ip_frag_offset', 'ip_id', 'ip_ttl', 'ip_proto',
+       'tcp_window_size', 'tcp_ack', 'tcp_seq', 'tcp_len',
+       'tcp_urgent_pointer', 'tcp_flags', 'tcp_analysis_ack_rtt',
+       'tcp_analysis_push_bytes_sent', 'tcp_analysis_bytes_in_flight',
+       'frame_time_delta', 'attack_specific', 'modbus_func_code',
+       'ip_flags_df', 'ip_flags_mf'],
+      dtype='object')
+=========================================
+Dataset: Intelligent Electronic Device
+Epoch 1/30, Loss: 0.000163, Time: 9.58s
+Epoch 2/30, Loss: 0.000002, Time: 10.77s
+Epoch 3/30, Loss: 0.000002, Time: 11.01s
+Epoch 4/30, Loss: 0.000001, Time: 12.53s
+Epoch 5/30, Loss: 0.000001, Time: 13.94s
+Epoch 6/30, Loss: 0.000001, Time: 13.10s
+Epoch 7/30, Loss: 0.000001, Time: 13.36s
+Epoch 8/30, Loss: 0.000001, Time: 13.64s
+Epoch 9/30, Loss: 0.000001, Time: 13.82s
+Epoch 10/30, Loss: 0.000001, Time: 13.56s
+Epoch 11/30, Loss: 0.000001, Time: 13.80s
+Epoch 12/30, Loss: 0.000001, Time: 14.09s
+Epoch 13/30, Loss: 0.000001, Time: 654.31s
+Epoch 14/30, Loss: 0.000001, Time: 793.40s
+Epoch 15/30, Loss: 0.000001, Time: 799.29s
+Epoch 16/30, Loss: 0.000001, Time: 812.71s
+Epoch 17/30, Loss: 0.000001, Time: 808.33s
+Epoch 18/30, Loss: 0.000001, Time: 218.22s
+Epoch 19/30, Loss: 0.000001, Time: 13.32s
+Epoch 20/30, Loss: 0.000001, Time: 13.16s
+Epoch 21/30, Loss: 0.000001, Time: 13.22s
+Epoch 22/30, Loss: 0.000001, Time: 13.22s
+Epoch 23/30, Loss: 0.000001, Time: 13.25s
+Epoch 24/30, Loss: 0.000001, Time: 13.27s
+Epoch 25/30, Loss: 0.000001, Time: 13.29s
+Epoch 26/30, Loss: 0.000001, Time: 13.33s
+Epoch 27/30, Loss: 0.000001, Time: 13.31s
+Epoch 28/30, Loss: 0.000001, Time: 13.27s
+Epoch 29/30, Loss: 0.000001, Time: 13.36s
+Epoch 30/30, Loss: 0.000001, Time: 13.36s
+Dataset Intelligent Electronic Device total time: 4399.22s
+=========================================
+Dataset: Smart Grid
+Epoch 1/30, Loss: 0.001248, Time: 2.20s
+Epoch 2/30, Loss: 0.000432, Time: 2.31s
+Epoch 3/30, Loss: 0.000239, Time: 2.35s
+Epoch 4/30, Loss: 0.000126, Time: 2.36s
+Epoch 5/30, Loss: 0.000191, Time: 2.38s
+Epoch 6/30, Loss: 0.000224, Time: 2.39s
+Epoch 7/30, Loss: 0.000202, Time: 2.41s
+Epoch 8/30, Loss: 0.000154, Time: 2.42s
+Epoch 9/30, Loss: 0.000368, Time: 2.43s
+Epoch 10/30, Loss: 0.000108, Time: 2.44s
+Epoch 11/30, Loss: 0.000267, Time: 2.46s
+Epoch 12/30, Loss: 0.000153, Time: 2.44s
+Epoch 13/30, Loss: 0.000176, Time: 2.46s
+Epoch 14/30, Loss: 0.000227, Time: 2.47s
+Epoch 15/30, Loss: 0.000131, Time: 2.49s
+Epoch 16/30, Loss: 0.000172, Time: 2.51s
+Epoch 17/30, Loss: 0.000156, Time: 2.53s
+Epoch 18/30, Loss: 0.000117, Time: 2.55s
+Epoch 19/30, Loss: 0.000143, Time: 2.56s
+Epoch 20/30, Loss: 0.000055, Time: 2.59s
+Epoch 21/30, Loss: 0.000197, Time: 2.61s
+Epoch 22/30, Loss: 0.000289, Time: 2.67s
+Epoch 23/30, Loss: 0.000058, Time: 2.70s
+Epoch 24/30, Loss: 0.000147, Time: 2.73s
+Epoch 25/30, Loss: 0.000110, Time: 2.76s
+Epoch 26/30, Loss: 0.000117, Time: 2.79s
+Epoch 27/30, Loss: 0.000109, Time: 2.79s
+Epoch 28/30, Loss: 0.000087, Time: 2.81s
+Epoch 29/30, Loss: 0.000171, Time: 2.83s
+Epoch 30/30, Loss: 0.000065, Time: 2.85s
+Dataset Smart Grid total time: 76.32s
+=========================================
+Dataset: Water Bottle Factory
+Epoch 1/30, Loss: 0.000285, Time: 8.17s
+Epoch 2/30, Loss: 0.000361, Time: 8.55s
+Epoch 3/30, Loss: 0.000169, Time: 8.65s
+Epoch 4/30, Loss: 0.000157, Time: 8.71s
+Epoch 5/30, Loss: 0.000155, Time: 8.88s
+Epoch 6/30, Loss: 0.000126, Time: 9.19s
+Epoch 7/30, Loss: 0.000147, Time: 9.61s
+Epoch 8/30, Loss: 0.000065, Time: 9.94s
+Epoch 9/30, Loss: 0.000155, Time: 10.10s
+Epoch 10/30, Loss: 0.000041, Time: 10.22s
+Epoch 11/30, Loss: 0.000141, Time: 10.27s
+Epoch 12/30, Loss: 0.000039, Time: 10.20s
+Epoch 13/30, Loss: 0.000077, Time: 10.19s
+Epoch 14/30, Loss: 0.000047, Time: 10.19s
+Epoch 15/30, Loss: 0.000068, Time: 10.25s
+Epoch 16/30, Loss: 0.000052, Time: 10.28s
+Epoch 17/30, Loss: 0.000068, Time: 10.29s
+Epoch 18/30, Loss: 0.000027, Time: 10.27s
+Epoch 19/30, Loss: 0.000110, Time: 10.26s
+Epoch 20/30, Loss: 0.000041, Time: 10.24s
+Epoch 21/30, Loss: 0.000139, Time: 10.27s
+Epoch 22/30, Loss: 0.000026, Time: 10.28s
+Epoch 23/30, Loss: 0.000040, Time: 10.24s
+Epoch 24/30, Loss: 0.000032, Time: 10.27s
+Epoch 25/30, Loss: 0.000015, Time: 10.29s
+Epoch 26/30, Loss: 0.000030, Time: 10.29s
+Epoch 27/30, Loss: 0.000013, Time: 10.27s
+Epoch 28/30, Loss: 0.000031, Time: 10.25s
+Epoch 29/30, Loss: 0.000011, Time: 10.27s
+Epoch 30/30, Loss: 0.000018, Time: 10.22s
+Dataset Water Bottle Factory total time: 297.13s
+=========================================
+Model for dataset (Test): Intelligent Electronic Device
+Threshold: 3.141054548905231e-05
+33476
+Confusion Matrix:
+ [[37982  1999]
+ [ 8504 31477]]
+
+Classification Report:
+               precision    recall  f1-score   support
+
+           0       0.82      0.95      0.88     39981
+           1       0.94      0.79      0.86     39981
+
+    accuracy                           0.87     79962
+   macro avg       0.88      0.87      0.87     79962
+weighted avg       0.88      0.87      0.87     79962
+
+Number of anomlies detected: 33476
+=========================================
+Model for dataset (Test): Smart Grid
+Threshold: 0.005842843465507031
+11158
+Confusion Matrix:
+ [[11066   583]
+ [ 1074 10575]]
+
+Classification Report:
+               precision    recall  f1-score   support
+
+           0       0.91      0.95      0.93     11649
+           1       0.95      0.91      0.93     11649
+
+    accuracy                           0.93     23298
+   macro avg       0.93      0.93      0.93     23298
+weighted avg       0.93      0.93      0.93     23298
+
+Number of anomlies detected: 11158
+=========================================
+Model for dataset (Test): Water Bottle Factory
+Threshold: 0.00119453135994263
+15146
+Confusion Matrix:
+ [[18606   980]
+ [ 5420 14166]]
+
+Classification Report:
+               precision    recall  f1-score   support
+
+           0       0.77      0.95      0.85     19586
+           1       0.94      0.72      0.82     19586
+
+    accuracy                           0.84     39172
+   macro avg       0.85      0.84      0.83     39172
+weighted avg       0.85      0.84      0.83     39172
+
+Number of anomlies detected: 15146
+=========================================
+Intelligent Electronic Device: 4399.22s
+Smart Grid: 76.32s
+Water Bottle Factory: 297.13s
+Total time consumed for all datasets: 4772.67s
