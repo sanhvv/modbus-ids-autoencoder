@@ -1,0 +1,258 @@
+dataset,model,attack_type,attack_specific,repeat,output,risk_score,format_ok_has_score,format_ok_length,latency_sec,prompt_tokens,completion_tokens,error,timestamp
+Intelligent Electronic Device,phi4-mini,address scan,1,1,The packet flow rate is significantly higher than normal. Possible Modbus command execution. Risk Score: 7/10.,7.0,True,True,66.96,231,25,,2026-08-19T07:12:53
+Intelligent Electronic Device,phi4-mini,function code scan,2,1,"The packet flow rate is significantly higher than normal, indicating potential malicious activity. Risk Score: 9/10.",9.0,True,True,0.49,251,24,,2026-08-19T07:12:54
+Intelligent Electronic Device,phi4-mini,device identification attack,3,1,"The high packet flow rate (38.75 packets/s) significantly exceeds the baseline (24.49 packets/s). The Modbus function code 43 (Read Holding Registers) and the PDU suggest legitimate Modbus traffic. However, the elevated flow rate could indicate a potential DoS attack or misconfiguration. Risk Score: 7/10.",7.0,True,False,0.91,257,71,,2026-08-19T07:12:54
+Intelligent Electronic Device,phi4-mini,naive sensor read,4,1,The packet flow rate is significantly higher than normal. Possible DoS attack. Risk Score: 8/10.,8.0,True,True,0.47,230,24,,2026-08-19T07:12:55
+Intelligent Electronic Device,phi4-mini,sporadic sensor measurement injection,5,1,"The high packet flow rate (43.5 packets/s) significantly exceeds the baseline (24.49 packets/s). Function Code 6 (Read Multiple Registers) suggests legitimate Modbus traffic. However, the elevated rate could indicate a Denial of Service (DoS) attack. Risk Score: 7/10.",7.0,True,True,0.86,253,65,,2026-08-19T07:12:56
+Intelligent Electronic Device,phi4-mini,force listen mode,6,1,"The packet flow rate is significantly higher than normal, indicating potential malicious activity. Risk Score: 8/10.",8.0,True,True,0.45,226,24,,2026-08-19T07:12:56
+Intelligent Electronic Device,phi4-mini,restart communication,7,1,"The high packet flow rate (26 packets/s) compared to the baseline (24.49 packets/s) suggests unusual activity. The consistent Modbus function code (8) and low frame time delta indicate a steady, possibly automated process. However, the unknown Modbus PDU value raises concerns about potential malicious activity. Risk Score: 7/10.",7.0,True,False,0.9,249,72,,2026-08-19T07:12:57
+Intelligent Electronic Device,phi4-mini,data flood attack,8,1,The high packet flow rate (10588.25 packets/s) significantly exceeds normal levels. Function Code 4 (Read Holding Registers) could indicate data exfiltration. Risk Score: 9/10.,9.0,True,True,0.64,255,43,,2026-08-19T07:12:58
+Intelligent Electronic Device,qwen3:4b,address scan,1,1,Anomalous: Flow rate (107.5 pps) > threshold (24.49 pps). Non-standard Modbus function code (24). Risk Score: 8/10,8.0,True,True,76.87,275,4782,,2026-08-19T07:14:15
+Intelligent Electronic Device,qwen3:4b,function code scan,2,1,Flow rate 189.25 pps > threshold 24.49. Modbus function 40.0 (non-standard) with empty PDU. Risk Score: 8/10,8.0,True,True,60.93,285,5265,,2026-08-19T07:15:16
+Intelligent Electronic Device,qwen3:4b,device identification attack,3,1,Flow rate (38.75 pps) exceeds threshold (24.49). Non-standard Modbus function code (43) detected. Risk Score: 8/10,8.0,True,True,49.93,293,4355,,2026-08-19T07:16:06
+Intelligent Electronic Device,qwen3:4b,naive sensor read,4,1,Anomalous flow rate (29.25 pps) exceeds threshold (24.49 pps). Risk Score: 4/10,4.0,True,True,41.8,261,3675,,2026-08-19T07:16:47
+Intelligent Electronic Device,qwen3:4b,sporadic sensor measurement injection,5,1,Flow rate (43.5 pps) exceeds threshold (24.49 pps). Risk Score: 5/10,5.0,True,True,34.86,295,3093,,2026-08-19T07:17:22
+Intelligent Electronic Device,qwen3:4b,force listen mode,6,1,"Malformed MODBUS request (func 8, 0x0000) with flow rate 31 pps > threshold. Risk Score: 9/10",9.0,True,True,57.28,258,4936,,2026-08-19T07:18:19
+Intelligent Electronic Device,qwen3:4b,restart communication,7,1,Modbus PDU empty (0x) for function 8 indicates malformed packet attack. Flow rate 26 pps slightly above threshold (24.49). Risk Score: 8/10,8.0,True,True,38.71,287,3419,,2026-08-19T07:18:58
+Intelligent Electronic Device,qwen3:4b,data flood attack,8,1,Flow rate 10588.25 pps (vs 24.49) is highly anomalous. MODBUS function 4 (read holding registers) at this rate suggests flood attack or data exfiltration. Risk Score: 9/10,9.0,True,True,32.49,298,2898,,2026-08-19T07:19:31
+Intelligent Electronic Device,gemma4:e4b,address scan,1,1,"The packet flow rate (107.5 pps) significantly exceeds the normal threshold (24.49 pps), indicating potential flooding or reconnaissance activity. The Modbus function code (24.0) and PDU must be analyzed for malicious intent. High flow rate is the primary concern.
+
+Risk Score: 8/10",8.0,True,False,110.03,285,395,,2026-08-19T07:21:21
+Intelligent Electronic Device,gemma4:e4b,function code scan,2,1,"The packet flow rate (189.25 pps) is highly anomalous, suggesting potential DoS or rapid scanning. The use of MODBUS Function Code 40.0 (Write) indicates an attempt to modify critical ICS registers. This rapid, unauthorized write activity is highly suspicious and requires immediate investigation.
+
+Risk Score: 9/10",9.0,True,False,9.55,297,704,,2026-08-19T07:21:30
+Intelligent Electronic Device,gemma4:e4b,device identification attack,3,1,"The packet flow rate (38.75 pps) significantly exceeds the normal threshold (24.49 pps), indicating potential scanning or DoS activity. The use of Function Code 43.0 is also suspicious. This combination suggests active reconnaissance or malicious flooding.
+
+Risk Score: 8/10",8.0,True,False,6.22,305,441,,2026-08-19T07:21:36
+Intelligent Electronic Device,gemma4:e4b,naive sensor read,4,1,The packet flow rate (29.25 pps) significantly exceeds the normal threshold (24.49 pps). This high rate suggests excessive polling or potential reconnaissance/DoS activity targeting the ICS device. Risk Score: 7/10,7.0,True,True,6.52,271,468,,2026-08-19T07:21:43
+Intelligent Electronic Device,gemma4:e4b,sporadic sensor measurement injection,5,1,"The flow rate (43.5 pps) is highly anomalous, exceeding the threshold (24.49 pps). The packet uses MODBUS Function Code 6 (Write Single Register), indicating rapid, potentially unauthorized data modification attempts. This suggests a potential Denial-of-Service or malicious write attack.
+
+Risk Score: 9/10",9.0,True,False,5.95,307,428,,2026-08-19T07:21:49
+Intelligent Electronic Device,gemma4:e4b,force listen mode,6,1,"The high packet flow rate (31.0 pps) significantly exceeds the established threshold (24.49 pps), indicating potential network flooding or rapid scanning. The use of MODBUS with a Function Code 8.0 and minimal PDU suggests automated, suspicious communication attempts. This behavior is highly anomalous and requires immediate investigation.
+
+Risk Score: 8/10",8.0,True,False,7.8,268,563,,2026-08-19T07:21:57
+Intelligent Electronic Device,gemma4:e4b,restart communication,7,1,"Elevated packet flow (26.0 pps) combined with MODBUS traffic and an empty PDU (0x) suggests rapid, potentially malicious reconnaissance or scanning activity. The high rate and malformed payload are concerning indicators of unauthorized probing of the ICS network.
+
+Risk Score: 7/10",7.0,True,False,8.03,299,582,,2026-08-19T07:22:05
+Intelligent Electronic Device,gemma4:e4b,data flood attack,8,1,"The packet flow rate (10588 pps) is critically high, far exceeding the normal threshold. This suggests potential network scanning, rapid polling, or a Denial-of-Service attack targeting the MODBUS device.
+
+Risk Score: 9/10",9.0,True,True,6.14,310,434,,2026-08-19T07:22:11
+Intelligent Electronic Device,qwen3:8b,address scan,1,1,High packet flow rate (107.5/s) and unusual Modbus function code 24 (non-standard) indicate potential DDoS or exploit activity. Risk Score: 9/10,9.0,True,True,66.88,275,742,,2026-08-19T07:23:18
+Intelligent Electronic Device,qwen3:8b,function code scan,2,1,"High packet flow rate (189.25 pps) exceeds normal thresholds, indicating potential denial-of-service or scanning activity. Risk Score: 9/10.",9.0,True,True,7.25,285,407,,2026-08-19T07:23:25
+Intelligent Electronic Device,qwen3:8b,device identification attack,3,1,"The packet flow rate (38.75 packets/sec) exceeds the threshold (24.49), indicating potential high-volume traffic. MODBUS function code 43 is non-standard, raising suspicion. Low RTT and high bytes in flight suggest possible DoS or scanning. Risk Score: 8/10.",8.0,True,True,12.63,293,730,,2026-08-19T07:23:38
+Intelligent Electronic Device,qwen3:8b,naive sensor read,4,1,"The packet flow rate (29.25 pps) exceeds the example threshold (24.49 pps), indicating potential reconnaissance or scanning activity. Modbus function code 1.0 (read coils) is normal, but sustained high-rate traffic may signal probing. Risk Score: 7/10",7.0,True,True,13.38,261,770,,2026-08-19T07:23:51
+Intelligent Electronic Device,qwen3:8b,sporadic sensor measurement injection,5,1,"The packet flow rate (43.5 packets/sec) exceeds the threshold (24.49), indicating potential high-traffic anomalies. Modbus function code 6 (write register) could be legitimate but paired with elevated rates raises suspicion. Risk Score: 8/10.",8.0,True,True,10.6,295,606,,2026-08-19T07:24:02
+Intelligent Electronic Device,qwen3:8b,force listen mode,6,1,"The Modbus function code 8.0 with PDU 0x0000 suggests a potential read input registers request, possibly malformed or exploitative. Combined with a 31 packets/sec flow rate exceeding the 24.49 threshold, this indicates suspicious activity. Risk Score: 7/10.",7.0,True,True,9.24,258,525,,2026-08-19T07:24:11
+Intelligent Electronic Device,qwen3:8b,restart communication,7,1,"The packet shows a MODBUS function code 8 (Exception Response), which is typically a normal error reply. However, the flow rate (26 pps) slightly exceeds the example threshold (24.49 pps), indicating potential scanning or DoS activity. Risk Score: 4/10.",4.0,True,True,9.13,287,519,,2026-08-19T07:24:20
+Intelligent Electronic Device,qwen3:8b,data flood attack,8,1,"The packet flow rate of 10,588 packets/sec is exceptionally high, far exceeding normal thresholds. MODBUS Function Code 4 (read coils) at this rate suggests potential reconnaissance or denial-of-service attempts. Risk Score: 10/10",10.0,True,True,6.91,298,392,,2026-08-19T07:24:27
+Intelligent Electronic Device,deepseek-r1:8b,address scan,1,1,"
+The MODBUS function code 24.0 is unusual and often associated with custom or potentially malicious implementations. The extremely high packet flow rate (107.5 pps) compared to the normal threshold (24.49 pps) strongly indicates anomalous activity, such as a denial-of-service attempt or aggressive scanning targeting the MODBUS device at 192.168.0.1.
+
+**Risk Score: 7/10**",7.0,True,False,62.62,269,674,,2026-08-19T07:25:30
+Intelligent Electronic Device,deepseek-r1:8b,function code scan,2,1,"
+The MODBUS function code 40.0 (Read Input Registers) is standard. Source and destination IPs (192.168.0.21 -> 192.168.0.1) are on the same subnet, suggesting internal traffic. The high packet flow rate (189.25 pps) combined with the low RTT indicates a potential flood, but the function code itself is benign. No other anomalies are specified.
+
+Risk Score: 5/10",5.0,True,False,7.12,279,400,,2026-08-19T07:25:37
+Intelligent Electronic Device,deepseek-r1:8b,device identification attack,3,1,"
+The MODBUS function code 43.0 is non-standard, raising immediate suspicion. The high packet flow rate (38.75 pps) combined with a small frame time delta indicates rapid, potentially malicious transmission. This combination suggests an active attack, possibly exploiting the protocol or overwhelming the system.
+
+Risk Score: 7/10",7.0,True,False,7.46,287,423,,2026-08-19T07:25:44
+Intelligent Electronic Device,deepseek-r1:8b,naive sensor read,4,1,"
+The packet flow rate is elevated (29.25 pps vs. 24.49 pps reference). A MODBUS function code 1.0 (broadcast read) is normal but combined with a high rate, it could indicate scanning or probing activity. Without baseline data, confirmation is difficult, but the deviation warrants attention.
+
+Risk Score: 5/10",5.0,True,False,9.14,255,524,,2026-08-19T07:25:53
+Intelligent Electronic Device,deepseek-r1:8b,sporadic sensor measurement injection,5,1,"
+The MODBUS response (Fn 6) originates from 192.168.0.11 to 192.168.0.1. The high flow rate (43.5 pps) is unusual but not extreme. ACK RTT and Bytes In Flight are normal for small packets. Risk Score: 5/10",5.0,True,True,10.24,289,586,,2026-08-19T07:26:04
+Intelligent Electronic Device,deepseek-r1:8b,force listen mode,6,1,"
+The high packet flow rate (31 pps) combined with a MODBUS restart function code (8.0) is highly suspicious. Such rates can indicate a denial-of-service attack or other malicious activity attempting to overwhelm the system. This behaviour significantly deviates from normal operational patterns.
+
+Risk Score: 9/10",9.0,True,False,6.64,252,374,,2026-08-19T07:26:10
+Intelligent Electronic Device,deepseek-r1:8b,restart communication,7,1,"
+The packet flow rate is slightly above the mentioned threshold (26 vs. 24.49), indicating a potential anomaly. However, the single-packet analysis shows no immediate red flags (normal MODBUS function code 8.0). The flow rate suggests increased network activity, but without context on baseline, it's moderate.
+
+Risk Score: 3/10",3.0,True,False,6.76,281,380,,2026-08-19T07:26:17
+Intelligent Electronic Device,deepseek-r1:8b,data flood attack,8,1,"
+The packet flow rate is extremely high (10588.25 pps) compared to the normal threshold (24.49 pps). This indicates a potential denial-of-service (DoS) or scanning attack targeting the MODBUS service on the internal network. Risk Score: 8/10",8.0,True,True,7.29,292,412,,2026-08-19T07:26:24
+Intelligent Electronic Device,gemma4:12b,address scan,1,1,,,False,False,193.51,285,3811,,2026-08-19T07:29:38
+Intelligent Electronic Device,gemma4:12b,function code scan,2,1,,,False,False,103.7,297,3799,,2026-08-19T07:31:21
+Intelligent Electronic Device,gemma4:12b,device identification attack,3,1,,,False,False,103.71,305,3791,,2026-08-19T07:33:05
+Intelligent Electronic Device,gemma4:12b,naive sensor read,4,1,,,False,False,104.41,271,3825,,2026-08-19T07:34:50
+Intelligent Electronic Device,gemma4:12b,sporadic sensor measurement injection,5,1,,,False,False,103.56,307,3789,,2026-08-19T07:36:33
+Intelligent Electronic Device,gemma4:12b,force listen mode,6,1,,,False,False,104.29,268,3828,,2026-08-19T07:38:17
+Intelligent Electronic Device,gemma4:12b,restart communication,7,1,,,False,False,103.95,299,3797,,2026-08-19T07:40:01
+Intelligent Electronic Device,gemma4:12b,data flood attack,8,1,,,False,False,103.5,310,3786,,2026-08-19T07:41:45
+Intelligent Electronic Device,qwen3:14b,address scan,1,1,"High flow rate (107.5 pps) exceeds threshold (24.49 pps), indicating potential DoS or scanning. MODBUS function 24 (write multiple coils) may be legitimate but combined with high rate raises concern. Risk Score: 9/10",9.0,True,True,104.72,275,715,,2026-08-19T07:43:30
+Intelligent Electronic Device,qwen3:14b,function code scan,2,1,High flow rate (189.25 vs 24.49) and invalid Modbus function code (40.0) indicate potential malicious activity. Risk Score: 9/10,9.0,True,True,18.11,285,608,,2026-08-19T07:43:48
+Intelligent Electronic Device,qwen3:14b,device identification attack,3,1,"The packet flow rate (38.75 pps) exceeds the anomaly threshold (24.49 pps), and the non-standard MODBUS function code (43) suggests potential malicious activity. Risk Score: 8/10",8.0,True,True,24.41,293,823,,2026-08-19T07:44:12
+Intelligent Electronic Device,qwen3:14b,naive sensor read,4,1,"The packet shows a slightly elevated flow rate (29.25 vs. 24.49 pps) and a Modbus PDU with an unusually high coil quantity (32000), suggesting potential scanning or exploitation. Risk Score: 6/10",6.0,True,True,31.17,261,1051,,2026-08-19T07:44:43
+Intelligent Electronic Device,qwen3:14b,sporadic sensor measurement injection,5,1,"The packet shows a high flow rate (43.5 pps) exceeding the 24.49 pps threshold, indicating potential anomaly. MODBUS function 6 is standard, but PDU format (0x001463b7) may be malformed. Risk Score: 6/10",6.0,True,True,28.91,295,972,,2026-08-19T07:45:12
+Intelligent Electronic Device,qwen3:14b,force listen mode,6,1,"The packet has a flow rate (31 pps) above the threshold (24.49 pps), function code 8 (unusual), and PDU 0x0000 (invalid). These suggest potential malicious activity. Risk Score: 8/10",8.0,True,True,36.23,258,1216,,2026-08-19T07:45:48
+Intelligent Electronic Device,qwen3:14b,restart communication,7,1,"The packet uses MODBUS function code 8 (uncommon), has an empty PDU, and a slightly elevated flow rate (26 vs. 24.49 pps). These may indicate probing or malformed traffic. Risk Score: 6/10",6.0,True,True,19.74,287,657,,2026-08-19T07:46:08
+Intelligent Electronic Device,qwen3:14b,data flood attack,8,1,"Network flow rate (10,588 packets/sec) far exceeds the anomalous threshold (24.49). MODBUS function 4 is standard, but high-rate traffic may indicate scanning or DoS. Risk Score: 8/10",8.0,True,True,23.45,298,783,,2026-08-19T07:46:32
+Smart Grid,phi4-mini,address scan,1,1,The packet flow rate is significantly higher than normal. This could indicate a potential security breach or DoS attack. Risk Score: 8/10.,8.0,True,True,25.1,228,31,,2026-08-19T07:46:58
+Smart Grid,phi4-mini,function code scan,2,1,The packet flow rate is significantly higher than normal. This could indicate a potential security breach or DoS attack. Risk Score: 8/10.,8.0,True,True,0.53,256,31,,2026-08-19T07:46:59
+Smart Grid,phi4-mini,device identification attack,3,1,The packet flow rate is significantly lower than the threshold for anomaly. No immediate risk detected. Risk Score: 1/10.,1.0,True,True,0.53,228,27,,2026-08-19T07:47:00
+Smart Grid,phi4-mini,naive sensor read,4,1,The packet flow rate is significantly higher than the threshold. This could indicate a potential DoS attack or misconfiguration. Risk Score: 8/10.,8.0,True,True,0.62,416,32,,2026-08-19T07:47:00
+Smart Grid,phi4-mini,force listen mode,6,1,The packet flow rate is significantly higher than normal. Risk Score: 8/10.,8.0,True,True,0.45,228,19,,2026-08-19T07:47:01
+Smart Grid,phi4-mini,restart communication,7,1,The packet flow rate is significantly lower than the threshold for anomalous activity. No immediate risk detected. Risk Score: 1/10.,1.0,True,True,0.54,249,29,,2026-08-19T07:47:01
+Smart Grid,phi4-mini,data flood attack,8,1,The high packet flow rate (11108.25 pps) significantly exceeds the threshold (15.07 pps). The Modbus function code 4.0 suggests a read operation. The IP addresses indicate internal communication. The frame time delta and TCP RTT are within normal ranges. The PDU size is unusually large. This unusual high flow rate and large PDU size indicate a potential DoS attack or data exfiltration attempt. Risk Score: 8/10.,8.0,True,False,1.18,294,97,,2026-08-19T07:47:02
+Smart Grid,qwen3:4b,address scan,1,1,Packet flow rate (17.25 pps) exceeds threshold (15.07 pps) and non-standard Modbus function code (43) indicates potential threat. Risk Score: 7/10,7.0,True,True,65.0,262,3801,,2026-08-19T07:48:07
+Smart Grid,qwen3:4b,function code scan,2,1,"Flow rate 39 pps > 15.07 and invalid Modbus (FC 102, PDU 0x00000000) -> high risk. Risk Score: 7/10",7.0,True,True,57.23,295,4937,,2026-08-19T07:49:05
+Smart Grid,qwen3:4b,device identification attack,3,1,Flow rate (12.0 pps) < 15.07 pps. Function code 43 non-standard. Risk Score: 2/10,2.0,True,True,53.01,261,4609,,2026-08-19T07:49:58
+Smart Grid,qwen3:4b,naive sensor read,4,1,Malformed Modbus PDU (all zeros) and flow rate 18.25 pps > threshold 15.07 pps indicate potential DoS. Risk Score: 8/10,8.0,True,True,32.96,790,2879,,2026-08-19T07:50:31
+Smart Grid,qwen3:4b,force listen mode,6,1,"Flow rate (17.0 pps) not much higher than threshold (15.07 pps). Modbus request (func 8, PDU 0x0000) valid. No anomaly. Risk Score: 1/10",1.0,True,True,50.49,257,4388,,2026-08-19T07:51:21
+Smart Grid,qwen3:4b,restart communication,7,1,"Malformed Modbus packet (function 8, empty PDU) detected. Risk Score: 5/10",5.0,True,True,41.34,288,3668,,2026-08-19T07:52:02
+Smart Grid,qwen3:4b,data flood attack,8,1,High packet flow rate (11108.25 pps) detected. Risk Score: 10/10,10.0,True,True,59.96,409,5141,,2026-08-19T07:53:02
+Smart Grid,gemma4:e4b,address scan,1,1,"The packet exhibits two major anomalies: an unusual Function Code (43.0) and an elevated flow rate (17.25 pps). The high rate suggests scanning or brute-forcing activity, while the non-standard function code indicates potential protocol misuse or malicious payload injection. This combination is highly suspicious.
+
+Risk Score: 8/10",8.0,True,False,96.72,272,641,,2026-08-19T07:54:39
+Smart Grid,gemma4:e4b,function code scan,2,1,"The high packet flow rate (39 pps) significantly exceeds the baseline, suggesting potential scanning or DoS activity. The use of Function Code 102.0 and a zeroed PDU is highly anomalous for standard Modbus communication, indicating suspicious reconnaissance or unauthorized protocol usage.
+
+Risk Score: 8/10",8.0,True,False,9.75,307,724,,2026-08-19T07:54:49
+Smart Grid,gemma4:e4b,device identification attack,3,1,"Suspicious Modbus Function Code (43.0) suggests unauthorized or non-standard communication attempt. While the current flow rate (12.0 pps) is below the defined threshold, the unusual function code is a critical indicator of potential reconnaissance or exploitation. Risk Score: 6/10",6.0,True,False,6.1,271,442,,2026-08-19T07:54:55
+Smart Grid,gemma4:e4b,naive sensor read,4,1,"The packet flow rate (18.25 pps) exceeds the normal threshold, indicating potential scanning or excessive polling activity. The unusually long, zero-filled MODBUS PDU is highly suspicious and suggests payload manipulation or data exfiltration attempt.
+Risk Score: 8/10",8.0,True,False,7.0,803,491,,2026-08-19T07:55:02
+Smart Grid,gemma4:e4b,force listen mode,6,1,"The packet flow rate (17.0 pps) exceeds the normal threshold (15.07 pps), indicating potential excessive traffic or scanning activity on the MODBUS protocol. This high rate warrants investigation for reconnaissance or DoS attempts. Risk Score: 7/10",7.0,True,True,5.79,267,412,,2026-08-19T07:55:08
+Smart Grid,gemma4:e4b,restart communication,7,1,"The flow rate (12.25 pps) is below the defined anomaly threshold. However, the use of Function Code 8.0 with an empty PDU (0x) is highly suspicious, suggesting a malformed or incomplete Modbus command attempt. This warrants investigation.
+
+Risk Score: 7/10",7.0,True,True,8.86,300,638,,2026-08-19T07:55:17
+Smart Grid,gemma4:e4b,data flood attack,8,1,"The packet flow rate (11108 pps) is critically high, indicating a severe Denial of Service (DoS) or flood attack. The large, repetitive Modbus PDU suggests payload abuse or an attempt at data flooding/exfiltration. This combination represents a major network breach attempt.
+
+Risk Score: 9/10",9.0,True,False,8.46,421,606,,2026-08-19T07:55:25
+Smart Grid,qwen3:8b,address scan,1,1,"The Modbus function code 43.0 is non-standard, indicating potential misuse. The packet flow rate (17.25 pps) exceeds the threshold (15.07 pps), suggesting possible reconnaissance or denial-of-service. Risk Score: 8/10",8.0,True,True,68.21,262,1239,,2026-08-19T07:56:33
+Smart Grid,qwen3:8b,function code scan,2,1,"High packet rate (39 pps) exceeds threshold, potential scan or DoS. Zero Modbus PDU may indicate malformed traffic. Risk Score: 7/10",7.0,True,True,15.61,295,901,,2026-08-19T07:56:49
+Smart Grid,qwen3:8b,device identification attack,3,1,"The Modbus function code 43.0 is non-standard, indicating potential exploitation or malformed traffic. While the flow rate (12 pps) is below the anomalous threshold (15.07 pps), the function code suggests a high-risk anomaly. Risk Score: 8/10",8.0,True,True,13.92,261,799,,2026-08-19T07:57:03
+Smart Grid,qwen3:8b,naive sensor read,4,1,"The packet shows a MODBUS function code 1.0 (read coils), but the PDU is unusually long and malformed, suggesting potential exploitation. Flow rate (18.25 pps) slightly exceeds the threshold, indicating possible flooding. Risk Score: 7/10.",7.0,True,True,10.95,790,603,,2026-08-19T07:57:14
+Smart Grid,qwen3:8b,force listen mode,6,1,"The packet shows a MODBUS function code 8 (Substitute Byte) with zero PDU, possibly indicating a malformed or probing request. Flow rate (17 pps) slightly exceeds the 15.07 pps threshold for anomaly. Short frame time delta suggests rapid succession, potentially indicative of a scan or attack.  
+
+Risk Score: 6/10",6.0,True,False,10.56,257,603,,2026-08-19T07:57:24
+Smart Grid,qwen3:8b,restart communication,7,1,"The Modbus function code 8.0 (Mask Write Register) suggests potential unauthorized register manipulation, which could disrupt ICS operations. While the packet flow rate (12.25 pps) is below the anomalous threshold (15.07 pps), the function code indicates a possible attack vector.  
+
+Risk Score: 5/10",5.0,True,False,10.52,288,600,,2026-08-19T07:57:35
+Smart Grid,qwen3:8b,data flood attack,8,1,"High packet flow rate (11,108 packets/sec) far exceeds normal thresholds, indicating potential DoS or scanning activity. Risk Score: 10/10",10.0,True,True,14.06,409,809,,2026-08-19T07:57:49
+Smart Grid,deepseek-r1:8b,address scan,1,1,"
+The MODBUS function code 43.0 is non-standard, often indicating private or extended applications. Coupled with a slightly elevated packet flow rate (17.25 pps vs. 15.07 pps), this could suggest an attempt to exploit or probe the system using unusual protocols. The small frame time delta indicates rapid consecutive packets, potentially part of an attack.
+
+Risk Score: 6/10",6.0,True,False,62.03,256,518,,2026-08-19T07:58:51
+Smart Grid,deepseek-r1:8b,function code scan,2,1,"
+The MODBUS function code 102.0 is highly unusual and not part of the standard MODBUS range (01-0F, 10-17, etc.). A zero Modbus PDU indicates no valid data or request, which is atypical. The packet flow rate of 39 pps is significantly above the normal threshold of 15.07 pps, suggesting aggressive scanning or flooding. This combination indicates a high-risk anomaly.
+
+Risk Score: 9/10",9.0,True,False,6.29,289,355,,2026-08-19T07:58:57
+Smart Grid,deepseek-r1:8b,device identification attack,3,1,"
+The non-standard Modbus function code (43.0) is a primary concern, as standard codes range from 1 to 127. This could indicate malformed traffic or an attempt to exploit the protocol. The flow rate (12.0 pps) is below the typical anomaly threshold (15.07+), suggesting it may not be a high-volume attack, but the function code anomaly itself warrants attention.
+
+Risk Score: 5/10",5.0,True,False,9.39,255,540,,2026-08-19T07:59:07
+Smart Grid,deepseek-r1:8b,naive sensor read,4,1,"
+The MODBUS packet shows an unusually long IP length (311.0 bytes) and low RTT, suggesting a potential flood or automated attack. The high broadcast read (Func 1.0) with all-zero data is suspicious. The elevated flow rate (18.25 pps) near the threshold indicates coordinated malicious activity.
+
+Risk Score: 8/10",8.0,True,False,10.57,784,583,,2026-08-19T07:59:17
+Smart Grid,deepseek-r1:8b,force listen mode,6,1,"
+The MODBUS packet with Function Code 8.0 (NOP) has a PDU of 0x0000, indicating no data payload. The high packet flow rate of 17.0 packets per second, despite the NOP function code, suggests unusual scanning or probing activity, deviating from typical low rates. This warrants attention.
+
+Risk Score: 5/10",5.0,True,False,8.21,251,468,,2026-08-19T07:59:25
+Smart Grid,deepseek-r1:8b,restart communication,7,1,"
+The packet flow rate (12.25 pps) is below the anomalous threshold (15.07 pps). Function code 8.0 (broadcast) warrants attention but lacks clear malicious intent here. Overall, the activity appears within normal parameters.
+
+Risk Score: 2/10",2.0,True,True,6.64,282,379,,2026-08-19T07:59:32
+Smart Grid,deepseek-r1:8b,data flood attack,8,1,"
+High packet flow rate (11,108 pps) combined with a large IP length (177 bytes) for MODBUS protocol is highly suspicious. Normal MODBUS traffic is typically much lower. The small Frame Time Delta suggests rapid, automated transmission, indicative of scanning or flooding activity. Risk Score: 7/10",7.0,True,False,7.94,403,450,,2026-08-19T07:59:40
+Smart Grid,gemma4:12b,address scan,1,1,,,False,False,173.21,272,3824,,2026-08-19T08:02:33
+Smart Grid,gemma4:12b,function code scan,2,1,,,False,False,103.59,307,3789,,2026-08-19T08:04:17
+Smart Grid,gemma4:12b,device identification attack,3,1,,,False,False,104.52,271,3825,,2026-08-19T08:06:01
+Smart Grid,gemma4:12b,naive sensor read,4,1,,,False,False,52.05,0,0,,2026-08-19T08:06:53
+Smart Grid,gemma4:12b,force listen mode,6,1,,,False,False,104.68,267,3829,,2026-08-19T08:08:38
+Smart Grid,gemma4:12b,restart communication,7,1,,,False,False,103.44,300,3796,,2026-08-19T08:10:21
+Smart Grid,gemma4:12b,data flood attack,8,1,,,False,False,5.38,0,0,,2026-08-19T08:10:27
+Smart Grid,qwen3:14b,address scan,1,1,"The packet uses a non-standard MODBUS function code (43) and a PDU (0x0e0100), suggesting potential exploitation. Flow rate (17.25 pps) exceeds the threshold (15.07 pps), indicating abnormal activity. Risk Score: 6/10",6.0,True,True,103.12,262,659,,2026-08-19T08:12:10
+Smart Grid,qwen3:14b,function code scan,2,1,"Anomalous behavior detected: non-standard MODBUS function code (102.0), high flow rate (39 pps), and invalid PDU (0x00000000). These indicate potential exploitation or malicious activity.  
+Risk Score: 8/10",8.0,True,True,14.82,295,496,,2026-08-19T08:12:25
+Smart Grid,qwen3:14b,device identification attack,3,1,"The packet uses a non-standard MODBUS function code (43) and malformed PDU (0x0e0100), indicating potential exploitation. Flow rate (12 pps) is below the anomaly threshold (15.07 pps). Risk Score: 9/10",9.0,True,True,24.1,261,813,,2026-08-19T08:12:49
+Smart Grid,qwen3:14b,naive sensor read,4,1,"The packet shows a high flow rate (18.25 pps) and an unusually large MODBUS PDU with all-zero data, suggesting potential probing or DoS. Risk Score: 6/10",6.0,True,True,16.39,790,526,,2026-08-19T08:13:05
+Smart Grid,qwen3:14b,force listen mode,6,1,"The packet uses a reserved MODBUS function code (8.0) and an empty PDU (0x0000), indicating potential exploitation or malformed traffic. Flow rate (17 pps) slightly exceeds the threshold. Risk Score: 8/10.",8.0,True,True,25.84,257,865,,2026-08-19T08:13:31
+Smart Grid,qwen3:14b,restart communication,7,1,"The packet uses MODBUS function code 8.0 (reserved, not standard), with incomplete PDU data. Flow rate (12.25 pps) is below the anomalous threshold (15.07 pps). However, non-standard function codes and malformed PDU suggest potential exploitation.  
+Risk Score: 7/10",7.0,True,True,22.85,288,768,,2026-08-19T08:13:54
+Smart Grid,qwen3:14b,data flood attack,8,1,"High packet flow rate (11,108 packets/sec) far exceeds normal thresholds (15.07), indicating potential DoS or scanning. MODBUS PDU length and structure may be anomalous. Risk Score: 9/10",9.0,True,True,18.67,409,622,,2026-08-19T08:14:13
+Water Bottle Factory,phi4-mini,address scan,1,1,"The IP addresses are within the same subnet, indicating internal communication. Function Code 2.0 corresponds to reading holding registers in MODBUS. The packet flow rate is significantly higher than normal (80 packets/s vs. 34.84 packets/s). This could indicate a potential DoS attack or misconfiguration. Risk Score: 7/10.",7.0,True,False,27.1,228,71,,2026-08-19T08:14:43
+Water Bottle Factory,phi4-mini,function code scan,2,1,The high flow rate (74.5 pps) significantly exceeds the normal threshold (34.84 pps). This suggests a potential DoS attack or misconfiguration. Risk Score: 9/10.,9.0,True,True,0.67,256,43,,2026-08-19T08:14:43
+Water Bottle Factory,phi4-mini,device identification attack,3,1,"The high packet flow rate (42.75 pps) exceeds the normal threshold (34.84 pps). The Modbus function code 43 (Read Holding Registers) could indicate a data retrieval attempt. Given the unusual flow rate and potential data access, this activity could be malicious. Risk Score: 7/10.",7.0,True,False,0.91,255,67,,2026-08-19T08:14:44
+Water Bottle Factory,phi4-mini,naive sensor read,4,1,"The packet flow rate is significantly higher than normal, indicating potential malicious activity. Risk Score: 8/10.",8.0,True,True,0.49,228,24,,2026-08-19T08:14:45
+Water Bottle Factory,phi4-mini,force listen mode,6,1,"The packet flow rate is significantly higher than normal, indicating potential malicious activity. Risk Score: 8/10.",8.0,True,True,0.46,228,24,,2026-08-19T08:14:45
+Water Bottle Factory,phi4-mini,restart communication,7,1,The packet flow rate is significantly higher than the baseline. This could indicate a potential DoS attack or unauthorized access. Risk Score: 8/10.,8.0,True,True,0.55,224,32,,2026-08-19T08:14:46
+Water Bottle Factory,phi4-mini,data flood attack,8,1,The high packet flow rate (11157 packets/s) significantly exceeds the baseline (34.84 packets/s). This suggests a potential DoS attack or misconfiguration. Risk Score: 9/10.,9.0,True,True,0.62,254,42,,2026-08-19T08:14:47
+Water Bottle Factory,qwen3:4b,address scan,1,1,Flow rate (80 pps) > threshold (34.84 pps) -> anomalous. Modbus function 2 (read) with PDU 0x000000 is standard. Risk Score: 3/10,3.0,True,True,67.73,259,4011,,2026-08-19T08:15:54
+Water Bottle Factory,qwen3:4b,function code scan,2,1,Non-standard Modbus function code 91 and zero PDU indicate potential malicious activity. Flow rate (74.5 pps) exceeds threshold (34.84) but not 'much higher'. Risk Score: 8/10,8.0,True,True,37.49,294,3358,,2026-08-19T08:16:32
+Water Bottle Factory,qwen3:4b,device identification attack,3,1,Flow rate (42.75 pps) exceeds threshold (34.84 pps). Risk Score: 4/10,4.0,True,True,60.55,301,5227,,2026-08-19T08:17:32
+Water Bottle Factory,qwen3:4b,naive sensor read,4,1,Flow rate (46.75 pps) exceeds threshold (34.84 pps). Short Frame Time Delta (0.54 ms) indicates bursty traffic. Risk Score: 4/10,4.0,True,True,41.26,262,3628,,2026-08-19T08:18:14
+Water Bottle Factory,qwen3:4b,force listen mode,6,1,Flow rate (47.5 pps) exceeds threshold (34.84 pps). Risk Score: 3/10,3.0,True,True,43.37,257,3829,,2026-08-19T08:18:57
+Water Bottle Factory,qwen3:4b,restart communication,7,1,Modbus PDU empty (func 8) indicates malformed packet. Flow rate 37 pps (slightly above 34.84) but not critical. Risk Score: 7/10,7.0,True,True,34.01,254,3034,,2026-08-19T08:19:31
+Water Bottle Factory,qwen3:4b,data flood attack,8,1,High flow rate (11157 pps) exceeds ICS threshold (34.84 pps) by 319x. Risk Score: 9/10,9.0,True,True,38.23,295,3373,,2026-08-19T08:20:09
+Water Bottle Factory,gemma4:e4b,address scan,1,1,"The high packet flow rate (80.0 pps) significantly exceeds the normal baseline, suggesting potential scanning or a Denial of Service attempt on the MODBUS protocol. This rapid, sustained communication is highly suspicious for ICS operations.
+
+Risk Score: 8/10",8.0,True,True,92.64,269,422,,2026-08-19T08:21:42
+Water Bottle Factory,gemma4:e4b,function code scan,2,1,"High packet flow rate (74.5 pps) exceeds the normal threshold, indicating potential scanning or denial-of-service activity. The use of Function Code 91.0 is highly anomalous for standard Modbus operations, suggesting unauthorized or malicious protocol misuse.
+
+Risk Score: 8/10",8.0,True,False,6.47,306,465,,2026-08-19T08:21:48
+Water Bottle Factory,gemma4:e4b,device identification attack,3,1,"High packet flow rate (42.75 pps) exceeds the baseline, indicating potential flooding or reconnaissance. The use of an unusual Modbus Function Code (43.0) suggests non-standard or malicious communication targeting the critical device (192.168.0.1). This combination is highly suspicious.
+
+Risk Score: 8/10",8.0,True,False,6.18,313,449,,2026-08-19T08:21:54
+Water Bottle Factory,gemma4:e4b,naive sensor read,4,1,"The packet flow rate (46.75 pps) significantly exceeds the established baseline (34.84 pps). This high rate suggests potential network scanning, excessive polling, or a denial-of-service attempt targeting the MODBUS device. Immediate investigation is required.
+
+Risk Score: 8/10",8.0,True,False,9.9,272,740,,2026-08-19T08:22:04
+Water Bottle Factory,gemma4:e4b,force listen mode,6,1,"The packet flow rate (47.5 pps) significantly exceeds the established baseline (34.84 pps), indicating potential network flooding or rapid scanning activity. This high-volume traffic targeting a MODBUS device suggests a potential Denial of Service or reconnaissance attempt on critical ICS infrastructure.
+
+Risk Score: 8/10",8.0,True,False,7.47,267,545,,2026-08-19T08:22:12
+Water Bottle Factory,gemma4:e4b,restart communication,7,1,"High flow rate (37.0 pps) exceeds the threshold, indicating potential scanning or DoS. The empty Modbus PDU is highly suspicious, suggesting malformed or incomplete packets. This combination points to active reconnaissance or attack attempts.
+
+Risk Score: 8/10",8.0,True,True,6.72,264,493,,2026-08-19T08:22:19
+Water Bottle Factory,gemma4:e4b,data flood attack,8,1,"The extremely high packet flow rate (11157 pps) significantly exceeds normal operational thresholds, suggesting a potential network scan, reconnaissance, or Denial of Service attack targeting the MODBUS protocol.
+
+Risk Score: 9/10",9.0,True,True,7.25,307,528,,2026-08-19T08:22:26
+Water Bottle Factory,qwen3:8b,address scan,1,1,"High packet flow rate (80pps) exceeds the anomalous threshold (34.84pps), indicating potential scanning or denial-of-service activity. MODBUS Function Code 2 (read coils) at high frequency may target ICS devices. Risk Score: 7/10",7.0,True,True,56.59,259,555,,2026-08-19T08:23:22
+Water Bottle Factory,qwen3:8b,function code scan,2,1,High packet flow rate (74.5 vs. 34.84) and non-standard Modbus function code (91) indicate potential exploitation. Risk Score: 9/10,9.0,True,True,10.77,294,618,,2026-08-19T08:23:33
+Water Bottle Factory,qwen3:8b,device identification attack,3,1,High packet flow rate (42.75 pps) exceeds the anomalous threshold (34.84 pps). MODBUS function code 43 (uncommon) and low RTT suggest potential scanning or exploitation. Risk Score: 8/10.,8.0,True,True,9.05,301,518,,2026-08-19T08:23:42
+Water Bottle Factory,qwen3:8b,naive sensor read,4,1,"The packet flow rate (46.75 packets/sec) exceeds the threshold (34.84), indicating potential DoS or scanning activity. Modbus function code 2.0 (Read Input Registers) is normal but amplified. Risk Score: 8/10.",8.0,True,True,9.18,262,528,,2026-08-19T08:23:51
+Water Bottle Factory,qwen3:8b,force listen mode,6,1,"The packet exhibits a high flow rate (47.5 pps) and uses Modbus function code 8 (Diagnostic Request), which is non-standard and often associated with probing or attacks. This combination suggests potential malicious activity. Risk Score: 8/10",8.0,True,True,8.25,257,476,,2026-08-19T08:24:00
+Water Bottle Factory,qwen3:8b,restart communication,7,1,"The Modbus function code 8.0 (Read Input Registers) is normal, but the packet flow rate (37 pps) slightly exceeds the example threshold (34.84 pps). While not extremely high, the marginal increase combined with short frame intervals (0.094s) suggests potential scanning or probing. Risk Score: 5/10",5.0,True,False,9.19,254,532,,2026-08-19T08:24:09
+Water Bottle Factory,qwen3:8b,data flood attack,8,1,"The packet flow rate of 11,157 packets/sec far exceeds the normal threshold, indicating potential flooding or scanning. MODBUS traffic at such a rate suggests a severe disruption risk. Risk Score: 9/10",9.0,True,True,6.4,295,364,,2026-08-19T08:24:15
+Water Bottle Factory,deepseek-r1:8b,address scan,1,1,"
+The MODBUS packet with function code 2.0 (read discrete inputs) and empty PDU (0x000000) appears normal. However, the high packet flow rate of 80 PPS (compared to the stated normal threshold of 34.84) warrants attention. This could indicate scanning or probing activity.
+
+Risk Score: 4/10",4.0,True,False,55.47,253,401,,2026-08-19T08:25:11
+Water Bottle Factory,deepseek-r1:8b,function code scan,2,1,"
+The packet flow rate is significantly higher than the stated normal threshold. The MODBUS function code 91.0 is unusual (not standard MODBUS range). The empty PDU (0x00000000) and short RTT suggest potential scanning or exploitation attempts. This combination indicates high-severity anomalous activity.
+
+Risk Score: 9/10",9.0,True,False,6.79,288,386,,2026-08-19T08:25:18
+Water Bottle Factory,deepseek-r1:8b,device identification attack,3,1,"
+The packet flow rate of 42.75 packets per second significantly exceeds the stated normal threshold of 34.84. The MODBUS function code 43.0 is non-standard. These factors suggest potential scanning or DoS activity.
+
+Risk Score: 7/10",7.0,True,True,8.04,295,459,,2026-08-19T08:25:26
+Water Bottle Factory,deepseek-r1:8b,naive sensor read,4,1,"
+The MODBUS function code 2.0 is typically used for read-only operations and is not inherently malicious. The MODBUS PDU `0x00007d0` appears standard. The flow rate, while high, is not exceptionally so compared to the provided anomalous threshold (34.84 vs. 46.75). This packet alone does not strongly indicate an intrusion.
+
+Risk Score: 2/10",2.0,True,False,8.95,256,514,,2026-08-19T08:25:35
+Water Bottle Factory,deepseek-r1:8b,force listen mode,6,1,"
+The Modbus PDU of 0x0000 is unusual and potentially malformed or illegal. The packet flow rate of 47.5 pps significantly exceeds the normal threshold of 34.84 pps, indicating abnormal network activity. This requires investigation.
+
+Risk Score: 7/10",7.0,True,True,9.36,251,539,,2026-08-19T08:25:44
+Water Bottle Factory,deepseek-r1:8b,restart communication,7,1,"
+The packet flow rate is 37.0 pps, exceeding the example threshold of 34.84 pps, indicating a potential high-volume attack. Function code 8.0 (Remote Function) is dangerous as it can disable devices or perform operations without authentication. This combination suggests a moderate to high threat level.
+
+Risk Score: 7/10",7.0,True,False,9.52,248,546,,2026-08-19T08:25:53
+Water Bottle Factory,deepseek-r1:8b,data flood attack,8,1,"
+The packet itself appears normal (standard MODBUS function code 1.0). However, the extremely high network flow rate (11,157 pps) compared to the stated normal threshold (34.84 pps) indicates a potential DoS or network flooding attack. The flow rate anomaly is the primary concern.
+
+Risk Score: 7/10",7.0,True,False,8.44,289,481,,2026-08-19T08:26:02
+Water Bottle Factory,gemma4:12b,address scan,1,1,,,False,False,173.33,269,3827,,2026-08-19T08:28:55
+Water Bottle Factory,gemma4:12b,function code scan,2,1,,,False,False,103.43,306,3790,,2026-08-19T08:30:39
+Water Bottle Factory,gemma4:12b,device identification attack,3,1,,,False,False,102.93,313,3783,,2026-08-19T08:32:22
+Water Bottle Factory,gemma4:12b,naive sensor read,4,1,,,False,False,104.28,272,3824,,2026-08-19T08:34:06
+Water Bottle Factory,gemma4:12b,force listen mode,6,1,,,False,False,104.38,267,3829,,2026-08-19T08:35:50
+Water Bottle Factory,gemma4:12b,restart communication,7,1,,,False,False,104.7,264,3832,,2026-08-19T08:37:35
+Water Bottle Factory,gemma4:12b,data flood attack,8,1,,,False,False,103.81,307,3789,,2026-08-19T08:39:19
+Water Bottle Factory,qwen3:14b,address scan,1,1,"The packet has a high flow rate (80 pps) and a malformed MODBUS PDU (0x000000), suggesting potential probing or DoS. Risk Score: 7/10.",7.0,True,True,103.41,259,631,,2026-08-19T08:41:02
+Water Bottle Factory,qwen3:14b,function code scan,2,1,Anomalous behavior detected: invalid Modbus function code (91) and elevated flow rate (74.5 pps). Both indicate potential exploitation or scanning. Risk Score: 8/10,8.0,True,True,22.82,294,768,,2026-08-19T08:41:25
+Water Bottle Factory,qwen3:14b,device identification attack,3,1,"High flow rate (42.75 > 34.84), non-standard MODBUS function code (43), and PDU inconsistency (0x02 vs 43) suggest potential exploitation. Risk Score: 9/10",9.0,True,True,22.9,301,771,,2026-08-19T08:41:48
+Water Bottle Factory,qwen3:14b,naive sensor read,4,1,"The packet has a high flow rate (46.75 pps) and a very short time delta (0.00054s), suggesting rapid, potentially malicious traffic. MODBUS function code 2 is normal, but the PDU (0x00007d0) may indicate unusual data. Risk Score: 6/10",6.0,True,True,36.15,262,1212,,2026-08-19T08:42:24
+Water Bottle Factory,qwen3:14b,force listen mode,6,1,"The packet uses non-standard MODBUS function code 8.0 with invalid PDU 0x0000, and flow rate (47.5 pps) exceeds the threshold (34.84 pps), indicating potential malicious activity. Risk Score: 7/10",7.0,True,True,32.17,257,1078,,2026-08-19T08:42:56
+Water Bottle Factory,qwen3:14b,restart communication,7,1,"The packet has a slightly elevated flow rate (37 pps) and uses Modbus function code 8, which is an exception response. While not extremely high, the flow rate and function code combination may indicate a potential anomaly. Risk Score: 6/10.",6.0,True,True,36.87,254,1236,,2026-08-19T08:43:33
+Water Bottle Factory,qwen3:14b,data flood attack,8,1,"Network flow rate (11,157 packets/sec) far exceeds the anomalous threshold (34.84), indicating potential DDoS or scanning. MODBUS PDU (0x002534) may request excessive data. Risk Score: 10/10",10.0,True,True,29.86,295,999,,2026-08-19T08:44:03
