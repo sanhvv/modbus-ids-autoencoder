@@ -5,8 +5,10 @@
 # dataset va xuat ket qua ra cac file CSV.
 #
 # Usage:
-#   ./run_local_multi_model.sh --purpose "mo ta muc dich lan chay" [--models ...] [--datasets ...] [--tag ...]
-# (--purpose la bat buoc, xem local_multi_model.py --help cho cac tuy chon con lai)
+#   ./run_local_multi_model.sh --purpose "mo ta muc dich lan chay" [--models ...] [--datasets ...] [--tag ...] [--runs N]
+# (--purpose la bat buoc, xem local_multi_model.py --help cho cac tuy chon con lai.
+#  --runs N chay lai toan bo pipeline N lan doc lap, moi lan ra file CSV rieng
+#  hau to _run1.._runN de so sanh do on dinh giua cac lan chay.)
 
 set -euo pipefail
 

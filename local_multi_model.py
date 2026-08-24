@@ -642,7 +642,16 @@ def parse_args():
         "--tag", default=None,
         help="Hau to them vao ten file CSV output (vd 'gemma4_ctxfix') de khong "
              "de len ket qua lan chay day du truoc do. Bo trong = dung ten file mac dinh.")
-    return parser.parse_args()
+    parser.add_argument(
+        "--runs", type=int, default=1,
+        help="So lan chay lai TOAN BO pipeline (moi lan goi lai LLM tu dau, khong "
+             "phai lap lai cung 1 cau tra loi) de so sanh do on dinh giua cac lan "
+             "chay doc lap. Moi lan ghi ra file CSV rieng (hau to _run1, _run2, ...). "
+             "Mac dinh 1 (chi chay 1 lan, ten file giu nguyen nhu truoc, khong them hau to).")
+    args = parser.parse_args()
+    if args.runs < 1:
+        sys.exit("Loi: --runs phai >= 1")
+    return args
 
 
 if __name__ == "__main__":
@@ -664,39 +673,53 @@ if __name__ == "__main__":
             sys.exit(f"Loi: dataset khong ton tai trong DATASETS: {unknown}")
         datasets_to_run = requested
 
-    suffix = f"_{args.tag}" if args.tag else ""
-    output_detail_csv = OUTPUT_DETAIL_CSV.replace(".csv", f"{suffix}.csv")
-    output_timing_csv = OUTPUT_DATASET_TIMING_CSV.replace(".csv", f"{suffix}.csv")
-    output_summary_csv = OUTPUT_SUMMARY_CSV.replace(".csv", f"{suffix}.csv")
+    base_suffix = f"_{args.tag}" if args.tag else ""
 
-    print(f"MUC DICH LAN CHAY NAY: {args.purpose}")
-    print(f"Model: {models_to_run}")
-    print(f"Dataset: {datasets_to_run}")
-    print(f"Output: {output_detail_csv}, {output_timing_csv}, {output_summary_csv}")
-    print("Bat dau so sanh model (tu nhe -> nang)...")
-    df_results, df_timing = run_comparison(
-        models_to_run, datasets_to_run, ATTACKS, run_purpose=args.purpose)
+    for run_idx in range(1, args.runs + 1):
+        run_suffix = base_suffix + (f"_run{run_idx}" if args.runs > 1 else "")
+        output_detail_csv = OUTPUT_DETAIL_CSV.replace(".csv", f"{run_suffix}.csv")
+        output_timing_csv = OUTPUT_DATASET_TIMING_CSV.replace(".csv", f"{run_suffix}.csv")
+        output_summary_csv = OUTPUT_SUMMARY_CSV.replace(".csv", f"{run_suffix}.csv")
 
-    df_results.to_csv(output_detail_csv, index=False)
-    print(f"\nDa luu chi tiet tung lan chay: {output_detail_csv}")
+        if args.runs > 1:
+            print(f"\n{'#'*60}\nLAN CHAY {run_idx}/{args.runs}\n{'#'*60}")
+        print(f"MUC DICH LAN CHAY NAY: {args.purpose}")
+        print(f"Model: {models_to_run}")
+        print(f"Dataset: {datasets_to_run}")
+        print(f"Output: {output_detail_csv}, {output_timing_csv}, {output_summary_csv}")
+        print("Bat dau so sanh model (tu nhe -> nang)...")
+        df_results, df_timing = run_comparison(
+            models_to_run, datasets_to_run, ATTACKS, run_purpose=args.purpose)
 
-    if not df_timing.empty:
-        df_timing.to_csv(output_timing_csv, index=False)
-        print(f"Da luu thoi gian chay theo tung dataset/model: {output_timing_csv}")
+        # de sau nay gop nhieu file _run* lai va biet dong nao thuoc lan chay nao
+        df_results.insert(0, "run_index", run_idx)
+        df_timing.insert(0, "run_index", run_idx)
 
-    df_summary = summarize_results(df_results, df_timing)
-    if not df_summary.empty:
-        df_summary.to_csv(output_summary_csv, index=False)
-        print(f"Da luu bang tong hop cuoi cung: {output_summary_csv}")
+        df_results.to_csv(output_detail_csv, index=False)
+        print(f"\nDa luu chi tiet tung lan chay: {output_detail_csv}")
 
-    print("\n" + "=" * 60)
-    print("THOI GIAN CHAY THEO TUNG DATASET (tung model)")
-    print("=" * 60)
-    if not df_timing.empty:
-        print(df_timing.to_string(index=False))
+        if not df_timing.empty:
+            df_timing.to_csv(output_timing_csv, index=False)
+            print(f"Da luu thoi gian chay theo tung dataset/model: {output_timing_csv}")
 
-    print("\n" + "=" * 60)
-    print("BANG TONG HOP CUOI CUNG (gop ca 3 dataset, sap xep theo toc do)")
-    print("=" * 60)
-    if not df_summary.empty:
-        print(df_summary.to_string(index=False))
+        df_summary = summarize_results(df_results, df_timing)
+        if not df_summary.empty:
+            df_summary.insert(0, "run_index", run_idx)
+            df_summary.to_csv(output_summary_csv, index=False)
+            print(f"Da luu bang tong hop cuoi cung: {output_summary_csv}")
+
+        print("\n" + "=" * 60)
+        print("THOI GIAN CHAY THEO TUNG DATASET (tung model)")
+        print("=" * 60)
+        if not df_timing.empty:
+            print(df_timing.to_string(index=False))
+
+        print("\n" + "=" * 60)
+        print("BANG TONG HOP CUOI CUNG (gop ca 3 dataset, sap xep theo toc do)")
+        print("=" * 60)
+        if not df_summary.empty:
+            print(df_summary.to_string(index=False))
+
+    if args.runs > 1:
+        print(f"\nDa chay xong {args.runs} lan doc lap, ket qua nam trong cac file "
+              f"co hau to _run1 .. _run{args.runs} de so sanh.")
