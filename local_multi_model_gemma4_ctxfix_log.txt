@@ -1,0 +1,61 @@
+/home/23532764/local-llms/modbus-ids-autoencoder/local_multi_model.py:36: DeprecationWarning: 
+Pyarrow will become a required dependency of pandas in the next major release of pandas (pandas 3.0),
+(to allow more performant data types, such as the Arrow string type, and better interoperability with other libraries)
+but was not found to be installed on your system.
+If this would cause problems for you,
+please provide us feedback at https://github.com/pandas-dev/pandas/issues/54466
+        
+  import pandas as pd
+MUC DICH LAN CHAY NAY: Rerun gemma4:12b tren ca 3 dataset sau khi fix num_ctx=16384 (truoc do dung mac dinh 4096, khien gemma4:12b - model 'thinking' - bi cat ngang giua chung think block, tra ve content rong / khong co risk score o ca 3 dataset, xem local_multi_model_results_1.csv)
+Model: ['gemma4:12b']
+Dataset: ['Intelligent Electronic Device', 'Smart Grid', 'Water Bottle Factory']
+Output: local_multi_model_results_gemma4_ctxfix.csv, local_multi_model_dataset_timing_gemma4_ctxfix.csv, local_multi_model_summary_gemma4_ctxfix.csv
+Bat dau so sanh model (tu nhe -> nang)...
+
+############################################################
+DATASET: Intelligent Electronic Device
+############################################################
+
+============================================================
+MODEL: gemma4:12b  (dataset: Intelligent Electronic Device)
+============================================================
+  [address scan] lan 1/1...   [function code scan] lan 1/1...   [device identification attack] lan 1/1...   [naive sensor read] lan 1/1...   [sporadic sensor measurement injection] lan 1/1...   [force listen mode] lan 1/1...   [restart communication] lan 1/1...   [data flood attack] lan 1/1...   -> Thoi gian chay model 'gemma4:12b' tren dataset 'Intelligent Electronic Device': 926.07s (8 lan goi)
+
+############################################################
+DATASET: Smart Grid
+############################################################
+  [BO QUA] Khong co anomaly nao duoc AE phat hien cho attack 'sporadic sensor measurement injection' o dataset nay.
+
+============================================================
+MODEL: gemma4:12b  (dataset: Smart Grid)
+============================================================
+  [address scan] lan 1/1...   [function code scan] lan 1/1...   [device identification attack] lan 1/1...   [naive sensor read] lan 1/1...   [force listen mode] lan 1/1...   [restart communication] lan 1/1...   [data flood attack] lan 1/1...   -> Thoi gian chay model 'gemma4:12b' tren dataset 'Smart Grid': 635.03s (7 lan goi)
+
+############################################################
+DATASET: Water Bottle Factory
+############################################################
+  [BO QUA] Khong co anomaly nao duoc AE phat hien cho attack 'sporadic sensor measurement injection' o dataset nay.
+
+============================================================
+MODEL: gemma4:12b  (dataset: Water Bottle Factory)
+============================================================
+  [address scan] lan 1/1...   [function code scan] lan 1/1...   [device identification attack] lan 1/1...   [naive sensor read] lan 1/1...   [force listen mode] lan 1/1...   [restart communication] lan 1/1...   [data flood attack] lan 1/1... OK (36.5s, risk=9.0)
+  -> Thoi gian chay model 'gemma4:12b' tren dataset 'Water Bottle Factory': 679.10s (7 lan goi)
+
+Da luu chi tiet tung lan chay: local_multi_model_results_gemma4_ctxfix.csv
+Da luu thoi gian chay theo tung dataset/model: local_multi_model_dataset_timing_gemma4_ctxfix.csv
+Da luu bang tong hop cuoi cung: local_multi_model_summary_gemma4_ctxfix.csv
+
+============================================================
+THOI GIAN CHAY THEO TUNG DATASET (tung model)
+============================================================
+     model                       dataset  total_time_sec  n_calls
+gemma4:12b Intelligent Electronic Device          926.07        8
+gemma4:12b                    Smart Grid          635.03        7
+gemma4:12b          Water Bottle Factory          679.10        7
+
+============================================================
+BANG TONG HOP CUOI CUNG (gop ca 3 dataset, sap xep theo toc do)
+============================================================
+     model  success_rate_%  format_compliance_%  avg_latency_sec  p95_latency_sec avg_risk_score_stddev  avg_completion_tokens  total_time_sec
+gemma4:12b           100.0                  4.5           101.83           107.82                  None                 3498.1          2240.2

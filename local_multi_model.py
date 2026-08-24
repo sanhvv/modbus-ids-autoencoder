@@ -27,11 +27,14 @@ REPEATS_PER_PROMPT. Mac dinh REPEATS_PER_PROMPT=1 de chay thu nhanh; tang len
 
 import re
 import os
+import sys
 import time
+import argparse
 import statistics
 from datetime import datetime
 
 import pandas as pd
+import requests
 import torch
 from torch import nn
 from sklearn.preprocessing import StandardScaler
@@ -70,11 +73,24 @@ ATTACKS = {
 }
 
 REPEATS_PER_PROMPT = 1      # tang len de do do on dinh cua risk score
-REQUEST_TIMEOUT_SEC = 300   # model 12B/14B tren GPU 3060 co the van can vai chuc giay
+REQUEST_TIMEOUT_SEC = 600   # model 12B/14B tren GPU 3060 co the van can vai chuc giay
+# Ollama mac dinh chay request voi context window 4096 token neu khong set
+# num_ctx. Cac model "thinking" (gemma4:12b, qwen3, deepseek-r1, ...) sinh
+# khoi <think>...</think> truoc khi tra loi va co the tieu het toan bo 4096
+# token do cho phan think, bi cat ngang truoc khi kip sinh cau tra loi that
+# -> response.choices[0].message.content rong, khong loi, khong risk score
+# (xem local_multi_model_results_1.csv, cot gemma4:12b: completion_tokens
+# ~3800 nhung output/risk_score rong o ca 3 dataset). Tang num_ctx de model
+# co du cho vua think vua tra loi.
+NUM_CTX = 16384
 # May nay chay 2 Ollama instance: mac dinh (11434, model dung chung/khong lien
 # quan) va instance rieng cua user (11435, noi cac model o MODELS_TO_TEST duoc
 # pull vao) - phai tro dung port 11435, khong dung mac dinh.
 OLLAMA_BASE_URL = "http://localhost:11435/v1"
+# Dung cho check_model_available() (list model qua OpenAI-compat, khong bi
+# anh huong boi bug num_ctx o tren). use_llm_local() goi thang endpoint goc
+# ben duoi (khong co "/v1") de options.num_ctx duoc ap dung dung.
+OLLAMA_NATIVE_BASE_URL = OLLAMA_BASE_URL.removesuffix("/v1")
 
 OUTPUT_DETAIL_CSV = "local_multi_model_results.csv"
 OUTPUT_DATASET_TIMING_CSV = "local_multi_model_dataset_timing.csv"
@@ -378,14 +394,45 @@ def check_model_available(client, model_name: str) -> bool:
         return False
 
 
+class _Usage:
+    def __init__(self, prompt_tokens, completion_tokens):
+        self.prompt_tokens = prompt_tokens
+        self.completion_tokens = completion_tokens
+
+
 def use_llm_local(client, prompt: str, model_name: str):
-    response = client.chat.completions.create(
-        model=model_name,
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.2,
+    # QUAN TRONG: goi thang endpoint goc /api/chat cua Ollama bang requests,
+    # KHONG dung client OpenAI-compat (client.chat.completions.create) o day.
+    # Da kiem chung bang tay (curl + `ollama ps`) rang endpoint OpenAI-compat
+    # /v1/chat/completions cua ban Ollama dang chay (0.32.14) AM THAM BO QUA
+    # "options": {"num_ctx": ...} (ca dang long trong "options" lan dang phang
+    # "num_ctx" o top-level) - model luon duoc load lai voi num_ctx=4096 mac
+    # dinh du client gui gi di nua (ollama ps van bao context_length=4096).
+    # Endpoint goc /api/chat thi ap dung dung (ollama ps bao dung context_length
+    # + size_vram tang tuong ung). Day chinh la ly do lan fix dau tien (dung
+    # extra_body qua client OpenAI-compat) khong co tac dung: gemma4:12b van bi
+    # cat ngang o dung 4096 token (prompt+completion) nhu truoc khi fix.
+    #
+    # "think": False - README truoc ghi "da thu think:false, khong cach nao
+    # tat duoc" nhung do la thu qua duong OpenAI-compat (cung bi bug nhu tren,
+    # option bi lo am tham). Qua endpoint goc, think:false hoat dong dung: model
+    # tra loi thang khong sinh khoi <think>/field "thinking", nhanh hon nhieu
+    # (vd gemma4:12b: ~2-5s thay vi hang tram giay hoac rong hoan toan).
+    response = requests.post(
+        f"{OLLAMA_NATIVE_BASE_URL}/api/chat",
+        json={
+            "model": model_name,
+            "messages": [{"role": "user", "content": prompt}],
+            "stream": False,
+            "think": False,
+            "options": {"temperature": 0.2, "num_ctx": NUM_CTX},
+        },
+        timeout=REQUEST_TIMEOUT_SEC,
     )
-    output = response.choices[0].message.content
-    usage = response.usage
+    response.raise_for_status()
+    data = response.json()
+    output = data.get("message", {}).get("content")
+    usage = _Usage(data.get("prompt_eval_count"), data.get("eval_count"))
     return output, usage
 
 
@@ -431,7 +478,7 @@ def build_prompts_for_dataset(df_orig, original_anomalies, attacks):
     return prompts
 
 
-def run_comparison(models_to_test, datasets, attacks):
+def run_comparison(models_to_test, datasets, attacks, run_purpose=""):
     results = []
     dataset_timing = []
 
@@ -478,6 +525,7 @@ def run_comparison(models_to_test, datasets, attacks):
                     )
 
                     results.append({
+                        "run_purpose": run_purpose,
                         "dataset": dataset_name,
                         "model": model_name,
                         "attack_type": attack_name,
@@ -574,21 +622,72 @@ def summarize_results(df_results: pd.DataFrame, df_timing: pd.DataFrame) -> pd.D
 # 6. CHAY
 # ============================================================
 
-if __name__ == "__main__":
-    print("Bat dau so sanh model (tu nhe -> nang) tren ca 3 dataset...")
-    df_results, df_timing = run_comparison(MODELS_TO_TEST, DATASETS, ATTACKS)
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="So sanh risk-scoring giua nhieu local LLM tren dataset ICS-SimLab.")
+    parser.add_argument(
+        "--purpose", required=True,
+        help="Bat buoc: mo ta ngan gon muc dich lan chay nay (vd 'rerun gemma4:12b "
+             "sau khi fix num_ctx'), duoc ghi vao log va cot run_purpose trong CSV "
+             "de sau nay tong hop lai cac experiment.")
+    parser.add_argument(
+        "--models", default=None,
+        help=f"Danh sach model can chay, cach nhau bang dau phay (mac dinh: ca "
+             f"{len(MODELS_TO_TEST)} model). Vd: --models gemma4:12b")
+    parser.add_argument(
+        "--datasets", default=None,
+        help=f"Danh sach dataset can chay, cach nhau bang dau phay (mac dinh: ca 3 "
+             f"dataset). Vd: --datasets 'Smart Grid,Water Bottle Factory'")
+    parser.add_argument(
+        "--tag", default=None,
+        help="Hau to them vao ten file CSV output (vd 'gemma4_ctxfix') de khong "
+             "de len ket qua lan chay day du truoc do. Bo trong = dung ten file mac dinh.")
+    return parser.parse_args()
 
-    df_results.to_csv(OUTPUT_DETAIL_CSV, index=False)
-    print(f"\nDa luu chi tiet tung lan chay: {OUTPUT_DETAIL_CSV}")
+
+if __name__ == "__main__":
+    args = parse_args()
+
+    models_to_run = MODELS_TO_TEST
+    if args.models:
+        requested = [m.strip() for m in args.models.split(",") if m.strip()]
+        unknown = [m for m in requested if m not in MODELS_TO_TEST]
+        if unknown:
+            sys.exit(f"Loi: model khong ton tai trong MODELS_TO_TEST: {unknown}")
+        models_to_run = requested
+
+    datasets_to_run = DATASETS
+    if args.datasets:
+        requested = [d.strip() for d in args.datasets.split(",") if d.strip()]
+        unknown = [d for d in requested if d not in DATASETS]
+        if unknown:
+            sys.exit(f"Loi: dataset khong ton tai trong DATASETS: {unknown}")
+        datasets_to_run = requested
+
+    suffix = f"_{args.tag}" if args.tag else ""
+    output_detail_csv = OUTPUT_DETAIL_CSV.replace(".csv", f"{suffix}.csv")
+    output_timing_csv = OUTPUT_DATASET_TIMING_CSV.replace(".csv", f"{suffix}.csv")
+    output_summary_csv = OUTPUT_SUMMARY_CSV.replace(".csv", f"{suffix}.csv")
+
+    print(f"MUC DICH LAN CHAY NAY: {args.purpose}")
+    print(f"Model: {models_to_run}")
+    print(f"Dataset: {datasets_to_run}")
+    print(f"Output: {output_detail_csv}, {output_timing_csv}, {output_summary_csv}")
+    print("Bat dau so sanh model (tu nhe -> nang)...")
+    df_results, df_timing = run_comparison(
+        models_to_run, datasets_to_run, ATTACKS, run_purpose=args.purpose)
+
+    df_results.to_csv(output_detail_csv, index=False)
+    print(f"\nDa luu chi tiet tung lan chay: {output_detail_csv}")
 
     if not df_timing.empty:
-        df_timing.to_csv(OUTPUT_DATASET_TIMING_CSV, index=False)
-        print(f"Da luu thoi gian chay theo tung dataset/model: {OUTPUT_DATASET_TIMING_CSV}")
+        df_timing.to_csv(output_timing_csv, index=False)
+        print(f"Da luu thoi gian chay theo tung dataset/model: {output_timing_csv}")
 
     df_summary = summarize_results(df_results, df_timing)
     if not df_summary.empty:
-        df_summary.to_csv(OUTPUT_SUMMARY_CSV, index=False)
-        print(f"Da luu bang tong hop cuoi cung: {OUTPUT_SUMMARY_CSV}")
+        df_summary.to_csv(output_summary_csv, index=False)
+        print(f"Da luu bang tong hop cuoi cung: {output_summary_csv}")
 
     print("\n" + "=" * 60)
     print("THOI GIAN CHAY THEO TUNG DATASET (tung model)")

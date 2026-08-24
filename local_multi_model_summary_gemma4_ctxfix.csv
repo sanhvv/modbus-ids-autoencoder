@@ -1,0 +1,2 @@
+model,success_rate_%,format_compliance_%,avg_latency_sec,p95_latency_sec,avg_risk_score_stddev,avg_completion_tokens,total_time_sec
+gemma4:12b,100.0,4.5,101.83,107.82,,3498.1,2240.2

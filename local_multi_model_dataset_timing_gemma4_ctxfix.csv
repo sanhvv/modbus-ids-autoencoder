@@ -1,0 +1,4 @@
+model,dataset,total_time_sec,n_calls
+gemma4:12b,Intelligent Electronic Device,926.07,8
+gemma4:12b,Smart Grid,635.03,7
+gemma4:12b,Water Bottle Factory,679.1,7

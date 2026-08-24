@@ -5,7 +5,8 @@
 # dataset va xuat ket qua ra cac file CSV.
 #
 # Usage:
-#   ./run_local_multi_model.sh
+#   ./run_local_multi_model.sh --purpose "mo ta muc dich lan chay" [--models ...] [--datasets ...] [--tag ...]
+# (--purpose la bat buoc, xem local_multi_model.py --help cho cac tuy chon con lai)
 
 set -euo pipefail
 
@@ -66,9 +67,9 @@ if [ "${#MISSING[@]}" -gt 0 ]; then
 fi
 
 echo
-echo "=== Chay local_multi_model.py (so sanh risk-scoring tren ca 3 dataset) ==="
-python3 local_multi_model.py
+echo "=== Chay local_multi_model.py ==="
+python3 local_multi_model.py "$@"
 
 echo
 echo "=== Hoan tat. File CSV da xuat ==="
-ls -la local_multi_model_results.csv local_multi_model_dataset_timing.csv local_multi_model_summary.csv 2>/dev/null || true
+ls -la local_multi_model_results*.csv local_multi_model_dataset_timing*.csv local_multi_model_summary*.csv 2>/dev/null || true
