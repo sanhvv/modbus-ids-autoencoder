@@ -1,0 +1,196 @@
+OK (45.1s, risk=8.0)
+  [device identification attack] lan 1/1... OK (41.2s, risk=7.0)
+  [naive sensor read] lan 1/1... OK (42.3s, risk=2.0)
+  [sporadic sensor measurement injection] lan 1/1... OK (32.8s, risk=5.0)
+  [force listen mode] lan 1/1... OK (50.7s, risk=7.0)
+  [restart communication] lan 1/1... OK (22.2s, risk=7.0)
+  [data flood attack] lan 1/1... OK (91.3s, risk=10.0)
+  -> Thoi gian chay model 'qwen3:4b' tren dataset 'Intelligent Electronic Device': 397.68s (8 lan goi)
+
+============================================================
+MODEL: gemma4:e4b  (dataset: Intelligent Electronic Device)
+============================================================
+  [address scan] lan 1/1... OK (90.8s, risk=7.0)
+  [function code scan] lan 1/1... OK (1.1s, risk=8.0)
+  [device identification attack] lan 1/1... OK (1.1s, risk=7.0)
+  [naive sensor read] lan 1/1... OK (1.4s, risk=3.0)
+  [sporadic sensor measurement injection] lan 1/1... OK (1.2s, risk=7.0)
+  [force listen mode] lan 1/1... OK (1.2s, risk=7.0)
+  [restart communication] lan 1/1... OK (1.2s, risk=6.0)
+  [data flood attack] lan 1/1... OK (1.1s, risk=8.0)
+  -> Thoi gian chay model 'gemma4:e4b' tren dataset 'Intelligent Electronic Device': 99.05s (8 lan goi)
+
+============================================================
+MODEL: qwen3:8b  (dataset: Intelligent Electronic Device)
+============================================================
+  [address scan] lan 1/1... OK (53.4s, risk=9.0)
+  [function code scan] lan 1/1... OK (1.2s, risk=9.0)
+  [device identification attack] lan 1/1... OK (1.0s, risk=9.0)
+  [naive sensor read] lan 1/1... OK (0.9s, risk=8.0)
+  [sporadic sensor measurement injection] lan 1/1... OK (0.9s, risk=8.0)
+  [force listen mode] lan 1/1... OK (1.0s, risk=9.0)
+  [restart communication] lan 1/1... OK (1.1s, risk=7.0)
+  [data flood attack] lan 1/1... OK (0.7s, risk=9.0)
+  -> Thoi gian chay model 'qwen3:8b' tren dataset 'Intelligent Electronic Device': 60.24s (8 lan goi)
+
+============================================================
+MODEL: openthinker:7b  (dataset: Intelligent Electronic Device)
+============================================================
+  [BO QUA] Model 'openthinker:7b' chua san sang tren Ollama. Chay: ollama pull openthinker:7b
+
+============================================================
+MODEL: deepseek-r1:8b  (dataset: Intelligent Electronic Device)
+============================================================
+  [address scan] lan 1/1... OK (61.8s, risk=9.0)
+  [function code scan] lan 1/1... OK (9.2s, risk=7.0)
+  [device identification attack] lan 1/1... OK (8.9s, risk=8.0)
+  [naive sensor read] lan 1/1... OK (8.1s, risk=4.0)
+  [sporadic sensor measurement injection] lan 1/1... OK (8.6s, risk=8.0)
+  [force listen mode] lan 1/1... OK (8.4s, risk=8.0)
+  [restart communication] lan 1/1... OK (7.1s, risk=6.0)
+  [data flood attack] lan 1/1... OK (7.4s, risk=9.0)
+  -> Thoi gian chay model 'deepseek-r1:8b' tren dataset 'Intelligent Electronic Device': 119.32s (8 lan goi)
+
+============================================================
+MODEL: gemma4:12b  (dataset: Intelligent Electronic Device)
+============================================================
+  [address scan] lan 1/1... OK (75.3s, risk=8.0)
+  [function code scan] lan 1/1... OK (2.5s, risk=8.0)
+  [device identification attack] lan 1/1... OK (2.4s, risk=8.0)
+  [naive sensor read] lan 1/1... OK (2.3s, risk=7.0)
+  [sporadic sensor measurement injection] lan 1/1... OK (2.4s, risk=8.0)
+  [force listen mode] lan 1/1... OK (2.4s, risk=7.0)
+  [restart communication] lan 1/1... OK (2.5s, risk=6.0)
+  [data flood attack] lan 1/1... OK (2.4s, risk=9.0)
+  -> Thoi gian chay model 'gemma4:12b' tren dataset 'Intelligent Electronic Device': 92.18s (8 lan goi)
+
+============================================================
+MODEL: qwen3:14b  (dataset: Intelligent Electronic Device)
+============================================================
+  [address scan] lan 1/1... OK (92.3s, risk=8.0)
+  [function code scan] lan 1/1... OK (2.7s, risk=9.0)
+  [device identification attack] lan 1/1... OK (2.9s, risk=8.0)
+  [naive sensor read] lan 1/1... OK (3.1s, risk=3.0)
+  [sporadic sensor measurement injection] lan 1/1... OK (3.2s, risk=7.0)
+  [force listen mode] lan 1/1... OK (2.5s, risk=7.0)
+  [restart communication] lan 1/1... OK (2.9s, risk=7.0)
+  [data flood attack] lan 1/1... OK (2.8s, risk=8.0)
+  -> Thoi gian chay model 'qwen3:14b' tren dataset 'Intelligent Electronic Device': 112.27s (8 lan goi)
+
+############################################################
+DATASET: Smart Grid
+############################################################
+  [BO QUA] Khong co anomaly nao duoc AE phat hien cho attack 'sporadic sensor measurement injection' o dataset nay.
+
+============================================================
+MODEL: phi4-mini  (dataset: Smart Grid)
+============================================================
+  [address scan] lan 1/1... OK (27.6s, risk=8.0)
+  [function code scan] lan 1/1... OK (0.6s, risk=8.0)
+  [device identification attack] lan 1/1... OK (0.6s, risk=1.0)
+  [naive sensor read] lan 1/1... OK (0.6s, risk=8.0)
+  [force listen mode] lan 1/1... OK (0.6s, risk=0.0)
+  [restart communication] lan 1/1... OK (0.6s, risk=1.0)
+  [data flood attack] lan 1/1... OK (0.9s, risk=9.0)
+  -> Thoi gian chay model 'phi4-mini' tren dataset 'Smart Grid': 31.38s (7 lan goi)
+
+============================================================
+MODEL: qwen3:4b  (dataset: Smart Grid)
+============================================================
+  [address scan] lan 1/1... OK (77.3s, risk=8.0)
+  [function code scan] lan 1/1... OK (30.9s, risk=5.0)
+  [device identification attack] lan 1/1... OK (74.5s, risk=7.0)
+  [naive sensor read] lan 1/1... OK (26.9s, risk=8.0)
+  [force listen mode] lan 1/1... OK (45.1s, risk=4.0)
+  [restart communication] lan 1/1... OK (40.1s, risk=4.0)
+  [data flood attack] lan 1/1... OK (45.9s, risk=9.0)
+  -> Thoi gian chay model 'qwen3:4b' tren dataset 'Smart Grid': 340.70s (7 lan goi)
+
+============================================================
+MODEL: gemma4:e4b  (dataset: Smart Grid)
+============================================================
+  [address scan] lan 1/1... OK (90.9s, risk=6.0)
+  [function code scan] lan 1/1... OK (1.2s, risk=7.0)
+  [device identification attack] lan 1/1... OK (1.0s, risk=3.0)
+  [naive sensor read] lan 1/1... OK (1.2s, risk=7.0)
+  [force listen mode] lan 1/1... OK (1.2s, risk=6.0)
+  [restart communication] lan 1/1... OK (1.1s, risk=2.0)
+  [data flood attack] lan 1/1... OK (1.3s, risk=9.0)
+  -> Thoi gian chay model 'gemma4:e4b' tren dataset 'Smart Grid': 97.93s (7 lan goi)
+
+============================================================
+MODEL: qwen3:8b  (dataset: Smart Grid)
+============================================================
+  [address scan] lan 1/1... OK (54.5s, risk=9.0)
+  [function code scan] lan 1/1... OK (0.7s, risk=9.0)
+  [device identification attack] lan 1/1... OK (1.0s, risk=8.0)
+  [naive sensor read] lan 1/1... OK (1.3s, risk=8.0)
+  [force listen mode] lan 1/1... OK (1.3s, risk=7.0)
+  [restart communication] lan 1/1... OK (1.1s, risk=6.0)
+  [data flood attack] lan 1/1... OK (0.7s, risk=9.0)
+  -> Thoi gian chay model 'qwen3:8b' tren dataset 'Smart Grid': 60.52s (7 lan goi)
+
+============================================================
+MODEL: openthinker:7b  (dataset: Smart Grid)
+============================================================
+  [BO QUA] Model 'openthinker:7b' chua san sang tren Ollama. Chay: ollama pull openthinker:7b
+
+============================================================
+MODEL: deepseek-r1:8b  (dataset: Smart Grid)
+============================================================
+  [address scan] lan 1/1... OK (59.1s, risk=5.0)
+  [function code scan] lan 1/1... OK (7.5s, risk=6.0)
+  [device identification attack] lan 1/1... OK (6.7s, risk=7.0)
+  [naive sensor read] lan 1/1... OK (8.1s, risk=5.0)
+  [force listen mode] lan 1/1... OK (8.2s, risk=6.0)
+  [restart communication] lan 1/1... OK (9.0s, risk=5.0)
+  [data flood attack] lan 1/1... OK (8.4s, risk=3.0)
+  -> Thoi gian chay model 'deepseek-r1:8b' tren dataset 'Smart Grid': 106.97s (7 lan goi)
+
+============================================================
+MODEL: gemma4:12b  (dataset: Smart Grid)
+============================================================
+  [address scan] lan 1/1... OK (75.7s, risk=6.0)
+  [function code scan] lan 1/1... OK (2.3s, risk=8.0)
+  [device identification attack] lan 1/1... OK (2.7s, risk=4.0)
+  [naive sensor read] lan 1/1... OK (2.8s, risk=9.0)
+  [force listen mode] lan 1/1... OK (2.8s, risk=7.0)
+  [restart communication] lan 1/1... OK (2.5s, risk=4.0)
+  [data flood attack] lan 1/1... OK (2.6s, risk=9.0)
+  -> Thoi gian chay model 'gemma4:12b' tren dataset 'Smart Grid': 91.44s (7 lan goi)
+
+============================================================
+MODEL: qwen3:14b  (dataset: Smart Grid)
+============================================================
+  [address scan] lan 1/1... OK (126.8s, risk=6.0)
+  [function code scan] lan 1/1... LOI: 400 Client Error: Bad Request for url: http://localhost:11435/api/chat
+  [device identification attack] lan 1/1... LOI: 400 Client Error: Bad Request for url: http://localhost:11435/api/chat
+  [naive sensor read] lan 1/1... LOI: 400 Client Error: Bad Request for url: http://localhost:11435/api/chat
+  [force listen mode] lan 1/1... LOI: 400 Client Error: Bad Request for url: http://localhost:11435/api/chat
+  [restart communication] lan 1/1... LOI: 400 Client Error: Bad Request for url: http://localhost:11435/api/chat
+  [data flood attack] lan 1/1... LOI: 400 Client Error: Bad Request for url: http://localhost:11435/api/chat
+  -> Thoi gian chay model 'qwen3:14b' tren dataset 'Smart Grid': 126.82s (7 lan goi)
+
+############################################################
+DATASET: Water Bottle Factory
+############################################################
+Traceback (most recent call last):
+  File "/home/23532764/local-llms/modbus-ids-autoencoder/local_multi_model.py", line 691, in <module>
+  File "/home/23532764/local-llms/modbus-ids-autoencoder/local_multi_model.py", line 490, in run_comparison
+  File "/home/23532764/local-llms/modbus-ids-autoencoder/local_multi_model.py", line 362, in prepare_dataset
+  File "/home/23532764/local-llms/modbus-ids-autoencoder/retrain_ae_9dim.py", line 38, in find_dataset_csv
+FileNotFoundError: Khong tim thay 'dataset_wbf_packetv4.csv' trong '/home/23532764/local-llms/modbus-ids-autoencoder/data/'. Chay cell tai dataset (Kaggle) o duoi truoc, hoac copy file csv thu cong vao '/home/23532764/local-llms/modbus-ids-autoencoder/data/'.
+Error in sys.excepthook:
+Traceback (most recent call last):
+  File "/usr/lib/python3/dist-packages/apport_python_hook.py", line 76, in apport_excepthook
+    binary = os.path.realpath(os.path.join(os.getcwd(), sys.argv[0]))
+FileNotFoundError: [Errno 2] No such file or directory
+
+Original exception was:
+Traceback (most recent call last):
+  File "/home/23532764/local-llms/modbus-ids-autoencoder/local_multi_model.py", line 691, in <module>
+  File "/home/23532764/local-llms/modbus-ids-autoencoder/local_multi_model.py", line 490, in run_comparison
+  File "/home/23532764/local-llms/modbus-ids-autoencoder/local_multi_model.py", line 362, in prepare_dataset
+  File "/home/23532764/local-llms/modbus-ids-autoencoder/retrain_ae_9dim.py", line 38, in find_dataset_csv
+FileNotFoundError: Khong tim thay 'dataset_wbf_packetv4.csv' trong '/home/23532764/local-llms/modbus-ids-autoencoder/data/'. Chay cell tai dataset (Kaggle) o duoi truoc, hoac copy file csv thu cong vao '/home/23532764/local-llms/modbus-ids-autoencoder/data/'.
+[?2004h[01;32m23532764@lab232-a01[00m:[01;34m~/local-llms/modbus-ids-autoencoder[00m$ ./run_local_multi_model.sh   --purpose "So sanh lai risk-scoring full 8 model x 3 dataset, 3 lan doc lap, sau khi fix think:false + num_ctx cho gemma4:12b (va ap dung chung cho moi model qua native /api/chat)"   --runs 3[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[C[Cll | grep csv[K[5Pgit pushcommit -m "refresh update"push[Kstatus
