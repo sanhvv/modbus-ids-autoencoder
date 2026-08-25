@@ -12,6 +12,7 @@ Toàn bộ pipeline nằm trong [`ics_simlab_sanh.ipynb`](ics_simlab_sanh.ipynb)
 - [File có sẵn trong repo](#file-có-sẵn-trong-repo)
 - [Các vấn đề đã gặp & cách xử lý](#các-vấn-đề-đã-gặp--cách-xử-lý)
 - [Nhật ký thực nghiệm](#nhật-ký-thực-nghiệm)
+- [So sánh kiến trúc autoencoder: Linear vs LSTM vs VAE](#so-sánh-kiến-trúc-autoencoder-linear-vs-lstm-vs-vae)
 
 ## Tổng quan pipeline
 
@@ -94,6 +95,30 @@ Ghi lại mục đích + kết quả từng lần chạy `local_multi_model.py` 
 | 24/08/2026 | `local_multi_model_results_gemma4_ctxfix.csv`, `..._dataset_timing_gemma4_ctxfix.csv`, `..._summary_gemma4_ctxfix.csv` | Rerun riêng `gemma4:12b` trên cả 3 dataset sau khi thêm `num_ctx=16384` qua `extra_body` của client OpenAI-compat | `gemma4:12b` × 3 dataset × 8 attack type | **Fix không hiệu quả** — kết quả gần như giống hệt lần đầu (`format_compliance_% = 4.5`, chỉ 1/22 lần gọi có risk score). Điều tra thêm phát hiện `/v1/chat/completions` bỏ qua `options.num_ctx` — xem mục "Các vấn đề đã gặp" ở trên. |
 | 24/08/2026 | _(không lưu — bị dừng giữa chừng, script chỉ ghi CSV sau khi chạy xong toàn bộ)_ | Rerun lần 2 sau khi đổi `use_llm_local()` sang gọi thẳng endpoint gốc `/api/chat` (đã xác nhận bằng `ollama ps` là `num_ctx=16384` lần này áp dụng thật) | `gemma4:12b` × 3 dataset × 8 attack type | **Dừng giữa chừng** — dataset IED xong sau 56 phút (8 lần gọi) nhưng vẫn chỉ 1/8 có risk score; `num_ctx` lớn hơn chỉ khiến model "nghĩ" lâu hơn chứ không nghĩ xong. Ước tính cần thêm 1.5-2h cho 2 dataset còn lại với tỷ lệ thành công tương tự → không đáng, chuyển sang thử `think: false`. |
 | 24/08/2026 | `local_multi_model_results_gemma4_thinkfix.csv`, `..._dataset_timing_gemma4_thinkfix.csv`, `..._summary_gemma4_thinkfix.csv` | Rerun lần 3 sau khi thêm `"think": false` vào request `/api/chat` để tắt hẳn suy luận nội bộ của `gemma4:12b` thay vì chỉ tăng ngân sách token cho nó | `gemma4:12b` × 3 dataset × 8 attack type | **Thành công** — 100% success rate, 100% format compliance, tổng 22 lần gọi chỉ mất 66s (trung bình 3s/lần, trước đó hàng trăm giây hoặc rỗng hoàn toàn). |
+
+## So sánh kiến trúc autoencoder: Linear vs LSTM vs VAE
+
+Ngoài autoencoder Linear/MLP gốc (`retrain_ae_9dim.py`, `tune_ae_9dim.py`), đã thử tune thêm 2 kiến trúc thay thế bằng `tune_ae_lstm_vae.py`: autoencoder dùng `nn.LSTM` (coi vector 18-feature của 1 packet như 1 "chuỗi" 18 bước — dữ liệu không có thứ tự thời gian thật giữa các feature, nên đây là một phép gán ghép, không phải sequence modeling đúng nghĩa) và Variational Autoencoder (VAE, vẫn dùng Linear nhưng bottleneck là latent phân phối `(mu, logvar)` thay vì deterministic).
+
+Kết quả random search (16 trial LSTM + 20 trial VAE mỗi dataset, seed cố định để so sánh công bằng — xem [`tune_ae_lstm_vae_log.txt`](tune_ae_lstm_vae_log.txt)):
+
+| Dataset | Model | F1 (attack) | Precision | Recall | Best trial time |
+|---|---|---|---|---|---|
+| IED | **VAE** | **0.9239** | 0.9474 | 0.9014 | 2.55s |
+| IED | LSTM | 0.8622 | 0.9409 | 0.7957 | 5.45s |
+| Smart Grid | **VAE** | **0.9280** | 0.9478 | 0.9090 | 0.51s |
+| Smart Grid | LSTM | 0.8449 | 0.9388 | 0.7680 | 8.24s |
+| Water Bottle Factory | **VAE** | **0.9501** | 0.9500 | 0.9502 | 0.93s |
+| Water Bottle Factory | LSTM | 0.8487 | 0.9393 | 0.7741 | 3.18s |
+
+**Nhận xét:**
+
+- **VAE thắng LSTM ở cả 3/3 dataset**, chênh 6-10 điểm F1, đến từ **recall** (VAE ~0.90-0.95 vs LSTM ~0.77-0.81) — precision 2 bên gần bằng nhau (~0.94). LSTM bỏ lọt tấn công nhiều hơn hẳn, hợp lý vì kiến trúc LSTM không có gì để khai thác từ "chuỗi" feature giả (không có thứ tự thời gian thật).
+- **LSTM nhạy hyperparameter hơn nhiều**: F1 dao động 0.53–0.85 chỉ do đổi batch_size/epochs/hidden_size (Smart Grid), khó chọn cấu hình tin cậy.
+- **VAE nhanh hơn ~2.7 lần/trial** trung bình (VAE ~1.3-1.4s vs LSTM ~3.8s) vì không cần unroll tuần tự như LSTM.
+- **Phát hiện quan trọng về `beta` (trọng số KL-divergence) của VAE**: hầu hết cấu hình tệ nhất đều rơi vào `beta=1.0` (regularize latent quá mạnh, làm mất chi tiết reconstruction cần để phân biệt gói tin bất thường), trong khi best config ở **cả 3 dataset đều dùng `beta=0.1`**. Đã thu hẹp `VAE_SEARCH_SPACE["beta"]` từ `[0.1, 0.5, 1.0]` xuống `[0.05, 0.1, 0.2]` trong `tune_ae_lstm_vae.py` để tập trung trial vào vùng tốt thay vì lặp lại xác nhận `beta=1.0` kém.
+
+**Kết luận:** VAE phù hợp hơn LSTM cho dữ liệu dạng bảng (tabular) như packet Modbus này, cả về chất lượng phát hiện lẫn tốc độ train. Đã thu hẹp search space VAE dựa trên phát hiện về `beta`; lần chạy tiếp theo dùng để kiểm chứng lại kết quả này với search space đã tinh chỉnh.
 
 ## Nguồn dữ liệu & mô phỏng
 

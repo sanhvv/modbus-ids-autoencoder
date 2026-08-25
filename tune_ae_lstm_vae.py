@@ -53,7 +53,12 @@ VAE_SEARCH_SPACE = {
     "batch_size": [32, 64],
     "learning_rate": [0.001, 0.0005],
     "activation": ["relu", "leaky_relu", "elu"],
-    "beta": [0.1, 0.5, 1.0],   # weight of the KL-divergence term
+    # Weight of the KL-divergence term. First run (see tune_ae_lstm_vae_log.txt)
+    # showed beta=1.0 tanks f1_attack on every dataset (over-regularizes the
+    # latent space, hurting reconstruction) while beta=0.1 was the best config
+    # on all 3 datasets - narrowed the search around that instead of wasting
+    # trials re-confirming beta=1.0 is bad.
+    "beta": [0.05, 0.1, 0.2],
 }
 
 N_TRIALS_PER_ARCH = 20      # number of random configs to try per architecture, per dataset
@@ -324,6 +329,21 @@ def tune_dataset(dataset_name, df):
     return dataset_time, best_per_arch
 
 
+def build_final_summary_table(best_overall):
+    rows = []
+    for dataset_name, best_per_arch in best_overall.items():
+        for arch, best in best_per_arch.items():
+            rows.append({
+                "Dataset": dataset_name,
+                "Model": arch.upper(),
+                "F1 (attack)": round(best["f1_attack"], 4),
+                "Precision": round(best["precision_attack"], 4),
+                "Recall": round(best["recall_attack"], 4),
+                "Best trial time (s)": round(best["trial_time_s"], 2),
+            })
+    return pd.DataFrame(rows)
+
+
 def main():
     ics_datasets = load_and_clean_datasets()
 
@@ -335,11 +355,14 @@ def main():
         total_time += dataset_time
         best_overall[dataset_name] = best_per_arch
 
+    summary_table = build_final_summary_table(best_overall)
+    summary_table.to_csv("ae_arch_comparison_summary.csv", index=False)
+
     print("=========================================")
-    print("Best config per dataset & architecture:")
-    for dataset_name, best_per_arch in best_overall.items():
-        for arch, best in best_per_arch.items():
-            print(f"  {dataset_name} / {arch}: f1_attack={best['f1_attack']:.4f}")
+    print("BANG TONG HOP KET QUA CUOI CUNG (best config moi dataset x architecture)")
+    print("=========================================")
+    print(summary_table.to_string(index=False))
+    print(f"\nDa luu bang tong hop: ae_arch_comparison_summary.csv")
     print(f"Total time consumed for all datasets: {total_time:.2f}s")
 
 
