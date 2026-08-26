@@ -23,6 +23,7 @@ Run in a screen session, e.g.:
 
 import time
 import random
+import argparse
 import itertools
 
 import numpy as np
@@ -65,6 +66,12 @@ N_TRIALS_PER_ARCH = 20      # number of random configs to try per architecture, 
 TRAIN_SAMPLE_SIZE = 3000    # subsample training rows per dataset for speed (None = use all)
 EVAL_PERCENTILE = 95
 RANDOM_SEED = 42
+
+# Hau to gan vao ten file CSV output (vd "--tag 2nd_attempt" -> ket qua
+# "..._ae_arch_tuning_results_2nd_attempt.csv"). De trong (None) = giu ten
+# mac dinh nhu cu. Dat qua CLI --tag, tranh phai doi ten file tay sau khi
+# chay xong (giong quy uoc --tag cua local_multi_model.py).
+RUN_TAG = None
 
 
 # ---------------------------------------------------------------------------
@@ -291,6 +298,13 @@ def tune_vae(X_train, df_ae, input_dim):
     return results
 
 
+def tagged_filename(base_name: str) -> str:
+    if not RUN_TAG:
+        return base_name
+    stem, ext = base_name.rsplit(".", 1)
+    return f"{stem}_{RUN_TAG}.{ext}"
+
+
 def tune_dataset(dataset_name, df):
     print("=========================================")
     print(f"Tuning architectures for dataset: {dataset_name}")
@@ -315,7 +329,7 @@ def tune_dataset(dataset_name, df):
 
     results_df = pd.DataFrame(results).sort_values("f1_attack", ascending=False)
 
-    csv_name = dataset_name.lower().replace(" ", "_") + "_ae_arch_tuning_results.csv"
+    csv_name = tagged_filename(dataset_name.lower().replace(" ", "_") + "_ae_arch_tuning_results.csv")
     results_df.to_csv(csv_name, index=False)
 
     best_per_arch = {
@@ -339,12 +353,24 @@ def build_final_summary_table(best_overall):
                 "F1 (attack)": round(best["f1_attack"], 4),
                 "Precision": round(best["precision_attack"], 4),
                 "Recall": round(best["recall_attack"], 4),
+                "F1 (weighted)": round(best["f1_weighted"], 4),
                 "Best trial time (s)": round(best["trial_time_s"], 2),
             })
     return pd.DataFrame(rows)
 
 
 def main():
+    global RUN_TAG
+
+    parser = argparse.ArgumentParser(
+        description="Tune va so sanh LSTM vs VAE autoencoder cho ICS-IDS.")
+    parser.add_argument(
+        "--tag", default=None,
+        help="Hau to gan vao ten cac file CSV output, vd --tag 2nd_attempt. "
+             "De trong = giu ten mac dinh (se bi de len o lan chay sau).")
+    args = parser.parse_args()
+    RUN_TAG = args.tag
+
     ics_datasets = load_and_clean_datasets()
 
     total_time = 0.0
@@ -356,13 +382,14 @@ def main():
         best_overall[dataset_name] = best_per_arch
 
     summary_table = build_final_summary_table(best_overall)
-    summary_table.to_csv("ae_arch_comparison_summary.csv", index=False)
+    summary_csv_name = tagged_filename("ae_arch_comparison_summary.csv")
+    summary_table.to_csv(summary_csv_name, index=False)
 
     print("=========================================")
     print("BANG TONG HOP KET QUA CUOI CUNG (best config moi dataset x architecture)")
     print("=========================================")
     print(summary_table.to_string(index=False))
-    print(f"\nDa luu bang tong hop: ae_arch_comparison_summary.csv")
+    print(f"\nDa luu bang tong hop: {summary_csv_name}")
     print(f"Total time consumed for all datasets: {total_time:.2f}s")
 
 

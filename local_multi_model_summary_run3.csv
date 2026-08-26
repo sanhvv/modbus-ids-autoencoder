@@ -1,0 +1,8 @@
+run_index,model,success_rate_%,format_compliance_%,avg_latency_sec,p95_latency_sec,avg_risk_score_stddev,avg_completion_tokens,total_time_sec
+3,phi4-mini,100.0,100.0,4.32,27.73,,32.5,94.94
+3,qwen3:8b,100.0,100.0,8.12,52.88,,38.2,178.57
+3,gemma4:12b,100.0,95.5,12.75,77.73,,65.0,280.42
+3,gemma4:e4b,100.0,100.0,13.46,91.55,,48.0,296.22
+3,deepseek-r1:8b,100.0,59.1,15.57,59.61,,458.0,342.63
+3,qwen3:14b,100.0,100.0,15.75,95.09,,53.4,346.52
+3,qwen3:4b,100.0,0.0,52.62,69.6,,4303.9,1157.59

@@ -429,7 +429,15 @@ def use_llm_local(client, prompt: str, model_name: str):
         },
         timeout=REQUEST_TIMEOUT_SEC,
     )
-    response.raise_for_status()
+    if not response.ok:
+        # response.raise_for_status() chi bao status line (vd "400 Client Error:
+        # Bad Request for url: ..."), KHONG kem body - ma body moi la noi Ollama
+        # ghi ly do that su (vd het VRAM, model runner crash...). Dinh kem body
+        # vao message de lan sau debug duoc ngay, khong phai doan mo.
+        raise RuntimeError(
+            f"{response.status_code} {response.reason} for url: {response.url} "
+            f"- response body: {response.text[:1000]}"
+        )
     data = response.json()
     output = data.get("message", {}).get("content")
     usage = _Usage(data.get("prompt_eval_count"), data.get("eval_count"))

@@ -1,0 +1,174 @@
+/home/23532764/local-llms/modbus-ids-autoencoder/tune_ae_lstm_vae.py:30: DeprecationWarning: 
+Pyarrow will become a required dependency of pandas in the next major release of pandas (pandas 3.0),
+(to allow more performant data types, such as the Arrow string type, and better interoperability with other libraries)
+but was not found to be installed on your system.
+If this would cause problems for you,
+please provide us feedback at https://github.com/pandas-dev/pandas/issues/54466
+        
+  import pandas as pd
+===================================
+Dataset: Intelligent Electronic Device
+Shape: (262589, 19)
+Column Names: Index(['ip_len', 'ip_frag_offset', 'ip_id', 'ip_ttl', 'ip_proto',
+       'tcp_window_size', 'tcp_ack', 'tcp_seq', 'tcp_len',
+       'tcp_urgent_pointer', 'tcp_flags', 'tcp_analysis_ack_rtt',
+       'tcp_analysis_push_bytes_sent', 'tcp_analysis_bytes_in_flight',
+       'frame_time_delta', 'attack_specific', 'modbus_func_code',
+       'ip_flags_df', 'ip_flags_mf'],
+      dtype='object')
+===================================
+Dataset: Smart Grid
+Shape: (58847, 19)
+Column Names: Index(['ip_len', 'ip_frag_offset', 'ip_id', 'ip_ttl', 'ip_proto',
+       'tcp_window_size', 'tcp_ack', 'tcp_seq', 'tcp_len',
+       'tcp_urgent_pointer', 'tcp_flags', 'tcp_analysis_ack_rtt',
+       'tcp_analysis_push_bytes_sent', 'tcp_analysis_bytes_in_flight',
+       'frame_time_delta', 'attack_specific', 'modbus_func_code',
+       'ip_flags_df', 'ip_flags_mf'],
+      dtype='object')
+===================================
+Dataset: Water Bottle Factory
+Shape: (186482, 19)
+Column Names: Index(['ip_len', 'ip_frag_offset', 'ip_id', 'ip_ttl', 'ip_proto',
+       'tcp_window_size', 'tcp_ack', 'tcp_seq', 'tcp_len',
+       'tcp_urgent_pointer', 'tcp_flags', 'tcp_analysis_ack_rtt',
+       'tcp_analysis_push_bytes_sent', 'tcp_analysis_bytes_in_flight',
+       'frame_time_delta', 'attack_specific', 'modbus_func_code',
+       'ip_flags_df', 'ip_flags_mf'],
+      dtype='object')
+=========================================
+Tuning architectures for dataset: Intelligent Electronic Device
+[LSTM 1/16] {'epochs': 10, 'batch_size': 64, 'learning_rate': 0.0005, 'hidden_size': 32} -> f1_attack=0.7885, precision_attack=0.9318, recall_attack=0.6834, time=3.44s
+[LSTM 2/16] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.001, 'hidden_size': 32} -> f1_attack=0.8759, precision_attack=0.9424, recall_attack=0.8181, time=9.90s
+[LSTM 3/16] {'epochs': 10, 'batch_size': 64, 'learning_rate': 0.001, 'hidden_size': 32} -> f1_attack=0.7902, precision_attack=0.9320, recall_attack=0.6858, time=2.77s
+[LSTM 4/16] {'epochs': 10, 'batch_size': 64, 'learning_rate': 0.0005, 'hidden_size': 16} -> f1_attack=0.7825, precision_attack=0.9310, recall_attack=0.6749, time=2.59s
+[LSTM 5/16] {'epochs': 20, 'batch_size': 64, 'learning_rate': 0.0005, 'hidden_size': 16} -> f1_attack=0.7907, precision_attack=0.9321, recall_attack=0.6866, time=6.03s
+[LSTM 6/16] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.0005, 'hidden_size': 16} -> f1_attack=0.7834, precision_attack=0.9311, recall_attack=0.6761, time=8.17s
+[LSTM 7/16] {'epochs': 20, 'batch_size': 64, 'learning_rate': 0.001, 'hidden_size': 16} -> f1_attack=0.8037, precision_attack=0.9338, recall_attack=0.7054, time=4.09s
+[LSTM 8/16] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.001, 'hidden_size': 16} -> f1_attack=0.8650, precision_attack=0.9412, recall_attack=0.8002, time=8.57s
+[LSTM 9/16] {'epochs': 10, 'batch_size': 32, 'learning_rate': 0.001, 'hidden_size': 32} -> f1_attack=0.8127, precision_attack=0.9350, recall_attack=0.7188, time=5.80s
+[LSTM 10/16] {'epochs': 10, 'batch_size': 32, 'learning_rate': 0.0005, 'hidden_size': 16} -> f1_attack=0.8000, precision_attack=0.9333, recall_attack=0.7000, time=6.82s
+[LSTM 11/16] {'epochs': 20, 'batch_size': 64, 'learning_rate': 0.001, 'hidden_size': 32} -> f1_attack=0.7713, precision_attack=0.9295, recall_attack=0.6591, time=4.93s
+[LSTM 12/16] {'epochs': 20, 'batch_size': 64, 'learning_rate': 0.0005, 'hidden_size': 32} -> f1_attack=0.7939, precision_attack=0.9325, recall_attack=0.6912, time=5.02s
+[LSTM 13/16] {'epochs': 10, 'batch_size': 64, 'learning_rate': 0.001, 'hidden_size': 16} -> f1_attack=0.8011, precision_attack=0.9335, recall_attack=0.7016, time=3.37s
+[LSTM 14/16] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.0005, 'hidden_size': 32} -> f1_attack=0.7803, precision_attack=0.9307, recall_attack=0.6718, time=9.31s
+[LSTM 15/16] {'epochs': 10, 'batch_size': 32, 'learning_rate': 0.001, 'hidden_size': 16} -> f1_attack=0.7951, precision_attack=0.9327, recall_attack=0.6929, time=4.41s
+[LSTM 16/16] {'epochs': 10, 'batch_size': 32, 'learning_rate': 0.0005, 'hidden_size': 32} -> f1_attack=0.8212, precision_attack=0.9360, recall_attack=0.7314, time=5.23s
+[VAE 1/20] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.0005, 'activation': 'leaky_relu', 'beta': 0.1} -> f1_attack=0.8295, precision_attack=0.9370, recall_attack=0.7441, time=2.47s
+[VAE 2/20] {'epochs': 10, 'batch_size': 64, 'learning_rate': 0.001, 'activation': 'relu', 'beta': 0.05} -> f1_attack=0.8428, precision_attack=0.9386, recall_attack=0.7647, time=0.62s
+[VAE 3/20] {'epochs': 10, 'batch_size': 64, 'learning_rate': 0.0005, 'activation': 'leaky_relu', 'beta': 0.05} -> f1_attack=0.9030, precision_attack=0.9453, recall_attack=0.8642, time=0.62s
+[VAE 4/20] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.0005, 'activation': 'relu', 'beta': 0.1} -> f1_attack=0.8261, precision_attack=0.9366, recall_attack=0.7389, time=2.60s
+[VAE 5/20] {'epochs': 10, 'batch_size': 32, 'learning_rate': 0.001, 'activation': 'elu', 'beta': 0.1} -> f1_attack=0.8983, precision_attack=0.9448, recall_attack=0.8561, time=1.35s
+[VAE 6/20] {'epochs': 10, 'batch_size': 64, 'learning_rate': 0.001, 'activation': 'relu', 'beta': 0.2} -> f1_attack=0.9148, precision_attack=0.9465, recall_attack=0.8850, time=0.77s
+[VAE 7/20] {'epochs': 10, 'batch_size': 32, 'learning_rate': 0.0005, 'activation': 'elu', 'beta': 0.05} -> f1_attack=0.8117, precision_attack=0.9348, recall_attack=0.7173, time=1.33s
+[VAE 8/20] {'epochs': 10, 'batch_size': 64, 'learning_rate': 0.0005, 'activation': 'elu', 'beta': 0.05} -> f1_attack=0.8706, precision_attack=0.9418, recall_attack=0.8095, time=0.71s
+[VAE 9/20] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.0005, 'activation': 'elu', 'beta': 0.1} -> f1_attack=0.8750, precision_attack=0.9423, recall_attack=0.8166, time=2.18s
+[VAE 10/20] {'epochs': 10, 'batch_size': 32, 'learning_rate': 0.001, 'activation': 'leaky_relu', 'beta': 0.1} -> f1_attack=0.9063, precision_attack=0.9457, recall_attack=0.8701, time=1.11s
+[VAE 11/20] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.001, 'activation': 'relu', 'beta': 0.05} -> f1_attack=0.8354, precision_attack=0.9377, recall_attack=0.7531, time=2.24s
+[VAE 12/20] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.001, 'activation': 'elu', 'beta': 0.05} -> f1_attack=0.8217, precision_attack=0.9361, recall_attack=0.7322, time=2.24s
+[VAE 13/20] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.001, 'activation': 'elu', 'beta': 0.1} -> f1_attack=0.8260, precision_attack=0.9366, recall_attack=0.7387, time=2.20s
+[VAE 14/20] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.0005, 'activation': 'leaky_relu', 'beta': 0.05} -> f1_attack=0.8284, precision_attack=0.9369, recall_attack=0.7424, time=2.18s
+[VAE 15/20] {'epochs': 10, 'batch_size': 32, 'learning_rate': 0.0005, 'activation': 'elu', 'beta': 0.1} -> f1_attack=0.9243, precision_attack=0.9475, recall_attack=0.9021, time=1.21s
+[VAE 16/20] {'epochs': 20, 'batch_size': 64, 'learning_rate': 0.001, 'activation': 'leaky_relu', 'beta': 0.05} -> f1_attack=0.8274, precision_attack=0.9368, recall_attack=0.7408, time=1.34s
+[VAE 17/20] {'epochs': 10, 'batch_size': 64, 'learning_rate': 0.0005, 'activation': 'relu', 'beta': 0.2} -> f1_attack=0.8397, precision_attack=0.9383, recall_attack=0.7599, time=0.72s
+[VAE 18/20] {'epochs': 20, 'batch_size': 64, 'learning_rate': 0.001, 'activation': 'relu', 'beta': 0.2} -> f1_attack=0.9137, precision_attack=0.9464, recall_attack=0.8832, time=1.37s
+[VAE 19/20] {'epochs': 20, 'batch_size': 64, 'learning_rate': 0.0005, 'activation': 'leaky_relu', 'beta': 0.2} -> f1_attack=0.8975, precision_attack=0.9447, recall_attack=0.8547, time=1.35s
+[VAE 20/20] {'epochs': 20, 'batch_size': 64, 'learning_rate': 0.001, 'activation': 'elu', 'beta': 0.2} -> f1_attack=0.9249, precision_attack=0.9475, recall_attack=0.9033, time=2.73s
+Dataset Intelligent Electronic Device architecture tuning total time: 121.77s
+Best LSTM config for Intelligent Electronic Device: {'architecture': 'lstm', 'epochs': 20, 'batch_size': 32, 'learning_rate': 0.001, 'hidden_size': 32.0, 'f1_attack': 0.8758869995983398, 'precision_attack': 0.9424068685355383, 'recall_attack': 0.8181386158425252, 'f1_weighted': 0.8835637921707588, 'trial_time_s': 9.89805793762207, 'activation': nan, 'beta': nan}
+Best VAE config for Intelligent Electronic Device: {'architecture': 'vae', 'epochs': 20, 'batch_size': 64, 'learning_rate': 0.001, 'hidden_size': nan, 'f1_attack': 0.9248716274185906, 'precision_attack': 0.9475493282955499, 'recall_attack': 0.9032540456716941, 'f1_weighted': 0.9265875410497897, 'trial_time_s': 2.7305819988250732, 'activation': 'elu', 'beta': 0.2}
+=========================================
+Tuning architectures for dataset: Smart Grid
+[LSTM 1/16] {'epochs': 10, 'batch_size': 64, 'learning_rate': 0.0005, 'hidden_size': 32} -> f1_attack=0.5818, precision_attack=0.8959, recall_attack=0.4308, time=1.76s
+[LSTM 2/16] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.001, 'hidden_size': 32} -> f1_attack=0.8533, precision_attack=0.9398, recall_attack=0.7814, time=7.10s
+[LSTM 3/16] {'epochs': 10, 'batch_size': 64, 'learning_rate': 0.001, 'hidden_size': 32} -> f1_attack=0.7414, precision_attack=0.9252, recall_attack=0.6186, time=1.58s
+[LSTM 4/16] {'epochs': 10, 'batch_size': 64, 'learning_rate': 0.0005, 'hidden_size': 16} -> f1_attack=0.5337, precision_attack=0.8842, recall_attack=0.3822, time=1.80s
+[LSTM 5/16] {'epochs': 20, 'batch_size': 64, 'learning_rate': 0.0005, 'hidden_size': 16} -> f1_attack=0.5906, precision_attack=0.8979, recall_attack=0.4400, time=2.81s
+[LSTM 6/16] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.0005, 'hidden_size': 16} -> f1_attack=0.7310, precision_attack=0.9236, recall_attack=0.6049, time=7.80s
+[LSTM 7/16] {'epochs': 20, 'batch_size': 64, 'learning_rate': 0.001, 'hidden_size': 16} -> f1_attack=0.7182, precision_attack=0.9216, recall_attack=0.5884, time=3.56s
+[LSTM 8/16] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.001, 'hidden_size': 16} -> f1_attack=0.8309, precision_attack=0.9371, recall_attack=0.7462, time=5.73s
+[LSTM 9/16] {'epochs': 10, 'batch_size': 32, 'learning_rate': 0.001, 'hidden_size': 32} -> f1_attack=0.4984, precision_attack=0.8744, recall_attack=0.3485, time=3.13s
+[LSTM 10/16] {'epochs': 10, 'batch_size': 32, 'learning_rate': 0.0005, 'hidden_size': 16} -> f1_attack=0.6844, precision_attack=0.9161, recall_attack=0.5463, time=2.86s
+[LSTM 11/16] {'epochs': 20, 'batch_size': 64, 'learning_rate': 0.001, 'hidden_size': 32} -> f1_attack=0.6284, precision_attack=0.9058, recall_attack=0.4811, time=4.24s
+[LSTM 12/16] {'epochs': 20, 'batch_size': 64, 'learning_rate': 0.0005, 'hidden_size': 32} -> f1_attack=0.6047, precision_attack=0.9009, recall_attack=0.4551, time=4.32s
+[LSTM 13/16] {'epochs': 10, 'batch_size': 64, 'learning_rate': 0.001, 'hidden_size': 16} -> f1_attack=0.6321, precision_attack=0.9065, recall_attack=0.4852, time=1.52s
+[LSTM 14/16] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.0005, 'hidden_size': 32} -> f1_attack=0.8028, precision_attack=0.9336, recall_attack=0.7042, time=8.77s
+[LSTM 15/16] {'epochs': 10, 'batch_size': 32, 'learning_rate': 0.001, 'hidden_size': 16} -> f1_attack=0.6977, precision_attack=0.9183, recall_attack=0.5625, time=2.84s
+[LSTM 16/16] {'epochs': 10, 'batch_size': 32, 'learning_rate': 0.0005, 'hidden_size': 32} -> f1_attack=0.6782, precision_attack=0.9150, recall_attack=0.5388, time=2.86s
+[VAE 1/20] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.0005, 'activation': 'leaky_relu', 'beta': 0.1} -> f1_attack=0.9261, precision_attack=0.9476, recall_attack=0.9056, time=2.40s
+[VAE 2/20] {'epochs': 10, 'batch_size': 64, 'learning_rate': 0.001, 'activation': 'relu', 'beta': 0.05} -> f1_attack=0.9256, precision_attack=0.9476, recall_attack=0.9045, time=0.64s
+[VAE 3/20] {'epochs': 10, 'batch_size': 64, 'learning_rate': 0.0005, 'activation': 'leaky_relu', 'beta': 0.05} -> f1_attack=0.9221, precision_attack=0.9472, recall_attack=0.8982, time=0.55s
+[VAE 4/20] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.0005, 'activation': 'relu', 'beta': 0.1} -> f1_attack=0.9285, precision_attack=0.9479, recall_attack=0.9099, time=2.07s
+[VAE 5/20] {'epochs': 10, 'batch_size': 32, 'learning_rate': 0.001, 'activation': 'elu', 'beta': 0.1} -> f1_attack=0.9206, precision_attack=0.9471, recall_attack=0.8956, time=1.06s
+[VAE 6/20] {'epochs': 10, 'batch_size': 64, 'learning_rate': 0.001, 'activation': 'relu', 'beta': 0.2} -> f1_attack=0.9058, precision_attack=0.9456, recall_attack=0.8693, time=0.56s
+[VAE 7/20] {'epochs': 10, 'batch_size': 32, 'learning_rate': 0.0005, 'activation': 'elu', 'beta': 0.05} -> f1_attack=0.9149, precision_attack=0.9465, recall_attack=0.8853, time=1.05s
+[VAE 8/20] {'epochs': 10, 'batch_size': 64, 'learning_rate': 0.0005, 'activation': 'elu', 'beta': 0.05} -> f1_attack=0.9114, precision_attack=0.9461, recall_attack=0.8790, time=0.58s
+[VAE 9/20] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.0005, 'activation': 'elu', 'beta': 0.1} -> f1_attack=0.9224, precision_attack=0.9473, recall_attack=0.8988, time=2.10s
+[VAE 10/20] {'epochs': 10, 'batch_size': 32, 'learning_rate': 0.001, 'activation': 'leaky_relu', 'beta': 0.1} -> f1_attack=0.9290, precision_attack=0.9479, recall_attack=0.9108, time=1.11s
+[VAE 11/20] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.001, 'activation': 'relu', 'beta': 0.05} -> f1_attack=0.9259, precision_attack=0.9476, recall_attack=0.9052, time=2.07s
+[VAE 12/20] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.001, 'activation': 'elu', 'beta': 0.05} -> f1_attack=0.9317, precision_attack=0.9482, recall_attack=0.9158, time=2.11s
+[VAE 13/20] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.001, 'activation': 'elu', 'beta': 0.1} -> f1_attack=0.9263, precision_attack=0.9476, recall_attack=0.9059, time=2.40s
+[VAE 14/20] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.0005, 'activation': 'leaky_relu', 'beta': 0.05} -> f1_attack=0.9217, precision_attack=0.9472, recall_attack=0.8975, time=1.99s
+[VAE 15/20] {'epochs': 10, 'batch_size': 32, 'learning_rate': 0.0005, 'activation': 'elu', 'beta': 0.1} -> f1_attack=0.9101, precision_attack=0.9460, recall_attack=0.8769, time=1.32s
+[VAE 16/20] {'epochs': 20, 'batch_size': 64, 'learning_rate': 0.001, 'activation': 'leaky_relu', 'beta': 0.05} -> f1_attack=0.9034, precision_attack=0.9453, recall_attack=0.8651, time=1.07s
+[VAE 17/20] {'epochs': 10, 'batch_size': 64, 'learning_rate': 0.0005, 'activation': 'relu', 'beta': 0.2} -> f1_attack=0.8780, precision_attack=0.9426, recall_attack=0.8216, time=0.55s
+[VAE 18/20] {'epochs': 20, 'batch_size': 64, 'learning_rate': 0.001, 'activation': 'relu', 'beta': 0.2} -> f1_attack=0.9254, precision_attack=0.9476, recall_attack=0.9042, time=1.22s
+[VAE 19/20] {'epochs': 20, 'batch_size': 64, 'learning_rate': 0.0005, 'activation': 'leaky_relu', 'beta': 0.2} -> f1_attack=0.9135, precision_attack=0.9464, recall_attack=0.8828, time=2.48s
+[VAE 20/20] {'epochs': 20, 'batch_size': 64, 'learning_rate': 0.001, 'activation': 'elu', 'beta': 0.2} -> f1_attack=0.9335, precision_attack=0.9484, recall_attack=0.9190, time=2.75s
+Dataset Smart Grid architecture tuning total time: 92.76s
+Best LSTM config for Smart Grid: {'architecture': 'lstm', 'epochs': 20, 'batch_size': 32, 'learning_rate': 0.001, 'hidden_size': 32.0, 'f1_attack': 0.8533395828450903, 'precision_attack': 0.9398100351022094, 'recall_attack': 0.781440466992875, 'f1_weighted': 0.864736376276668, 'trial_time_s': 7.0960776805877686, 'activation': nan, 'beta': nan}
+Best VAE config for Smart Grid: {'architecture': 'vae', 'epochs': 20, 'batch_size': 64, 'learning_rate': 0.001, 'hidden_size': nan, 'f1_attack': 0.9334728398291046, 'precision_attack': 0.9483568075117371, 'recall_attack': 0.9190488453944544, 'f1_weighted': 0.9344851729790548, 'trial_time_s': 2.7505648136138916, 'activation': 'elu', 'beta': 0.2}
+=========================================
+Tuning architectures for dataset: Water Bottle Factory
+[LSTM 1/16] {'epochs': 10, 'batch_size': 64, 'learning_rate': 0.0005, 'hidden_size': 32} -> f1_attack=0.8208, precision_attack=0.9359, recall_attack=0.7309, time=1.98s
+[LSTM 2/16] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.001, 'hidden_size': 32} -> f1_attack=0.7082, precision_attack=0.9200, recall_attack=0.5757, time=11.25s
+[LSTM 3/16] {'epochs': 10, 'batch_size': 64, 'learning_rate': 0.001, 'hidden_size': 32} -> f1_attack=0.7792, precision_attack=0.9305, recall_attack=0.6702, time=2.19s
+[LSTM 4/16] {'epochs': 10, 'batch_size': 64, 'learning_rate': 0.0005, 'hidden_size': 16} -> f1_attack=0.8056, precision_attack=0.9340, recall_attack=0.7082, time=2.02s
+[LSTM 5/16] {'epochs': 20, 'batch_size': 64, 'learning_rate': 0.0005, 'hidden_size': 16} -> f1_attack=0.8631, precision_attack=0.9409, recall_attack=0.7971, time=5.44s
+[LSTM 6/16] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.0005, 'hidden_size': 16} -> f1_attack=0.7996, precision_attack=0.9332, recall_attack=0.6994, time=9.63s
+[LSTM 7/16] {'epochs': 20, 'batch_size': 64, 'learning_rate': 0.001, 'hidden_size': 16} -> f1_attack=0.7773, precision_attack=0.9303, recall_attack=0.6676, time=4.18s
+[LSTM 8/16] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.001, 'hidden_size': 16} -> f1_attack=0.7942, precision_attack=0.9325, recall_attack=0.6916, time=8.84s
+[LSTM 9/16] {'epochs': 10, 'batch_size': 32, 'learning_rate': 0.001, 'hidden_size': 32} -> f1_attack=0.7547, precision_attack=0.9271, recall_attack=0.6364, time=5.35s
+[LSTM 10/16] {'epochs': 10, 'batch_size': 32, 'learning_rate': 0.0005, 'hidden_size': 16} -> f1_attack=0.7841, precision_attack=0.9312, recall_attack=0.6772, time=6.82s
+[LSTM 11/16] {'epochs': 20, 'batch_size': 64, 'learning_rate': 0.001, 'hidden_size': 32} -> f1_attack=0.7677, precision_attack=0.9289, recall_attack=0.6541, time=4.60s
+[LSTM 12/16] {'epochs': 20, 'batch_size': 64, 'learning_rate': 0.0005, 'hidden_size': 32} -> f1_attack=0.8418, precision_attack=0.9385, recall_attack=0.7632, time=4.81s
+[LSTM 13/16] {'epochs': 10, 'batch_size': 64, 'learning_rate': 0.001, 'hidden_size': 16} -> f1_attack=0.7971, precision_attack=0.9329, recall_attack=0.6958, time=2.99s
+[LSTM 14/16] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.0005, 'hidden_size': 32} -> f1_attack=0.7510, precision_attack=0.9266, recall_attack=0.6314, time=7.51s
+[LSTM 15/16] {'epochs': 10, 'batch_size': 32, 'learning_rate': 0.001, 'hidden_size': 16} -> f1_attack=0.8373, precision_attack=0.9379, recall_attack=0.7562, time=4.17s
+[LSTM 16/16] {'epochs': 10, 'batch_size': 32, 'learning_rate': 0.0005, 'hidden_size': 32} -> f1_attack=0.8435, precision_attack=0.9387, recall_attack=0.7659, time=4.88s
+[VAE 1/20] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.0005, 'activation': 'leaky_relu', 'beta': 0.1} -> f1_attack=0.8106, precision_attack=0.9346, recall_attack=0.7156, time=2.39s
+[VAE 2/20] {'epochs': 10, 'batch_size': 64, 'learning_rate': 0.001, 'activation': 'relu', 'beta': 0.05} -> f1_attack=0.8079, precision_attack=0.9343, recall_attack=0.7117, time=1.28s
+[VAE 3/20] {'epochs': 10, 'batch_size': 64, 'learning_rate': 0.0005, 'activation': 'leaky_relu', 'beta': 0.05} -> f1_attack=0.7826, precision_attack=0.9310, recall_attack=0.6750, time=0.66s
+[VAE 4/20] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.0005, 'activation': 'relu', 'beta': 0.1} -> f1_attack=0.7905, precision_attack=0.9320, recall_attack=0.6863, time=2.12s
+[VAE 5/20] {'epochs': 10, 'batch_size': 32, 'learning_rate': 0.001, 'activation': 'elu', 'beta': 0.1} -> f1_attack=0.7567, precision_attack=0.9274, recall_attack=0.6391, time=0.95s
+[VAE 6/20] {'epochs': 10, 'batch_size': 64, 'learning_rate': 0.001, 'activation': 'relu', 'beta': 0.2} -> f1_attack=0.7589, precision_attack=0.9277, recall_attack=0.6421, time=0.52s
+[VAE 7/20] {'epochs': 10, 'batch_size': 32, 'learning_rate': 0.0005, 'activation': 'elu', 'beta': 0.05} -> f1_attack=0.7474, precision_attack=0.9260, recall_attack=0.6265, time=2.22s
+[VAE 8/20] {'epochs': 10, 'batch_size': 64, 'learning_rate': 0.0005, 'activation': 'elu', 'beta': 0.05} -> f1_attack=0.7477, precision_attack=0.9261, recall_attack=0.6270, time=1.37s
+[VAE 9/20] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.0005, 'activation': 'elu', 'beta': 0.1} -> f1_attack=0.7713, precision_attack=0.9294, recall_attack=0.6591, time=3.28s
+[VAE 10/20] {'epochs': 10, 'batch_size': 32, 'learning_rate': 0.001, 'activation': 'leaky_relu', 'beta': 0.1} -> f1_attack=0.7771, precision_attack=0.9302, recall_attack=0.6673, time=0.97s
+[VAE 11/20] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.001, 'activation': 'relu', 'beta': 0.05} -> f1_attack=0.8452, precision_attack=0.9389, recall_attack=0.7685, time=1.96s
+[VAE 12/20] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.001, 'activation': 'elu', 'beta': 0.05} -> f1_attack=0.7488, precision_attack=0.9263, recall_attack=0.6285, time=1.93s
+[VAE 13/20] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.001, 'activation': 'elu', 'beta': 0.1} -> f1_attack=0.7465, precision_attack=0.9259, recall_attack=0.6253, time=1.94s
+[VAE 14/20] {'epochs': 20, 'batch_size': 32, 'learning_rate': 0.0005, 'activation': 'leaky_relu', 'beta': 0.05} -> f1_attack=0.8053, precision_attack=0.9340, recall_attack=0.7079, time=1.89s
+[VAE 15/20] {'epochs': 10, 'batch_size': 32, 'learning_rate': 0.0005, 'activation': 'elu', 'beta': 0.1} -> f1_attack=0.7480, precision_attack=0.9261, recall_attack=0.6274, time=2.48s
+[VAE 16/20] {'epochs': 20, 'batch_size': 64, 'learning_rate': 0.001, 'activation': 'leaky_relu', 'beta': 0.05} -> f1_attack=0.8609, precision_attack=0.9407, recall_attack=0.7935, time=1.00s
+[VAE 17/20] {'epochs': 10, 'batch_size': 64, 'learning_rate': 0.0005, 'activation': 'relu', 'beta': 0.2} -> f1_attack=0.7490, precision_attack=0.9263, recall_attack=0.6287, time=0.54s
+[VAE 18/20] {'epochs': 20, 'batch_size': 64, 'learning_rate': 0.001, 'activation': 'relu', 'beta': 0.2} -> f1_attack=0.9343, precision_attack=0.9485, recall_attack=0.9206, time=1.04s
+[VAE 19/20] {'epochs': 20, 'batch_size': 64, 'learning_rate': 0.0005, 'activation': 'leaky_relu', 'beta': 0.2} -> f1_attack=0.7990, precision_attack=0.9332, recall_attack=0.6985, time=1.02s
+[VAE 20/20] {'epochs': 20, 'batch_size': 64, 'learning_rate': 0.001, 'activation': 'elu', 'beta': 0.2} -> f1_attack=0.7615, precision_attack=0.9281, recall_attack=0.6456, time=1.09s
+Dataset Water Bottle Factory architecture tuning total time: 117.33s
+Best LSTM config for Water Bottle Factory: {'architecture': 'lstm', 'epochs': 20, 'batch_size': 64, 'learning_rate': 0.0005, 'hidden_size': 16.0, 'f1_attack': 0.8630659516833434, 'precision_attack': 0.9409353905496625, 'recall_attack': 0.7970999693658736, 'f1_weighted': 0.8727889640786398, 'trial_time_s': 5.436425447463989, 'activation': nan, 'beta': nan}
+Best VAE config for Water Bottle Factory: {'architecture': 'vae', 'epochs': 20, 'batch_size': 64, 'learning_rate': 0.001, 'hidden_size': nan, 'f1_attack': 0.9343213203098687, 'precision_attack': 0.9484508968491926, 'recall_attack': 0.9206065557030532, 'f1_weighted': 0.9352714609700903, 'trial_time_s': 1.0448079109191895, 'activation': 'relu', 'beta': 0.2}
+=========================================
+BANG TONG HOP KET QUA CUOI CUNG (best config moi dataset x architecture)
+=========================================
+                      Dataset Model  F1 (attack)  Precision  Recall  F1 (weighted)  Best trial time (s)
+Intelligent Electronic Device   VAE       0.9249     0.9475  0.9033         0.9266                 2.73
+Intelligent Electronic Device  LSTM       0.8759     0.9424  0.8181         0.8836                 9.90
+                   Smart Grid   VAE       0.9335     0.9484  0.9190         0.9345                 2.75
+                   Smart Grid  LSTM       0.8533     0.9398  0.7814         0.8647                 7.10
+         Water Bottle Factory   VAE       0.9343     0.9485  0.9206         0.9353                 1.04
+         Water Bottle Factory  LSTM       0.8631     0.9409  0.7971         0.8728                 5.44
+
+Da luu bang tong hop: ae_arch_comparison_summary_3rd_attempt.csv
+Total time consumed for all datasets: 331.86s

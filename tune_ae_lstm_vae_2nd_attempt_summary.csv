@@ -1,0 +1,7 @@
+Dataset,Model,F1 (attack),Precision,Recall,F1 (weighted),Best trial time (s)
+Intelligent Electronic Device,VAE,0.9241,0.9475,0.9019,0.9259,0.94
+Intelligent Electronic Device,LSTM,0.8651,0.9412,0.8004,0.8745,7.46
+Smart Grid,VAE,0.9391,0.9489,0.9295,0.9397,0.92
+Smart Grid,LSTM,0.8452,0.9389,0.7686,0.8581,8.03
+Water Bottle Factory,VAE,0.932,0.9482,0.9163,0.9331,1.75
+Water Bottle Factory,LSTM,0.8417,0.9385,0.763,0.8552,2.61

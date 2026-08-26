@@ -1,0 +1,56 @@
+=== Kiem tra Ollama (OLLAMA_HOST=127.0.0.1:11435) ===
+=== Doc danh sach model can test tu local_multi_model.py ===
+  [OK]     phi4-mini
+  [OK]     qwen3:4b
+  [OK]     gemma4:e4b
+  [OK]     qwen3:8b
+  [THIEU]  openthinker:7b  (chay: ollama pull openthinker:7b)
+  [OK]     deepseek-r1:8b
+  [OK]     gemma4:12b
+  [OK]     qwen3:14b
+
+=== 7/8 model da san sang ===
+(Model con thieu se bi local_multi_model.py tu dong bo qua khi chay: openthinker:7b)
+
+=== Chay local_multi_model.py ===
+/home/23532764/local-llms/modbus-ids-autoencoder/local_multi_model.py:36: DeprecationWarning: 
+Pyarrow will become a required dependency of pandas in the next major release of pandas (pandas 3.0),
+(to allow more performant data types, such as the Arrow string type, and better interoperability with other libraries)
+but was not found to be installed on your system.
+If this would cause problems for you,
+please provide us feedback at https://github.com/pandas-dev/pandas/issues/54466
+        
+  import pandas as pd
+
+############################################################
+LAN CHAY 1/3
+############################################################
+MUC DICH LAN CHAY NAY: ...
+Model: ['phi4-mini', 'qwen3:4b', 'gemma4:e4b', 'qwen3:8b', 'openthinker:7b', 'deepseek-r1:8b', 'gemma4:12b', 'qwen3:14b']
+Dataset: ['Intelligent Electronic Device', 'Smart Grid', 'Water Bottle Factory']
+Output: local_multi_model_results_run1.csv, local_multi_model_dataset_timing_run1.csv, local_multi_model_summary_run1.csv
+Bat dau so sanh model (tu nhe -> nang)...
+
+############################################################
+DATASET: Intelligent Electronic Device
+############################################################
+
+============================================================
+MODEL: phi4-mini  (dataset: Intelligent Electronic Device)
+============================================================
+  [address scan] lan 1/1... LOI: 500 Internal Server Error for url: http://localhost:11435/api/chat - response body: {"error":"llama-server process has terminated: error: cannot get current path: No such file or directory: error: cannot get current path: No such file or directory"}
+  [function code scan] lan 1/1... LOI: 500 Internal Server Error for url: http://localhost:11435/api/chat - response body: {"error":"llama-server process has terminated: error: cannot get current path: No such file or directory: error: cannot get current path: No such file or directory"}
+  [device identification attack] lan 1/1... LOI: 500 Internal Server Error for url: http://localhost:11435/api/chat - response body: {"error":"llama-server process has terminated: error: cannot get current path: No such file or directory: error: cannot get current path: No such file or directory"}
+  [naive sensor read] lan 1/1... LOI: 500 Internal Server Error for url: http://localhost:11435/api/chat - response body: {"error":"llama-server process has terminated: error: cannot get current path: No such file or directory: error: cannot get current path: No such file or directory"}
+  [sporadic sensor measurement injection] lan 1/1... LOI: 500 Internal Server Error for url: http://localhost:11435/api/chat - response body: {"error":"llama-server process has terminated: error: cannot get current path: No such file or directory: error: cannot get current path: No such file or directory"}
+  [force listen mode] lan 1/1... LOI: 500 Internal Server Error for url: http://localhost:11435/api/chat - response body: {"error":"llama-server process has terminated: error: cannot get current path: No such file or directory: error: cannot get current path: No such file or directory"}
+  [restart communication] lan 1/1... LOI: 500 Internal Server Error for url: http://localhost:11435/api/chat - response body: {"error":"llama-server process has terminated: error: cannot get current path: No such file or directory: error: cannot get current path: No such file or directory"}
+  [data flood attack] lan 1/1... LOI: 500 Internal Server Error for url: http://localhost:11435/api/chat - response body: {"error":"llama-server process has terminated: error: cannot get current path: No such file or directory: error: cannot get current path: No such file or directory"}
+  -> Thoi gian chay model 'phi4-mini' tren dataset 'Intelligent Electronic Device': 30.34s (8 lan goi)
+
+============================================================
+MODEL: qwen3:4b  (dataset: Intelligent Electronic Device)
+============================================================
+  [address scan] lan 1/1... LOI: 500 Internal Server Error for url: http://localhost:11435/api/chat - response body: {"error":"llama-server process has terminated: error: cannot get current path: No such file or directory: error: cannot get current path: No such file or directory"}
+  [function code scan] lan 1/1... LOI: 500 Internal Server Error for url: http://localhost:11435/api/chat - response body: {"error":"llama-server process has terminated: error: cannot get current path: No such file or directory: error: cannot get current path: No such file or directory"}
+  [device identification attack] lan 1/1... 
