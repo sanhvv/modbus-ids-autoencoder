@@ -1,0 +1,8 @@
+attack_type,phi4-mini,qwen3:4b,gemma4:e4b,qwen3:8b,deepseek-r1:8b,gemma4:12b,qwen3:14b
+address scan,8.0,2.0,6.0,9.0,4.0,6.0,6.0
+function code scan,8.0,3.0,7.0,8.0,7.0,7.0,9.0
+device identification attack,2.0,7.0,3.0,8.0,5.0,4.0,3.0
+naive sensor read,8.0,8.0,7.0,8.0,2.0,9.0,4.0
+force listen mode,3.0,2.0,3.0,8.0,6.0,6.0,6.0
+restart communication,1.0,7.0,2.0,3.0,5.0,4.0,2.0
+data flood attack,9.0,9.0,9.0,9.0,7.0,9.0,9.0

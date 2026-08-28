@@ -4,8 +4,9 @@
 # local_multi_model.py de so sanh risk-scoring giua cac model tren ca 3
 # dataset va xuat ket qua ra cac file CSV.
 #
-# Usage:
-#   ./run_local_multi_model.sh --purpose "mo ta muc dich lan chay" [--models ...] [--datasets ...] [--tag ...] [--runs N]
+# Usage (redirect log vao local_multi_model/ de gom chung voi CSV output):
+#   ./run_local_multi_model.sh --purpose "mo ta muc dich lan chay" [--models ...] [--datasets ...] [--tag ...] [--runs N] \
+#     2>&1 | tee local_multi_model/run_$(date +%Y%m%d_%H%M).log
 # (--purpose la bat buoc, xem local_multi_model.py --help cho cac tuy chon con lai.
 #  --runs N chay lai toan bo pipeline N lan doc lap, moi lan ra file CSV rieng
 #  hau to _run1.._runN de so sanh do on dinh giua cac lan chay.)
@@ -73,5 +74,5 @@ echo "=== Chay local_multi_model.py ==="
 python3 local_multi_model.py "$@"
 
 echo
-echo "=== Hoan tat. File CSV da xuat ==="
-ls -la local_multi_model_results*.csv local_multi_model_dataset_timing*.csv local_multi_model_summary*.csv 2>/dev/null || true
+echo "=== Hoan tat. File CSV da xuat (trong local_multi_model/) ==="
+ls -la local_multi_model/local_multi_model_results*.csv local_multi_model/local_multi_model_dataset_timing*.csv local_multi_model/local_multi_model_summary*.csv 2>/dev/null || true

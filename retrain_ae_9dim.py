@@ -5,9 +5,10 @@ section of ics_simlab_sanh.ipynb.
 Loads + cleans the 3 ICS-SimLab datasets, then trains (or loads) a smaller
 autoencoder (latent dim 9 instead of 32) for each dataset and evaluates it.
 
-Run in a screen session, e.g.:
+Output (model .pt, threshold .txt) goes into retrain_ae_9dim/. Run in a
+screen session, redirecting the log into the same folder, e.g.:
     screen -S ae_retrain
-    python retrain_ae_9dim.py
+    python retrain_ae_9dim.py 2>&1 | tee retrain_ae_9dim/run_$(date +%Y%m%d_%H%M).log
     # Ctrl-A D to detach
 """
 
@@ -24,6 +25,14 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import classification_report, confusion_matrix
 
 DATA_DIR = Path("data").resolve()
+
+# Ket qua (model .pt, threshold .txt) va log cua script nay deu gom vao day,
+# de de quan ly thay vi nam rai rac o repo root. Tao ngay luc import (khong
+# doi den khi ghi file) de lenh redirect log qua shell (vd `> retrain_ae_9dim/
+# run.log`) hoat dong duoc ngay tu dau, vi shell tao file redirect TRUOC khi
+# Python kip chay, va se loi neu thu muc chua ton tai.
+OUTPUT_DIR = Path("retrain_ae_9dim")
+OUTPUT_DIR.mkdir(exist_ok=True)
 
 DATASET_FILENAMES = {
     "Intelligent Electronic Device": "dataset_ied_packetv4.csv",
@@ -256,7 +265,7 @@ def detect_anomaly_9dim(model, X_train, X_test, y_true, dataset_name, cus_percen
 
     if dataset_name is not None:
         file_threshold_name = dataset_name.lower().replace(" ", "_") + "_threshold_test.txt"
-        with open(file_threshold_name, "w") as f:
+        with open(OUTPUT_DIR / file_threshold_name, "w") as f:
             f.write(str(best_threshold))
 
     if return_originals:
@@ -322,7 +331,7 @@ def main():
             ae_models_test[dataset_name] = ae_model_test
 
             file_model_name = dataset_name.lower().replace(" ", "_") + "_ae_model_9dim.pt"
-            torch.save(ae_model_test.state_dict(), file_model_name)
+            torch.save(ae_model_test.state_dict(), OUTPUT_DIR / file_model_name)
 
             dataset_time = time.time() - dataset_start
             dataset_times[dataset_name] = dataset_time

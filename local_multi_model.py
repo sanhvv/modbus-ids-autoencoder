@@ -6,7 +6,9 @@ Day la ban standalone, mo rong tu "local llms.py" (chi chay 1 dataset, phai
 chay trong notebook da co san bien/ham) - script nay tu load + clean dataset,
 tu load autoencoder 32-dim va nguong (threshold) da luu san cho ca 3 dataset,
 roi moi goi cac model local de risk-scoring, nen co the chay doc lap bang:
-    python local_multi_model.py
+    python local_multi_model.py --purpose "..." 2>&1 | tee local_multi_model/run_$(date +%Y%m%d_%H%M).log
+(output CSV cung gom vao local_multi_model/, tao ngay luc import de shell
+redirect vao day hoat dong duoc tu dau)
 
 CAC MODEL DUOC TEST (dang duoc pull ve, chay tren GPU GTX 3060):
     phi4-mini, qwen3:4b, gemma4:e4b, qwen3:8b, openthinker:7b, deepseek-r1:8b,
@@ -31,6 +33,7 @@ import sys
 import time
 import argparse
 import statistics
+from pathlib import Path
 from datetime import datetime
 
 import pandas as pd
@@ -95,6 +98,12 @@ OLLAMA_NATIVE_BASE_URL = OLLAMA_BASE_URL.removesuffix("/v1")
 OUTPUT_DETAIL_CSV = "local_multi_model_results.csv"
 OUTPUT_DATASET_TIMING_CSV = "local_multi_model_dataset_timing.csv"
 OUTPUT_SUMMARY_CSV = "local_multi_model_summary.csv"
+
+# Ket qua CSV cua script nay gom vao day (xem ghi chu tuong tu trong
+# retrain_ae_9dim.py - tao ngay luc import de shell redirect vao day hoat
+# dong duoc tu dau).
+OUTPUT_DIR = Path("local_multi_model")
+OUTPUT_DIR.mkdir(exist_ok=True)
 
 
 local_client = OpenAI(
@@ -685,9 +694,9 @@ if __name__ == "__main__":
 
     for run_idx in range(1, args.runs + 1):
         run_suffix = base_suffix + (f"_run{run_idx}" if args.runs > 1 else "")
-        output_detail_csv = OUTPUT_DETAIL_CSV.replace(".csv", f"{run_suffix}.csv")
-        output_timing_csv = OUTPUT_DATASET_TIMING_CSV.replace(".csv", f"{run_suffix}.csv")
-        output_summary_csv = OUTPUT_SUMMARY_CSV.replace(".csv", f"{run_suffix}.csv")
+        output_detail_csv = OUTPUT_DIR / OUTPUT_DETAIL_CSV.replace(".csv", f"{run_suffix}.csv")
+        output_timing_csv = OUTPUT_DIR / OUTPUT_DATASET_TIMING_CSV.replace(".csv", f"{run_suffix}.csv")
+        output_summary_csv = OUTPUT_DIR / OUTPUT_SUMMARY_CSV.replace(".csv", f"{run_suffix}.csv")
 
         if args.runs > 1:
             print(f"\n{'#'*60}\nLAN CHAY {run_idx}/{args.runs}\n{'#'*60}")

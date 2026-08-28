@@ -15,9 +15,10 @@ with no inherent temporal order between features, so the LSTM treats the
 feature vector as a length-input_dim sequence of scalars (one feature per
 timestep) rather than modeling true packet-to-packet sequence structure.
 
-Run in a screen session, e.g.:
+Output CSVs go into tune_ae_lstm_vae/. Run in a screen session, redirecting
+the log into the same folder, e.g.:
     screen -S ae_arch_tune
-    python tune_ae_lstm_vae.py
+    python tune_ae_lstm_vae.py 2>&1 | tee tune_ae_lstm_vae/run_$(date +%Y%m%d_%H%M).log
     # Ctrl-A D to detach
 """
 
@@ -25,6 +26,7 @@ import time
 import random
 import argparse
 import itertools
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -34,6 +36,12 @@ from sklearn.metrics import f1_score, precision_score, recall_score
 
 from retrain_ae_9dim import load_and_clean_datasets, preprocess_ae_9dim
 from tune_ae_9dim import ACTIVATIONS
+
+# Ket qua CSV cua script nay gom vao day (xem ghi chu tuong tu trong
+# retrain_ae_9dim.py - tao ngay luc import de shell redirect vao day hoat
+# dong duoc tu dau).
+OUTPUT_DIR = Path("tune_ae_lstm_vae")
+OUTPUT_DIR.mkdir(exist_ok=True)
 
 # ---------------------------------------------------------------------------
 # Search space / tuning settings - adjust these to trade off runtime vs.
@@ -298,11 +306,11 @@ def tune_vae(X_train, df_ae, input_dim):
     return results
 
 
-def tagged_filename(base_name: str) -> str:
-    if not RUN_TAG:
-        return base_name
-    stem, ext = base_name.rsplit(".", 1)
-    return f"{stem}_{RUN_TAG}.{ext}"
+def tagged_filename(base_name: str) -> Path:
+    if RUN_TAG:
+        stem, ext = base_name.rsplit(".", 1)
+        base_name = f"{stem}_{RUN_TAG}.{ext}"
+    return OUTPUT_DIR / base_name
 
 
 def tune_dataset(dataset_name, df):

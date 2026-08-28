@@ -66,6 +66,27 @@ Notebook chia theo section, chạy tuần tự từ trên xuống:
 | `*_threshold.txt` | Ngưỡng reconstruction error (95th percentile) của autoencoder |
 | `local_llm_comparison_results.csv` | Chi tiết từng lần gọi model local qua Ollama |
 | `local_llm_comparison_summary.csv` | Bảng so sánh tốc độ / độ ổn định / độ tuân thủ format giữa các model |
+
+Các file trên nằm ở repo root vì được dùng chung giữa nhiều script/notebook (vd `smart_grid_ae_model.pt` được `ics_simlab_sanh.ipynb` và `local_multi_model.py` cùng load).
+
+### Log + kết quả của 4 script standalone (`retrain_ae_9dim.py`, `tune_ae_9dim.py`, `tune_ae_lstm_vae.py`, `local_multi_model.py`)
+
+Mỗi script gom log + CSV/`.pt`/`.txt` output riêng của nó vào 1 folder cùng tên (tạo tự động lúc import, kể cả khi chỉ import làm dependency):
+
+```
+retrain_ae_9dim/    ← retrain_ae_9dim.py   (*_ae_model_9dim.pt, *_threshold_test.txt, log)
+tune_ae_9dim/       ← tune_ae_9dim.py      (*_ae_tuning_results.csv, log)
+tune_ae_lstm_vae/   ← tune_ae_lstm_vae.py  (*_ae_arch_tuning_results*.csv, *summary*.csv, log)
+local_multi_model/  ← local_multi_model.py (*_results*.csv, *_dataset_timing*.csv, *_summary*.csv, *_risk_score_pivot_*.csv, log)
+```
+
+Bản thân file `.py` vẫn ở repo root (chạy `python3 <ten_script>.py` bình thường) — chỉ output đi vào folder. Vì thư mục được tạo ngay lúc import (trước khi ghi file bất kỳ), redirect log qua shell vào đúng folder đó cũng hoạt động ngay từ lần chạy đầu, ví dụ:
+
+```bash
+python3 tune_ae_lstm_vae.py --tag 4th_attempt 2>&1 | tee tune_ae_lstm_vae/run_$(date +%Y%m%d_%H%M).log
+```
+
+Các file `.pt`/`.pkl`/`.txt` dùng chung giữa nhiều script (bảng ở trên) **không** nằm trong các folder này — di chuyển sẽ gây `FileNotFoundError` ở script khác đang load chúng.
 | `local llms.py` | Bản script độc lập tương đương cell "Local LLM Comparison", chạy được ngoài notebook nếu đã có sẵn các biến cần thiết trong kernel |
 
 ## Các vấn đề đã gặp & cách xử lý

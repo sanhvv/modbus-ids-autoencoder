@@ -7,15 +7,17 @@ function for each dataset, on a subsample of the training data for speed,
 and reports the best config per dataset by F1 score on the attack
 (anomaly) class. Full results per trial are written to a CSV per dataset.
 
-Run in a screen session, e.g.:
+Output CSVs go into tune_ae_9dim/. Run in a screen session, redirecting the
+log into the same folder, e.g.:
     screen -S ae_tune
-    python tune_ae_9dim.py
+    python tune_ae_9dim.py 2>&1 | tee tune_ae_9dim/run_$(date +%Y%m%d_%H%M).log
     # Ctrl-A D to detach
 """
 
 import time
 import random
 import itertools
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -24,6 +26,12 @@ from torch import nn, optim
 from sklearn.metrics import f1_score, precision_score, recall_score
 
 from retrain_ae_9dim import load_and_clean_datasets, preprocess_ae_9dim
+
+# Ket qua CSV cua script nay gom vao day (xem ghi chu tuong tu trong
+# retrain_ae_9dim.py - tao ngay luc import de shell redirect vao day hoat
+# dong duoc tu dau).
+OUTPUT_DIR = Path("tune_ae_9dim")
+OUTPUT_DIR.mkdir(exist_ok=True)
 
 # ---------------------------------------------------------------------------
 # Search space / tuning settings - adjust these to trade off runtime vs.
@@ -187,7 +195,7 @@ def tune_dataset(dataset_name, df):
     results_df = pd.DataFrame(results).sort_values("f1_attack", ascending=False)
 
     csv_name = dataset_name.lower().replace(" ", "_") + "_ae_tuning_results.csv"
-    results_df.to_csv(csv_name, index=False)
+    results_df.to_csv(OUTPUT_DIR / csv_name, index=False)
 
     best = results_df.iloc[0].to_dict()
     print(f"Best config for {dataset_name}: {best}")
