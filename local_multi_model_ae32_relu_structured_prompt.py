@@ -368,7 +368,7 @@ def describe_func_code(code) -> str:
     name = MODBUS_FUNC_NAMES.get(code)
     if name:
         return f"{code} ({name})"
-    return f"{code} (khong phai ma chuan Modbus - co the la do quet/fuzzing function code)"
+    return f"{code} (not a standard Modbus function code - may indicate function code scanning/fuzzing)"
 
 
 def create_prompt(orig_packet_info, orig_flow_info):
@@ -384,10 +384,10 @@ You are a SOC analyst reviewing a flagged anomalous packet on an Industrial
 Control System (Modbus/TCP) network. Based on the data below, respond in
 EXACTLY this format (one short line per field, no extra commentary):
 
-Source: <IP/MAC nghi la nguon tan cong, va internal/external so voi mang noi bo>
-Likely Cause: <1 cau - loai hanh vi nghi ngo + vi sao, dua tren cac tin hieu duoi>
-Affected Asset: <IP/thiet bi dich bi anh huong>
-Recommendation: <1 hanh dong cu the operator nen lam ngay>
+Source: <suspected source IP/MAC, and whether it is internal or external to the local network>
+Likely Cause: <one sentence - the suspected type of behavior and why, based on the signals below>
+Affected Asset: <the destination IP/device being affected>
+Recommendation: <one specific action the operator should take right now>
 Risk Score: X/10
 
 --- Packet data ---

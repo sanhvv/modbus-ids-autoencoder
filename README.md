@@ -98,6 +98,9 @@ Ghi lại để đỡ mất công debug lại từ đầu:
 - **`Request timed out.` khi gọi model Ollama** — SDK `openai` mặc định tự retry 2 lần khi timeout, nên 1 lần gọi thất bại thực chất chờ tới ~3× `REQUEST_TIMEOUT_SEC` mới báo lỗi. Đã set `max_retries=0` trong `OpenAI(...)` ở cell "Local LLM Comparison" để fail nhanh đúng 1 lần thử.
 - **CPU bị chiếm dụng bất thường sau khi timeout/interrupt** — Ollama không huỷ job đang generate khi client timeout hoặc bị interrupt; job cũ tiếp tục chạy ngầm, tranh CPU với các lần gọi sau. Nếu nghi ngờ, chạy `ollama ps` kiểm tra model đang load, và `sudo snap restart ollama` (hoặc restart service Ollama tương ứng) để dọn sạch trước khi chạy lại.
 - **`qwen3:4b` và `deepseek-r1:8b` chậm hơn hẳn `phi4-mini`** — cả hai đều là reasoning model, tự động sinh khối `<think>...</think>` suy luận nội bộ trước khi trả lời. Đã thử tắt qua `think: false` (cả OpenAI-compat client lẫn API gốc Ollama) và quy ước `/no_think` trong prompt — **không cách nào tắt được** với bản model đang dùng, đây là giới hạn của model/Ollama chứ không phải lỗi code.
+  - **Retest 06/09/2026 (`local_multi_model_ae32_relu_structured_prompt.py`, prompt_2, `--tag run2`):** đã retest cả 2 model bằng đúng `use_llm_local()` hiện tại (gọi native `/api/chat` + `think: false`). Kết quả **khác nhau rõ rệt**:
+    - **`deepseek-r1:8b` đã FIX** — `think:false` hoạt động đúng, 100% success rate, 100% format compliance, tốc độ hợp lý (avg 42s/lần, tổng 928s cho 22 lần gọi cả 3 dataset).
+    - **`qwen3:4b` VẪN CHƯA FIX được** — output bắt đầu bằng `"We are given the following packet data: ..."`, tức model viết toàn bộ chuỗi suy luận thẳng vào `content` thay vì đưa vào `<think>` (hoặc field `thinking` riêng), không tôn trọng `think:false`. Hậu quả: `avg_completion_tokens` 3536 (gấp 8-50 lần các model khác), `format_compliance_%` chỉ 65% (nhiều lần không kịp sinh dòng `Risk Score:`), 2/22 lần gọi timeout hẳn (>600s), tổng thời gian 3980s — riêng model này chiếm gần bằng tổng thời gian của 6 model còn lại cộng lại. Kết luận: `qwen3:4b` nên coi là model có giới hạn đã biết (not comparable fairly) khi so sánh format compliance/tốc độ, trừ khi Ollama/model có bản cập nhật khác.
 - **File `.pt`/`.pkl` tải về là trang lỗi HTML** — cell "Load Models" ban đầu không kiểm tra HTTP status trước khi ghi file, khiến response lỗi bị ghi đè lên làm file corrupt. Đã thêm kiểm tra status code, bỏ qua (skip) rõ ràng các file không tồn tại (như 3 file RF ở trên) thay vì ghi rác.
 - **`ModuleNotFoundError` dù đã cài thư viện** — do VS Code chọn nhầm kernel Python (không phải kernel của `.venv` trong repo này). Chọn lại kernel đúng qua "Select Kernel" ở góc trên phải notebook.
 - **Sửa code nhưng chạy vẫn ra lỗi cũ** — nếu file `.ipynb` bị sửa từ bên ngoài VS Code (script, git, ...) trong khi đang mở, editor có thể vẫn hiển thị bản cũ trong bộ nhớ. Dùng `Ctrl+Shift+P` → "Revert File" để nạp lại từ đĩa trước khi chạy lại.
@@ -124,6 +127,7 @@ Ghi lại mục đích + kết quả từng lần chạy `local_multi_model_ae32
 | 24/08/2026 | `local_multi_model_results_gemma4_ctxfix.csv`, `..._dataset_timing_gemma4_ctxfix.csv`, `..._summary_gemma4_ctxfix.csv` | Rerun riêng `gemma4:12b` trên cả 3 dataset sau khi thêm `num_ctx=16384` qua `extra_body` của client OpenAI-compat | `gemma4:12b` × 3 dataset × 8 attack type | **Fix không hiệu quả** — kết quả gần như giống hệt lần đầu (`format_compliance_% = 4.5`, chỉ 1/22 lần gọi có risk score). Điều tra thêm phát hiện `/v1/chat/completions` bỏ qua `options.num_ctx` — xem mục "Các vấn đề đã gặp" ở trên. |
 | 24/08/2026 | _(không lưu — bị dừng giữa chừng, script chỉ ghi CSV sau khi chạy xong toàn bộ)_ | Rerun lần 2 sau khi đổi `use_llm_local()` sang gọi thẳng endpoint gốc `/api/chat` (đã xác nhận bằng `ollama ps` là `num_ctx=16384` lần này áp dụng thật) | `gemma4:12b` × 3 dataset × 8 attack type | **Dừng giữa chừng** — dataset IED xong sau 56 phút (8 lần gọi) nhưng vẫn chỉ 1/8 có risk score; `num_ctx` lớn hơn chỉ khiến model "nghĩ" lâu hơn chứ không nghĩ xong. Ước tính cần thêm 1.5-2h cho 2 dataset còn lại với tỷ lệ thành công tương tự → không đáng, chuyển sang thử `think: false`. |
 | 24/08/2026 | `local_multi_model_results_gemma4_thinkfix.csv`, `..._dataset_timing_gemma4_thinkfix.csv`, `..._summary_gemma4_thinkfix.csv` | Rerun lần 3 sau khi thêm `"think": false` vào request `/api/chat` để tắt hẳn suy luận nội bộ của `gemma4:12b` thay vì chỉ tăng ngân sách token cho nó | `gemma4:12b` × 3 dataset × 8 attack type | **Thành công** — 100% success rate, 100% format compliance, tổng 22 lần gọi chỉ mất 66s (trung bình 3s/lần, trước đó hàng trăm giây hoặc rỗng hoàn toàn). |
+| 06/09/2026 | `local_multi_model_results_run2.csv`, `..._dataset_timing_run2.csv`, `..._summary_run2.csv` (script: `local_multi_model_ae32_relu_structured_prompt.py`, prompt_2, chạy trên lab232-a04) | So sánh full 7 model đã pull (thiếu `openthinker:7b`) × 3 dataset với prompt có cấu trúc (5 field), sau khi sửa lỗi prompt lẫn tiếng Việt | 7 model × 3 dataset × 8 attack type | Xem chi tiết ở mục "Các vấn đề đã gặp" — `deepseek-r1:8b` xác nhận đã fix (100% success/compliance), `qwen3:4b` vẫn không tắt được thinking (format_compliance 65%, 2 timeout), 1 crash CUDA transient ở `phi4-mini`/WBF, và Water Bottle Factory làm chậm hẳn các model reasoning (qwen3:14b/deepseek-r1:8b/gemma4:12b) so với 2 dataset kia. |
 
 ## So sánh kiến trúc autoencoder: Linear vs LSTM vs VAE
 
@@ -156,10 +160,10 @@ Kết quả random search (16 trial LSTM + 20 trial VAE mỗi dataset, seed cố
 `local_multi_model_ae32_relu_structured_prompt.py` (**prompt_2**) thay bằng prompt yêu cầu đúng 5 field, mỗi field 1 dòng:
 
 ```
-Source: <IP/MAC nghi la nguon tan cong, va internal/external so voi mang noi bo>
-Likely Cause: <1 cau - loai hanh vi nghi ngo + vi sao, dua tren cac tin hieu duoi>
-Affected Asset: <IP/thiet bi dich bi anh huong>
-Recommendation: <1 hanh dong cu the operator nen lam ngay>
+Source: <suspected source IP/MAC, and whether it is internal or external to the local network>
+Likely Cause: <one sentence - the suspected type of behavior and why, based on the signals below>
+Affected Asset: <the destination IP/device being affected>
+Recommendation: <one specific action the operator should take right now>
 Risk Score: X/10
 ```
 
