@@ -1,0 +1,35 @@
+/home/23532764/local-llms/modbus-ids-autoencoder/local_multi_model_ae32_relu_structured_prompt.py:53: DeprecationWarning: 
+Pyarrow will become a required dependency of pandas in the next major release of pandas (pandas 3.0),
+(to allow more performant data types, such as the Arrow string type, and better interoperability with other libraries)
+but was not found to be installed on your system.
+If this would cause problems for you,
+please provide us feedback at https://github.com/pandas-dev/pandas/issues/54466
+        
+  import pandas as pd
+MUC DICH LAN CHAY NAY: prompt2
+Model: ['phi4-mini', 'qwen3:4b', 'gemma4:e4b', 'qwen3:8b', 'openthinker:7b', 'deepseek-r1:8b', 'gemma4:12b', 'qwen3:14b']
+Dataset: ['Intelligent Electronic Device', 'Smart Grid', 'Water Bottle Factory']
+Output: local_multi_model_ae32_relu_structured_prompt/local_multi_model_results.csv, local_multi_model_ae32_relu_structured_prompt/local_multi_model_dataset_timing.csv, local_multi_model_ae32_relu_structured_prompt/local_multi_model_summary.csv
+Bat dau so sanh model (tu nhe -> nang)...
+
+############################################################
+DATASET: Intelligent Electronic Device
+############################################################
+
+============================================================
+MODEL: phi4-mini  (dataset: Intelligent Electronic Device)
+============================================================
+  [address scan] lan 1/1... OK (13.2s, risk=7.0)
+  [function code scan] lan 1/1... OK (9.2s, risk=8.0)
+  [device identification attack] lan 1/1... OK (9.6s, risk=8.0)
+  [naive sensor read] lan 1/1... OK (8.3s, risk=7.0)
+  [sporadic sensor measurement injection] lan 1/1... OK (11.2s, risk=8.0)
+  [force listen mode] lan 1/1... OK (8.4s, risk=8.0)
+  [restart communication] lan 1/1... OK (7.1s, risk=7.0)
+  [data flood attack] lan 1/1... OK (8.1s, risk=9.0)
+  -> Thoi gian chay model 'phi4-mini' tren dataset 'Intelligent Electronic Device': 75.18s (8 lan goi)
+
+============================================================
+MODEL: qwen3:4b  (dataset: Intelligent Electronic Device)
+============================================================
+  [address scan] lan 1/1... 
