@@ -13,6 +13,7 @@ Toàn bộ pipeline nằm trong [`ics_simlab_sanh.ipynb`](ics_simlab_sanh.ipynb)
 - [Các vấn đề đã gặp & cách xử lý](#các-vấn-đề-đã-gặp--cách-xử-lý)
 - [Nhật ký thực nghiệm](#nhật-ký-thực-nghiệm)
 - [So sánh kiến trúc autoencoder: Linear vs LSTM vs VAE](#so-sánh-kiến-trúc-autoencoder-linear-vs-lstm-vs-vae)
+- [Prompt 2: prompt có cấu trúc cho risk-scoring](#prompt-2-prompt-có-cấu-trúc-cho-risk-scoring)
 
 ## Tổng quan pipeline
 
@@ -70,7 +71,7 @@ Notebook chia theo section, chạy tuần tự từ trên xuống:
 
 Các file trên nằm ở repo root vì được dùng chung giữa nhiều script/notebook (vd `smart_grid_ae_model.pt` được `ics_simlab_sanh.ipynb` và `local_multi_model_ae32_relu.py` cùng load).
 
-### Log + kết quả của 4 script standalone (`retrain_ae_9dim.py`, `tune_ae_9dim.py`, `tune_ae_lstm_vae.py`, `local_multi_model_ae32_relu.py`)
+### Log + kết quả của 5 script standalone (`retrain_ae_9dim.py`, `tune_ae_9dim.py`, `tune_ae_lstm_vae.py`, `local_multi_model_ae32_relu.py`, `local_multi_model_ae32_relu_structured_prompt.py`)
 
 Mỗi script gom log + CSV/`.pt`/`.txt` output riêng của nó vào 1 folder cùng tên (tạo tự động lúc import, kể cả khi chỉ import làm dependency):
 
@@ -78,7 +79,8 @@ Mỗi script gom log + CSV/`.pt`/`.txt` output riêng của nó vào 1 folder c�
 retrain_ae_9dim/    ← retrain_ae_9dim.py   (*_ae_model_9dim.pt, *_threshold_test.txt, log)
 tune_ae_9dim/       ← tune_ae_9dim.py      (*_ae_tuning_results.csv, log)
 tune_ae_lstm_vae/   ← tune_ae_lstm_vae.py  (*_ae_arch_tuning_results*.csv, *summary*.csv, log)
-local_multi_model_ae32_relu/  ← local_multi_model_ae32_relu.py (*_results*.csv, *_dataset_timing*.csv, *_summary*.csv, *_risk_score_pivot_*.csv, log)
+local_multi_model_ae32_relu/       ← local_multi_model_ae32_relu.py (*_results*.csv, *_dataset_timing*.csv, *_summary*.csv, *_risk_score_pivot_*.csv, log) — prompt gốc (250 ký tự, không có cấu trúc)
+local_multi_model_ae32_relu_structured_prompt/ ← local_multi_model_ae32_relu_structured_prompt.py (cung dinh dang output nhu tren) — prompt_2, xem mục "Prompt 2" bên dưới
 ```
 
 Bản thân file `.py` vẫn ở repo root (chạy `python3 <ten_script>.py` bình thường) — chỉ output đi vào folder. Vì thư mục được tạo ngay lúc import (trước khi ghi file bất kỳ), redirect log qua shell vào đúng folder đó cũng hoạt động ngay từ lần chạy đầu, ví dụ:
@@ -146,6 +148,33 @@ Kết quả random search (16 trial LSTM + 20 trial VAE mỗi dataset, seed cố
 - **Phát hiện quan trọng về `beta` (trọng số KL-divergence) của VAE**: hầu hết cấu hình tệ nhất đều rơi vào `beta=1.0` (regularize latent quá mạnh, làm mất chi tiết reconstruction cần để phân biệt gói tin bất thường), trong khi best config ở **cả 3 dataset đều dùng `beta=0.1`**. Đã thu hẹp `VAE_SEARCH_SPACE["beta"]` từ `[0.1, 0.5, 1.0]` xuống `[0.05, 0.1, 0.2]` trong `tune_ae_lstm_vae.py` để tập trung trial vào vùng tốt thay vì lặp lại xác nhận `beta=1.0` kém.
 
 **Kết luận:** VAE phù hợp hơn LSTM cho dữ liệu dạng bảng (tabular) như packet Modbus này, cả về chất lượng phát hiện lẫn tốc độ train. Đã thu hẹp search space VAE dựa trên phát hiện về `beta`; lần chạy tiếp theo dùng để kiểm chứng lại kết quả này với search space đã tinh chỉnh.
+
+## Prompt 2: prompt có cấu trúc cho risk-scoring
+
+`local_multi_model_ae32_relu.py` dùng prompt gốc (giới hạn 250 ký tự, không yêu cầu format cụ thể) — LLM chỉ trả về 1-2 câu chung chung + `Risk Score: X/10`, không đủ thông tin để operator xác định nguồn gốc, nguyên nhân, thiết bị bị ảnh hưởng, hay hành động cần làm.
+
+`local_multi_model_ae32_relu_structured_prompt.py` (**prompt_2**) thay bằng prompt yêu cầu đúng 5 field, mỗi field 1 dòng:
+
+```
+Source: <IP/MAC nghi la nguon tan cong, va internal/external so voi mang noi bo>
+Likely Cause: <1 cau - loai hanh vi nghi ngo + vi sao, dua tren cac tin hieu duoi>
+Affected Asset: <IP/thiet bi dich bi anh huong>
+Recommendation: <1 hanh dong cu the operator nen lam ngay>
+Risk Score: X/10
+```
+
+Input đưa vào prompt cũng được bổ sung so với bản gốc: thêm MAC source/destination (đã tính sẵn ở `extract_packet_info()` nhưng bản gốc không dùng tới), và dịch nghĩa Modbus function code (vd `3 (Read Holding Registers)` thay vì chỉ số `3`) để model nhỏ (phi4-mini...) suy luận nguyên nhân đúng hướng hơn thay vì phải tự nhớ bảng mã Modbus.
+
+**Ví dụ thật** (Smart Grid, attack "function code scan", model `phi4-mini`, function code `102` — không hợp lệ trong chuẩn Modbus, flow rate 39 pkt/s so với baseline 15.07 pkt/s):
+
+| | Prompt gốc | Prompt 2 |
+|---|---|---|
+| Output | `The packet flow rate is significantly higher than normal, indicating potential malicious activity. Risk Score: 8/10.` | `Source: 192.168.0.1`<br>`Likely Cause: Modbus flooding attack - high packet rate indicating potential DoS; Modbus function code 102 suggests probing/fuzzing`<br>`Affected Asset: 192.168.0.31`<br>`Recommendation: Block source IP 192.168.0.1, increase network monitoring for further investigation`<br>`Risk Score: 8/10` |
+| Parse tự động | Chỉ `risk_score` | `source`, `likely_cause`, `affected_asset`, `recommendation`, `risk_score` — mỗi field 1 cột CSV riêng |
+
+**Lưu ý:** cấu trúc field giúp output dễ đọc/dễ parse hơn, nhưng **không đảm bảo model chẩn đoán đúng bản chất tấn công** — đây là giới hạn của năng lực model, không phải lỗi prompt. Ground truth ở ví dụ trên là "function code scan" (tín hiệu then chốt là function code `102` không hợp lệ), nhưng `phi4-mini` (3.8B) thiên về diễn giải "flooding/DoS" do bị flow-rate cao thu hút sự chú ý hơn.
+
+Cột `format_all_fields_present` (thay cho `format_ok_has_score`/`format_ok_length` ở bản gốc) đo tỉ lệ % lần gọi có đủ cả 5 field, dùng trong `summarize_results()` để tính `format_compliance_%`.
 
 ## Nguồn dữ liệu & mô phỏng
 
