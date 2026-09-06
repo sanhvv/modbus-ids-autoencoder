@@ -1,0 +1,631 @@
+run_purpose,dataset,model,attack_type,attack_specific,repeat,output,risk_score,format_ok_has_score,format_ok_length,latency_sec,prompt_tokens,completion_tokens,error,timestamp,prompt
+"Rerun gemma4:12b tren ca 3 dataset sau khi fix num_ctx=16384 (truoc do dung mac dinh 4096, khien gemma4:12b - model 'thinking' - bi cat ngang giua chung think block, tra ve content rong / khong co risk score o ca 3 dataset, xem local_multi_model_results_1.csv)",Intelligent Electronic Device,gemma4:12b,address scan,1,1,,,False,False,179.02,285,3811,,2026-08-24T07:25:51,"
+  You are an intrusion detection system tasked with monitoring an Industrial
+  Control System network. The following information has been extract from a
+  potentially anomalous network packet.
+
+  IP/TCP packet information:
+  IP Source Address: 192.168.0.13
+  IP Destination Address: 192.168.0.1
+  Protocol: MODBUS
+  IP Length: 72.0
+  Frame Time Delta: 0.00014964
+  
+  Modbus packet information.
+  Function Code: 24.0
+  Modbus PDU: 0x00080000000100020003
+  
+  Network flow information:
+  Packet flow rate: 107.5 packets per second
+
+  An example of anomalous packet flow would have a much higher flow rate than 24.49 packets per second.
+
+  Analyse the network behaviour. Answer within 250 characters. You cannot exceed this limit.
+
+  Determine a risk score out of 10 to represent the
+  severity of this anomalous activity. It must formatted in the last sentence as
+  Risk Score: X/10
+  "
+"Rerun gemma4:12b tren ca 3 dataset sau khi fix num_ctx=16384 (truoc do dung mac dinh 4096, khien gemma4:12b - model 'thinking' - bi cat ngang giua chung think block, tra ve content rong / khong co risk score o ca 3 dataset, xem local_multi_model_results_1.csv)",Intelligent Electronic Device,gemma4:12b,function code scan,2,1,,,False,False,106.46,297,3799,,2026-08-24T07:27:38,"
+  You are an intrusion detection system tasked with monitoring an Industrial
+  Control System network. The following information has been extract from a
+  potentially anomalous network packet.
+
+  IP/TCP packet information:
+  IP Source Address: 192.168.0.21
+  IP Destination Address: 192.168.0.1
+  Protocol: MODBUS
+  IP Length: 61.0
+  Frame Time Delta: 7.489e-05
+  
+  TCP Analysis Ack RTT: 7.489e-05
+  TCP Analysis Bytes In Flight: 9.0
+  
+  Modbus packet information.
+  Function Code: 40.0
+  Modbus PDU: 0x
+  
+  Network flow information:
+  Packet flow rate: 189.25 packets per second
+
+  An example of anomalous packet flow would have a much higher flow rate than 24.49 packets per second.
+
+  Analyse the network behaviour. Answer within 250 characters. You cannot exceed this limit.
+
+  Determine a risk score out of 10 to represent the
+  severity of this anomalous activity. It must formatted in the last sentence as
+  Risk Score: X/10
+  "
+"Rerun gemma4:12b tren ca 3 dataset sau khi fix num_ctx=16384 (truoc do dung mac dinh 4096, khien gemma4:12b - model 'thinking' - bi cat ngang giua chung think block, tra ve content rong / khong co risk score o ca 3 dataset, xem local_multi_model_results_1.csv)",Intelligent Electronic Device,gemma4:12b,device identification attack,3,1,,,False,False,106.52,305,3791,,2026-08-24T07:29:24,"
+  You are an intrusion detection system tasked with monitoring an Industrial
+  Control System network. The following information has been extract from a
+  potentially anomalous network packet.
+
+  IP/TCP packet information:
+  IP Source Address: 192.168.0.1
+  IP Destination Address: 192.168.0.13
+  Protocol: MODBUS
+  IP Length: 63.0
+  Frame Time Delta: 9.1871e-05
+  
+  TCP Analysis Ack RTT: 9.1871e-05
+  TCP Analysis Bytes In Flight: 11.0
+  
+  Modbus packet information.
+  Function Code: 43.0
+  Modbus PDU: 0x0e0200
+  
+  Network flow information:
+  Packet flow rate: 38.75 packets per second
+
+  An example of anomalous packet flow would have a much higher flow rate than 24.49 packets per second.
+
+  Analyse the network behaviour. Answer within 250 characters. You cannot exceed this limit.
+
+  Determine a risk score out of 10 to represent the
+  severity of this anomalous activity. It must formatted in the last sentence as
+  Risk Score: X/10
+  "
+"Rerun gemma4:12b tren ca 3 dataset sau khi fix num_ctx=16384 (truoc do dung mac dinh 4096, khien gemma4:12b - model 'thinking' - bi cat ngang giua chung think block, tra ve content rong / khong co risk score o ca 3 dataset, xem local_multi_model_results_1.csv)",Intelligent Electronic Device,gemma4:12b,naive sensor read,4,1,,,False,False,107.24,271,3825,,2026-08-24T07:31:12,"
+  You are an intrusion detection system tasked with monitoring an Industrial
+  Control System network. The following information has been extract from a
+  potentially anomalous network packet.
+
+  IP/TCP packet information:
+  IP Source Address: 192.168.0.1
+  IP Destination Address: 192.168.0.11
+  Protocol: MODBUS
+  IP Length: 64.0
+  Frame Time Delta: 7.8236e-05
+  
+  Modbus packet information.
+  Function Code: 1.0
+  Modbus PDU: 0x00007d0
+  
+  Network flow information:
+  Packet flow rate: 29.25 packets per second
+
+  An example of anomalous packet flow would have a much higher flow rate than 24.49 packets per second.
+
+  Analyse the network behaviour. Answer within 250 characters. You cannot exceed this limit.
+
+  Determine a risk score out of 10 to represent the
+  severity of this anomalous activity. It must formatted in the last sentence as
+  Risk Score: X/10
+  "
+"Rerun gemma4:12b tren ca 3 dataset sau khi fix num_ctx=16384 (truoc do dung mac dinh 4096, khien gemma4:12b - model 'thinking' - bi cat ngang giua chung think block, tra ve content rong / khong co risk score o ca 3 dataset, xem local_multi_model_results_1.csv)",Intelligent Electronic Device,gemma4:12b,sporadic sensor measurement injection,5,1,,,False,False,106.46,307,3789,,2026-08-24T07:32:58,"
+  You are an intrusion detection system tasked with monitoring an Industrial
+  Control System network. The following information has been extract from a
+  potentially anomalous network packet.
+
+  IP/TCP packet information:
+  IP Source Address: 192.168.0.11
+  IP Destination Address: 192.168.0.1
+  Protocol: MODBUS
+  IP Length: 64.0
+  Frame Time Delta: 0.000229139
+  
+  TCP Analysis Ack RTT: 0.000229139
+  TCP Analysis Bytes In Flight: 12.0
+  
+  Modbus packet information.
+  Function Code: 6.0
+  Modbus PDU: 0x001463b7
+  
+  Network flow information:
+  Packet flow rate: 43.5 packets per second
+
+  An example of anomalous packet flow would have a much higher flow rate than 24.49 packets per second.
+
+  Analyse the network behaviour. Answer within 250 characters. You cannot exceed this limit.
+
+  Determine a risk score out of 10 to represent the
+  severity of this anomalous activity. It must formatted in the last sentence as
+  Risk Score: X/10
+  "
+"Rerun gemma4:12b tren ca 3 dataset sau khi fix num_ctx=16384 (truoc do dung mac dinh 4096, khien gemma4:12b - model 'thinking' - bi cat ngang giua chung think block, tra ve content rong / khong co risk score o ca 3 dataset, xem local_multi_model_results_1.csv)",Intelligent Electronic Device,gemma4:12b,force listen mode,6,1,,,False,False,107.43,268,3828,,2026-08-24T07:34:46,"
+  You are an intrusion detection system tasked with monitoring an Industrial
+  Control System network. The following information has been extract from a
+  potentially anomalous network packet.
+
+  IP/TCP packet information:
+  IP Source Address: 192.168.0.1
+  IP Destination Address: 192.168.0.13
+  Protocol: MODBUS
+  IP Length: 64.0
+  Frame Time Delta: 0.000105537
+  
+  Modbus packet information.
+  Function Code: 8.0
+  Modbus PDU: 0x0000
+  
+  Network flow information:
+  Packet flow rate: 31.0 packets per second
+
+  An example of anomalous packet flow would have a much higher flow rate than 24.49 packets per second.
+
+  Analyse the network behaviour. Answer within 250 characters. You cannot exceed this limit.
+
+  Determine a risk score out of 10 to represent the
+  severity of this anomalous activity. It must formatted in the last sentence as
+  Risk Score: X/10
+  "
+"Rerun gemma4:12b tren ca 3 dataset sau khi fix num_ctx=16384 (truoc do dung mac dinh 4096, khien gemma4:12b - model 'thinking' - bi cat ngang giua chung think block, tra ve content rong / khong co risk score o ca 3 dataset, xem local_multi_model_results_1.csv)",Intelligent Electronic Device,gemma4:12b,restart communication,7,1,,,False,False,106.53,299,3797,,2026-08-24T07:36:32,"
+  You are an intrusion detection system tasked with monitoring an Industrial
+  Control System network. The following information has been extract from a
+  potentially anomalous network packet.
+
+  IP/TCP packet information:
+  IP Source Address: 192.168.0.21
+  IP Destination Address: 192.168.0.1
+  Protocol: MODBUS
+  IP Length: 64.0
+  Frame Time Delta: 0.000396631
+  
+  TCP Analysis Ack RTT: 0.000396631
+  TCP Analysis Bytes In Flight: 12.0
+  
+  Modbus packet information.
+  Function Code: 8.0
+  Modbus PDU: 0x
+  
+  Network flow information:
+  Packet flow rate: 26.0 packets per second
+
+  An example of anomalous packet flow would have a much higher flow rate than 24.49 packets per second.
+
+  Analyse the network behaviour. Answer within 250 characters. You cannot exceed this limit.
+
+  Determine a risk score out of 10 to represent the
+  severity of this anomalous activity. It must formatted in the last sentence as
+  Risk Score: X/10
+  "
+"Rerun gemma4:12b tren ca 3 dataset sau khi fix num_ctx=16384 (truoc do dung mac dinh 4096, khien gemma4:12b - model 'thinking' - bi cat ngang giua chung think block, tra ve content rong / khong co risk score o ca 3 dataset, xem local_multi_model_results_1.csv)",Intelligent Electronic Device,gemma4:12b,data flood attack,8,1,,,False,False,106.41,310,3786,,2026-08-24T07:38:18,"
+  You are an intrusion detection system tasked with monitoring an Industrial
+  Control System network. The following information has been extract from a
+  potentially anomalous network packet.
+
+  IP/TCP packet information:
+  IP Source Address: 192.168.0.1
+  IP Destination Address: 192.168.0.12
+  Protocol: MODBUS
+  IP Length: 64.0
+  Frame Time Delta: 5.9472e-05
+  
+  TCP Analysis Ack RTT: 0.001323812
+  TCP Analysis Bytes In Flight: 12.0
+  
+  Modbus packet information.
+  Function Code: 4.0
+  Modbus PDU: 0x00630009
+  
+  Network flow information:
+  Packet flow rate: 10588.25 packets per second
+
+  An example of anomalous packet flow would have a much higher flow rate than 24.49 packets per second.
+
+  Analyse the network behaviour. Answer within 250 characters. You cannot exceed this limit.
+
+  Determine a risk score out of 10 to represent the
+  severity of this anomalous activity. It must formatted in the last sentence as
+  Risk Score: X/10
+  "
+"Rerun gemma4:12b tren ca 3 dataset sau khi fix num_ctx=16384 (truoc do dung mac dinh 4096, khien gemma4:12b - model 'thinking' - bi cat ngang giua chung think block, tra ve content rong / khong co risk score o ca 3 dataset, xem local_multi_model_results_1.csv)",Smart Grid,gemma4:12b,address scan,1,1,,,False,False,107.25,272,3824,,2026-08-24T07:40:07,"
+  You are an intrusion detection system tasked with monitoring an Industrial
+  Control System network. The following information has been extract from a
+  potentially anomalous network packet.
+
+  IP/TCP packet information:
+  IP Source Address: 192.168.0.1
+  IP Destination Address: 192.168.0.31
+  Protocol: MODBUS
+  IP Length: 63.0
+  Frame Time Delta: 0.000128994
+  
+  Modbus packet information.
+  Function Code: 43.0
+  Modbus PDU: 0x0e0100
+  
+  Network flow information:
+  Packet flow rate: 17.25 packets per second
+
+  An example of anomalous packet flow would have a much higher flow rate than 15.07 packets per second.
+
+  Analyse the network behaviour. Answer within 250 characters. You cannot exceed this limit.
+
+  Determine a risk score out of 10 to represent the
+  severity of this anomalous activity. It must formatted in the last sentence as
+  Risk Score: X/10
+  "
+"Rerun gemma4:12b tren ca 3 dataset sau khi fix num_ctx=16384 (truoc do dung mac dinh 4096, khien gemma4:12b - model 'thinking' - bi cat ngang giua chung think block, tra ve content rong / khong co risk score o ca 3 dataset, xem local_multi_model_results_1.csv)",Smart Grid,gemma4:12b,function code scan,2,1,,,False,False,106.3,307,3789,,2026-08-24T07:41:53,"
+  You are an intrusion detection system tasked with monitoring an Industrial
+  Control System network. The following information has been extract from a
+  potentially anomalous network packet.
+
+  IP/TCP packet information:
+  IP Source Address: 192.168.0.1
+  IP Destination Address: 192.168.0.31
+  Protocol: MODBUS
+  IP Length: 64.0
+  Frame Time Delta: 6.0153e-05
+  
+  TCP Analysis Ack RTT: 6.0153e-05
+  TCP Analysis Bytes In Flight: 12.0
+  
+  Modbus packet information.
+  Function Code: 102.0
+  Modbus PDU: 0x00000000
+  
+  Network flow information:
+  Packet flow rate: 39.0 packets per second
+
+  An example of anomalous packet flow would have a much higher flow rate than 15.07 packets per second.
+
+  Analyse the network behaviour. Answer within 250 characters. You cannot exceed this limit.
+
+  Determine a risk score out of 10 to represent the
+  severity of this anomalous activity. It must formatted in the last sentence as
+  Risk Score: X/10
+  "
+"Rerun gemma4:12b tren ca 3 dataset sau khi fix num_ctx=16384 (truoc do dung mac dinh 4096, khien gemma4:12b - model 'thinking' - bi cat ngang giua chung think block, tra ve content rong / khong co risk score o ca 3 dataset, xem local_multi_model_results_1.csv)",Smart Grid,gemma4:12b,device identification attack,3,1,,,False,False,107.52,271,3825,,2026-08-24T07:43:41,"
+  You are an intrusion detection system tasked with monitoring an Industrial
+  Control System network. The following information has been extract from a
+  potentially anomalous network packet.
+
+  IP/TCP packet information:
+  IP Source Address: 192.168.0.1
+  IP Destination Address: 192.168.0.31
+  Protocol: MODBUS
+  IP Length: 63.0
+  Frame Time Delta: 0.000137317
+  
+  Modbus packet information.
+  Function Code: 43.0
+  Modbus PDU: 0x0e0100
+  
+  Network flow information:
+  Packet flow rate: 12.0 packets per second
+
+  An example of anomalous packet flow would have a much higher flow rate than 15.07 packets per second.
+
+  Analyse the network behaviour. Answer within 250 characters. You cannot exceed this limit.
+
+  Determine a risk score out of 10 to represent the
+  severity of this anomalous activity. It must formatted in the last sentence as
+  Risk Score: X/10
+  "
+"Rerun gemma4:12b tren ca 3 dataset sau khi fix num_ctx=16384 (truoc do dung mac dinh 4096, khien gemma4:12b - model 'thinking' - bi cat ngang giua chung think block, tra ve content rong / khong co risk score o ca 3 dataset, xem local_multi_model_results_1.csv)",Smart Grid,gemma4:12b,naive sensor read,4,1,,,False,False,93.65,803,3293,,2026-08-24T07:45:14,"
+  You are an intrusion detection system tasked with monitoring an Industrial
+  Control System network. The following information has been extract from a
+  potentially anomalous network packet.
+
+  IP/TCP packet information:
+  IP Source Address: 192.168.0.31
+  IP Destination Address: 192.168.0.1
+  Protocol: MODBUS
+  IP Length: 311.0
+  Frame Time Delta: 0.000710974
+  
+  TCP Analysis Ack RTT: 0.000710974
+  TCP Analysis Bytes In Flight: 259.0
+  
+  Modbus packet information.
+  Function Code: 1.0
+  Modbus PDU: 0xfa00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  
+  Network flow information:
+  Packet flow rate: 18.25 packets per second
+
+  An example of anomalous packet flow would have a much higher flow rate than 15.07 packets per second.
+
+  Analyse the network behaviour. Answer within 250 characters. You cannot exceed this limit.
+
+  Determine a risk score out of 10 to represent the
+  severity of this anomalous activity. It must formatted in the last sentence as
+  Risk Score: X/10
+  "
+"Rerun gemma4:12b tren ca 3 dataset sau khi fix num_ctx=16384 (truoc do dung mac dinh 4096, khien gemma4:12b - model 'thinking' - bi cat ngang giua chung think block, tra ve content rong / khong co risk score o ca 3 dataset, xem local_multi_model_results_1.csv)",Smart Grid,gemma4:12b,force listen mode,6,1,,,False,False,107.83,267,3829,,2026-08-24T07:47:02,"
+  You are an intrusion detection system tasked with monitoring an Industrial
+  Control System network. The following information has been extract from a
+  potentially anomalous network packet.
+
+  IP/TCP packet information:
+  IP Source Address: 192.168.0.1
+  IP Destination Address: 192.168.0.31
+  Protocol: MODBUS
+  IP Length: 64.0
+  Frame Time Delta: 7.9278e-05
+  
+  Modbus packet information.
+  Function Code: 8.0
+  Modbus PDU: 0x0000
+  
+  Network flow information:
+  Packet flow rate: 17.0 packets per second
+
+  An example of anomalous packet flow would have a much higher flow rate than 15.07 packets per second.
+
+  Analyse the network behaviour. Answer within 250 characters. You cannot exceed this limit.
+
+  Determine a risk score out of 10 to represent the
+  severity of this anomalous activity. It must formatted in the last sentence as
+  Risk Score: X/10
+  "
+"Rerun gemma4:12b tren ca 3 dataset sau khi fix num_ctx=16384 (truoc do dung mac dinh 4096, khien gemma4:12b - model 'thinking' - bi cat ngang giua chung think block, tra ve content rong / khong co risk score o ca 3 dataset, xem local_multi_model_results_1.csv)",Smart Grid,gemma4:12b,restart communication,7,1,,,False,False,106.67,300,3796,,2026-08-24T07:48:49,"
+  You are an intrusion detection system tasked with monitoring an Industrial
+  Control System network. The following information has been extract from a
+  potentially anomalous network packet.
+
+  IP/TCP packet information:
+  IP Source Address: 192.168.0.31
+  IP Destination Address: 192.168.0.1
+  Protocol: MODBUS
+  IP Length: 64.0
+  Frame Time Delta: 0.000285304
+  
+  TCP Analysis Ack RTT: 0.000285304
+  TCP Analysis Bytes In Flight: 12.0
+  
+  Modbus packet information.
+  Function Code: 8.0
+  Modbus PDU: 0x
+  
+  Network flow information:
+  Packet flow rate: 12.25 packets per second
+
+  An example of anomalous packet flow would have a much higher flow rate than 15.07 packets per second.
+
+  Analyse the network behaviour. Answer within 250 characters. You cannot exceed this limit.
+
+  Determine a risk score out of 10 to represent the
+  severity of this anomalous activity. It must formatted in the last sentence as
+  Risk Score: X/10
+  "
+"Rerun gemma4:12b tren ca 3 dataset sau khi fix num_ctx=16384 (truoc do dung mac dinh 4096, khien gemma4:12b - model 'thinking' - bi cat ngang giua chung think block, tra ve content rong / khong co risk score o ca 3 dataset, xem local_multi_model_results_1.csv)",Smart Grid,gemma4:12b,data flood attack,8,1,,,False,False,5.81,0,0,,2026-08-24T07:48:55,"
+  You are an intrusion detection system tasked with monitoring an Industrial
+  Control System network. The following information has been extract from a
+  potentially anomalous network packet.
+
+  IP/TCP packet information:
+  IP Source Address: 192.168.0.31
+  IP Destination Address: 192.168.0.1
+  Protocol: MODBUS
+  IP Length: 177.0
+  Frame Time Delta: 3.0938e-05
+  
+  TCP Analysis Ack RTT: 8.9838e-05
+  TCP Analysis Bytes In Flight: 125.0
+  
+  Modbus packet information.
+  Function Code: 4.0
+  Modbus PDU: 0x7400000000000000000000000000038700000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  
+  Network flow information:
+  Packet flow rate: 11108.25 packets per second
+
+  An example of anomalous packet flow would have a much higher flow rate than 15.07 packets per second.
+
+  Analyse the network behaviour. Answer within 250 characters. You cannot exceed this limit.
+
+  Determine a risk score out of 10 to represent the
+  severity of this anomalous activity. It must formatted in the last sentence as
+  Risk Score: X/10
+  "
+"Rerun gemma4:12b tren ca 3 dataset sau khi fix num_ctx=16384 (truoc do dung mac dinh 4096, khien gemma4:12b - model 'thinking' - bi cat ngang giua chung think block, tra ve content rong / khong co risk score o ca 3 dataset, xem local_multi_model_results_1.csv)",Water Bottle Factory,gemma4:12b,address scan,1,1,,,False,False,107.09,269,3827,,2026-08-24T07:50:44,"
+  You are an intrusion detection system tasked with monitoring an Industrial
+  Control System network. The following information has been extract from a
+  potentially anomalous network packet.
+
+  IP/TCP packet information:
+  IP Source Address: 192.168.0.1
+  IP Destination Address: 192.168.0.22
+  Protocol: MODBUS
+  IP Length: 64.0
+  Frame Time Delta: 5.2629e-05
+  
+  Modbus packet information.
+  Function Code: 2.0
+  Modbus PDU: 0x000000
+  
+  Network flow information:
+  Packet flow rate: 80.0 packets per second
+
+  An example of anomalous packet flow would have a much higher flow rate than 34.84 packets per second.
+
+  Analyse the network behaviour. Answer within 250 characters. You cannot exceed this limit.
+
+  Determine a risk score out of 10 to represent the
+  severity of this anomalous activity. It must formatted in the last sentence as
+  Risk Score: X/10
+  "
+"Rerun gemma4:12b tren ca 3 dataset sau khi fix num_ctx=16384 (truoc do dung mac dinh 4096, khien gemma4:12b - model 'thinking' - bi cat ngang giua chung think block, tra ve content rong / khong co risk score o ca 3 dataset, xem local_multi_model_results_1.csv)",Water Bottle Factory,gemma4:12b,function code scan,2,1,,,False,False,106.65,306,3790,,2026-08-24T07:52:31,"
+  You are an intrusion detection system tasked with monitoring an Industrial
+  Control System network. The following information has been extract from a
+  potentially anomalous network packet.
+
+  IP/TCP packet information:
+  IP Source Address: 192.168.0.1
+  IP Destination Address: 192.168.0.21
+  Protocol: MODBUS
+  IP Length: 64.0
+  Frame Time Delta: 6.1545e-05
+  
+  TCP Analysis Ack RTT: 6.1545e-05
+  TCP Analysis Bytes In Flight: 12.0
+  
+  Modbus packet information.
+  Function Code: 91.0
+  Modbus PDU: 0x00000000
+  
+  Network flow information:
+  Packet flow rate: 74.5 packets per second
+
+  An example of anomalous packet flow would have a much higher flow rate than 34.84 packets per second.
+
+  Analyse the network behaviour. Answer within 250 characters. You cannot exceed this limit.
+
+  Determine a risk score out of 10 to represent the
+  severity of this anomalous activity. It must formatted in the last sentence as
+  Risk Score: X/10
+  "
+"Rerun gemma4:12b tren ca 3 dataset sau khi fix num_ctx=16384 (truoc do dung mac dinh 4096, khien gemma4:12b - model 'thinking' - bi cat ngang giua chung think block, tra ve content rong / khong co risk score o ca 3 dataset, xem local_multi_model_results_1.csv)",Water Bottle Factory,gemma4:12b,device identification attack,3,1,,,False,False,106.3,313,3783,,2026-08-24T07:54:17,"
+  You are an intrusion detection system tasked with monitoring an Industrial
+  Control System network. The following information has been extract from a
+  potentially anomalous network packet.
+
+  IP/TCP packet information:
+  IP Source Address: 192.168.0.21
+  IP Destination Address: 192.168.0.1
+  Protocol: MODBUS
+  IP Length: 66.0
+  Frame Time Delta: 0.000162765
+  
+  TCP Analysis Ack RTT: 0.000162765
+  TCP Analysis Bytes In Flight: 14.0
+  
+  Modbus packet information.
+  Function Code: 43.0
+  Modbus PDU: 0x0e0283000000
+  
+  Network flow information:
+  Packet flow rate: 42.75 packets per second
+
+  An example of anomalous packet flow would have a much higher flow rate than 34.84 packets per second.
+
+  Analyse the network behaviour. Answer within 250 characters. You cannot exceed this limit.
+
+  Determine a risk score out of 10 to represent the
+  severity of this anomalous activity. It must formatted in the last sentence as
+  Risk Score: X/10
+  "
+"Rerun gemma4:12b tren ca 3 dataset sau khi fix num_ctx=16384 (truoc do dung mac dinh 4096, khien gemma4:12b - model 'thinking' - bi cat ngang giua chung think block, tra ve content rong / khong co risk score o ca 3 dataset, xem local_multi_model_results_1.csv)",Water Bottle Factory,gemma4:12b,naive sensor read,4,1,,,False,False,107.37,272,3824,,2026-08-24T07:56:05,"
+  You are an intrusion detection system tasked with monitoring an Industrial
+  Control System network. The following information has been extract from a
+  potentially anomalous network packet.
+
+  IP/TCP packet information:
+  IP Source Address: 192.168.0.1
+  IP Destination Address: 192.168.0.22
+  Protocol: MODBUS
+  IP Length: 64.0
+  Frame Time Delta: 0.000540722
+  
+  Modbus packet information.
+  Function Code: 2.0
+  Modbus PDU: 0x00007d0
+  
+  Network flow information:
+  Packet flow rate: 46.75 packets per second
+
+  An example of anomalous packet flow would have a much higher flow rate than 34.84 packets per second.
+
+  Analyse the network behaviour. Answer within 250 characters. You cannot exceed this limit.
+
+  Determine a risk score out of 10 to represent the
+  severity of this anomalous activity. It must formatted in the last sentence as
+  Risk Score: X/10
+  "
+"Rerun gemma4:12b tren ca 3 dataset sau khi fix num_ctx=16384 (truoc do dung mac dinh 4096, khien gemma4:12b - model 'thinking' - bi cat ngang giua chung think block, tra ve content rong / khong co risk score o ca 3 dataset, xem local_multi_model_results_1.csv)",Water Bottle Factory,gemma4:12b,force listen mode,6,1,,,False,False,107.5,267,3829,,2026-08-24T07:57:52,"
+  You are an intrusion detection system tasked with monitoring an Industrial
+  Control System network. The following information has been extract from a
+  potentially anomalous network packet.
+
+  IP/TCP packet information:
+  IP Source Address: 192.168.0.1
+  IP Destination Address: 192.168.0.22
+  Protocol: MODBUS
+  IP Length: 64.0
+  Frame Time Delta: 6.9841e-05
+  
+  Modbus packet information.
+  Function Code: 8.0
+  Modbus PDU: 0x0000
+  
+  Network flow information:
+  Packet flow rate: 47.5 packets per second
+
+  An example of anomalous packet flow would have a much higher flow rate than 34.84 packets per second.
+
+  Analyse the network behaviour. Answer within 250 characters. You cannot exceed this limit.
+
+  Determine a risk score out of 10 to represent the
+  severity of this anomalous activity. It must formatted in the last sentence as
+  Risk Score: X/10
+  "
+"Rerun gemma4:12b tren ca 3 dataset sau khi fix num_ctx=16384 (truoc do dung mac dinh 4096, khien gemma4:12b - model 'thinking' - bi cat ngang giua chung think block, tra ve content rong / khong co risk score o ca 3 dataset, xem local_multi_model_results_1.csv)",Water Bottle Factory,gemma4:12b,restart communication,7,1,,,False,False,107.65,264,3832,,2026-08-24T07:59:40,"
+  You are an intrusion detection system tasked with monitoring an Industrial
+  Control System network. The following information has been extract from a
+  potentially anomalous network packet.
+
+  IP/TCP packet information:
+  IP Source Address: 192.168.0.1
+  IP Destination Address: 192.168.0.21
+  Protocol: MODBUS
+  IP Length: 64.0
+  Frame Time Delta: 0.094638237
+  
+  Modbus packet information.
+  Function Code: 8.0
+  Modbus PDU: 0x
+  
+  Network flow information:
+  Packet flow rate: 37.0 packets per second
+
+  An example of anomalous packet flow would have a much higher flow rate than 34.84 packets per second.
+
+  Analyse the network behaviour. Answer within 250 characters. You cannot exceed this limit.
+
+  Determine a risk score out of 10 to represent the
+  severity of this anomalous activity. It must formatted in the last sentence as
+  Risk Score: X/10
+  "
+"Rerun gemma4:12b tren ca 3 dataset sau khi fix num_ctx=16384 (truoc do dung mac dinh 4096, khien gemma4:12b - model 'thinking' - bi cat ngang giua chung think block, tra ve content rong / khong co risk score o ca 3 dataset, xem local_multi_model_results_1.csv)",Water Bottle Factory,gemma4:12b,data flood attack,8,1,"The flow rate of 11157.0 packets/sec vastly exceeds the 34.84 threshold. This indicates a high-frequency Modbus flood, likely a DoS attack or rapid reconnaissance targeting the ICS infrastructure. Risk Score: 9/10.",9.0,True,True,36.54,307,1292,,2026-08-24T08:00:16,"
+  You are an intrusion detection system tasked with monitoring an Industrial
+  Control System network. The following information has been extract from a
+  potentially anomalous network packet.
+
+  IP/TCP packet information:
+  IP Source Address: 192.168.0.1
+  IP Destination Address: 192.168.0.22
+  Protocol: MODBUS
+  IP Length: 64.0
+  Frame Time Delta: 1.4677e-05
+  
+  TCP Analysis Ack RTT: 0.000426278
+  TCP Analysis Bytes In Flight: 12.0
+  
+  Modbus packet information.
+  Function Code: 1.0
+  Modbus PDU: 0x002534
+  
+  Network flow information:
+  Packet flow rate: 11157.0 packets per second
+
+  An example of anomalous packet flow would have a much higher flow rate than 34.84 packets per second.
+
+  Analyse the network behaviour. Answer within 250 characters. You cannot exceed this limit.
+
+  Determine a risk score out of 10 to represent the
+  severity of this anomalous activity. It must formatted in the last sentence as
+  Risk Score: X/10
+  "

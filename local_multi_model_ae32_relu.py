@@ -554,6 +554,7 @@ def run_comparison(models_to_test, datasets, attacks, run_purpose=""):
                         "attack_type": attack_name,
                         "attack_specific": attack_specific,
                         "repeat": repeat_idx + 1,
+                        "prompt": prompt,
                         "output": output,
                         "risk_score": risk_score,
                         "format_ok_has_score": has_risk_score,
