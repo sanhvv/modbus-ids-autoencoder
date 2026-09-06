@@ -1,0 +1,343 @@
+/home/23532764/local-llms/modbus-ids-autoencoder/local_multi_model_ae32_relu_structured_prompt.py:53: DeprecationWarning: 
+Pyarrow will become a required dependency of pandas in the next major release of pandas (pandas 3.0),
+(to allow more performant data types, such as the Arrow string type, and better interoperability with other libraries)
+but was not found to be installed on your system.
+If this would cause problems for you,
+please provide us feedback at https://github.com/pandas-dev/pandas/issues/54466
+        
+  import pandas as pd
+MUC DICH LAN CHAY NAY: prompt2 run3 - lap lai de kiem chung do on dinh, dac biet WBF
+Model: ['phi4-mini', 'qwen3:4b', 'gemma4:e4b', 'qwen3:8b', 'openthinker:7b', 'deepseek-r1:8b', 'gemma4:12b', 'qwen3:14b']
+Dataset: ['Intelligent Electronic Device', 'Smart Grid', 'Water Bottle Factory']
+Output: local_multi_model_ae32_relu_structured_prompt/local_multi_model_results_run3.csv, local_multi_model_ae32_relu_structured_prompt/local_multi_model_dataset_timing_run3.csv, local_multi_model_ae32_relu_structured_prompt/local_multi_model_summary_run3.csv
+Bat dau so sanh model (tu nhe -> nang)...
+
+############################################################
+DATASET: Intelligent Electronic Device
+############################################################
+
+============================================================
+MODEL: phi4-mini  (dataset: Intelligent Electronic Device)
+============================================================
+  [address scan] lan 1/1... OK (178.9s, risk=7.0)
+  [function code scan] lan 1/1... OK (136.2s, risk=6.0)
+  [device identification attack] lan 1/1... OK (125.6s, risk=7.0)
+  [naive sensor read] lan 1/1... OK (92.4s, risk=6.0)
+  [sporadic sensor measurement injection] lan 1/1... OK (125.4s, risk=7.0)
+  [force listen mode] lan 1/1... OK (118.2s, risk=7.0)
+  [restart communication] lan 1/1... OK (162.8s, risk=7.0)
+  [data flood attack] lan 1/1... OK (136.5s, risk=9.0)
+  -> Thoi gian chay model 'phi4-mini' tren dataset 'Intelligent Electronic Device': 1075.94s (8 lan goi)
+
+============================================================
+MODEL: qwen3:4b  (dataset: Intelligent Electronic Device)
+============================================================
+  [address scan] lan 1/1... LOI: HTTPConnectionPool(host='localhost', port=11435): Read timed out. (read timeout=600)
+  [function code scan] lan 1/1... LOI: HTTPConnectionPool(host='localhost', port=11435): Read timed out. (read timeout=600)
+  [device identification attack] lan 1/1... LOI: HTTPConnectionPool(host='localhost', port=11435): Read timed out. (read timeout=600)
+  [naive sensor read] lan 1/1... LOI: HTTPConnectionPool(host='localhost', port=11435): Read timed out. (read timeout=600)
+  [sporadic sensor measurement injection] lan 1/1... LOI: HTTPConnectionPool(host='localhost', port=11435): Read timed out. (read timeout=600)
+  [force listen mode] lan 1/1... LOI: HTTPConnectionPool(host='localhost', port=11435): Read timed out. (read timeout=600)
+  [restart communication] lan 1/1... LOI: HTTPConnectionPool(host='localhost', port=11435): Read timed out. (read timeout=600)
+  [data flood attack] lan 1/1... LOI: HTTPConnectionPool(host='localhost', port=11435): Read timed out. (read timeout=600)
+  -> Thoi gian chay model 'qwen3:4b' tren dataset 'Intelligent Electronic Device': 4800.83s (8 lan goi)
+
+============================================================
+MODEL: gemma4:e4b  (dataset: Intelligent Electronic Device)
+============================================================
+  [address scan] lan 1/1... OK (476.1s, risk=8.0)
+  [function code scan] lan 1/1... OK (368.5s, risk=8.0)
+  [device identification attack] lan 1/1... LOI: HTTPConnectionPool(host='localhost', port=11435): Read timed out. (read timeout=600)
+  [naive sensor read] lan 1/1... LOI: HTTPConnectionPool(host='localhost', port=11435): Read timed out. (read timeout=600)
+  [sporadic sensor measurement injection] lan 1/1... LOI: HTTPConnectionPool(host='localhost', port=11435): Read timed out. (read timeout=600)
+  [force listen mode] lan 1/1... OK (411.9s, risk=8.0)
+  [restart communication] lan 1/1... OK (370.3s, risk=7.0)
+  [data flood attack] lan 1/1... OK (358.2s, risk=9.0)
+  -> Thoi gian chay model 'gemma4:e4b' tren dataset 'Intelligent Electronic Device': 3785.25s (8 lan goi)
+
+============================================================
+MODEL: qwen3:8b  (dataset: Intelligent Electronic Device)
+============================================================
+  [address scan] lan 1/1... OK (316.6s, risk=9.0)
+  [function code scan] lan 1/1... OK (180.9s, risk=9.0)
+  [device identification attack] lan 1/1... OK (259.8s, risk=8.0)
+  [naive sensor read] lan 1/1... OK (202.3s, risk=8.0)
+  [sporadic sensor measurement injection] lan 1/1... OK (224.9s, risk=8.0)
+  [force listen mode] lan 1/1... OK (221.6s, risk=8.0)
+  [restart communication] lan 1/1... OK (223.4s, risk=8.0)
+  [data flood attack] lan 1/1... OK (163.5s, risk=9.0)
+  -> Thoi gian chay model 'qwen3:8b' tren dataset 'Intelligent Electronic Device': 1792.99s (8 lan goi)
+
+============================================================
+MODEL: openthinker:7b  (dataset: Intelligent Electronic Device)
+============================================================
+  [BO QUA] Model 'openthinker:7b' chua san sang tren Ollama. Chay: ollama pull openthinker:7b
+
+============================================================
+MODEL: deepseek-r1:8b  (dataset: Intelligent Electronic Device)
+============================================================
+  [address scan] lan 1/1... LOI: HTTPConnectionPool(host='localhost', port=11435): Read timed out. (read timeout=600)
+  [function code scan] lan 1/1... LOI: HTTPConnectionPool(host='localhost', port=11435): Read timed out. (read timeout=600)
+  [device identification attack] lan 1/1... LOI: HTTPConnectionPool(host='localhost', port=11435): Read timed out. (read timeout=600)
+  [naive sensor read] lan 1/1... LOI: HTTPConnectionPool(host='localhost', port=11435): Read timed out. (read timeout=600)
+  [sporadic sensor measurement injection] lan 1/1... LOI: HTTPConnectionPool(host='localhost', port=11435): Read timed out. (read timeout=600)
+  [force listen mode] lan 1/1... OK (445.6s, risk=7.0)
+  [restart communication] lan 1/1... OK (65.5s, risk=7.0)
+  [data flood attack] lan 1/1... OK (63.8s, risk=9.0)
+  -> Thoi gian chay model 'deepseek-r1:8b' tren dataset 'Intelligent Electronic Device': 3575.44s (8 lan goi)
+
+============================================================
+MODEL: gemma4:12b  (dataset: Intelligent Electronic Device)
+============================================================
+  [address scan] lan 1/1... OK (138.3s, risk=8.0)
+  [function code scan] lan 1/1... OK (63.1s, risk=8.0)
+  [device identification attack] lan 1/1... OK (58.7s, risk=7.0)
+  [naive sensor read] lan 1/1... OK (55.1s, risk=6.0)
+  [sporadic sensor measurement injection] lan 1/1... OK (58.1s, risk=8.0)
+  [force listen mode] lan 1/1... OK (56.5s, risk=8.0)
+  [restart communication] lan 1/1... OK (56.3s, risk=8.0)
+  [data flood attack] lan 1/1... OK (61.0s, risk=9.0)
+  -> Thoi gian chay model 'gemma4:12b' tren dataset 'Intelligent Electronic Device': 547.18s (8 lan goi)
+
+============================================================
+MODEL: qwen3:14b  (dataset: Intelligent Electronic Device)
+============================================================
+  [address scan] lan 1/1... OK (165.5s, risk=9.0)
+  [function code scan] lan 1/1... OK (50.8s, risk=9.0)
+  [device identification attack] lan 1/1... OK (64.0s, risk=7.0)
+  [naive sensor read] lan 1/1... OK (47.7s, risk=7.0)
+  [sporadic sensor measurement injection] lan 1/1... OK (51.9s, risk=8.0)
+  [force listen mode] lan 1/1... OK (51.4s, risk=8.0)
+  [restart communication] lan 1/1... OK (48.5s, risk=8.0)
+  [data flood attack] lan 1/1... OK (44.7s, risk=9.0)
+  -> Thoi gian chay model 'qwen3:14b' tren dataset 'Intelligent Electronic Device': 524.58s (8 lan goi)
+
+############################################################
+DATASET: Smart Grid
+############################################################
+  [BO QUA] Khong co anomaly nao duoc AE phat hien cho attack 'sporadic sensor measurement injection' o dataset nay.
+
+============================================================
+MODEL: phi4-mini  (dataset: Smart Grid)
+============================================================
+  [address scan] lan 1/1... OK (37.3s, risk=1.0)
+  [function code scan] lan 1/1... OK (12.9s, risk=7.0)
+  [device identification attack] lan 1/1... OK (8.4s, risk=1.0)
+  [naive sensor read] lan 1/1... OK (15.2s, risk=7.0)
+  [force listen mode] lan 1/1... OK (11.2s, risk=7.0)
+  [restart communication] lan 1/1... OK (9.8s, risk=3.0)
+  [data flood attack] lan 1/1... OK (9.0s, risk=9.0)
+  -> Thoi gian chay model 'phi4-mini' tren dataset 'Smart Grid': 103.70s (7 lan goi)
+
+============================================================
+MODEL: qwen3:4b  (dataset: Smart Grid)
+============================================================
+  [address scan] lan 1/1... LOI: HTTPConnectionPool(host='localhost', port=11435): Read timed out. (read timeout=600)
+  [function code scan] lan 1/1... OK (139.9s, risk=8.0)
+  [device identification attack] lan 1/1... OK (482.9s, risk=2.0)
+  [naive sensor read] lan 1/1... OK (448.0s, risk=6.0)
+  [force listen mode] lan 1/1... OK (513.1s, risk=6.0)
+  [restart communication] lan 1/1... OK (260.3s, risk=None)
+  [data flood attack] lan 1/1... OK (222.7s, risk=None)
+  -> Thoi gian chay model 'qwen3:4b' tren dataset 'Smart Grid': 2667.11s (7 lan goi)
+
+============================================================
+MODEL: gemma4:e4b  (dataset: Smart Grid)
+============================================================
+  [address scan] lan 1/1... OK (116.4s, risk=6.0)
+  [function code scan] lan 1/1... OK (26.1s, risk=8.0)
+  [device identification attack] lan 1/1... OK (35.4s, risk=7.0)
+  [naive sensor read] lan 1/1... OK (44.8s, risk=6.0)
+  [force listen mode] lan 1/1... OK (31.2s, risk=7.0)
+  [restart communication] lan 1/1... OK (34.1s, risk=7.0)
+  [data flood attack] lan 1/1... OK (29.9s, risk=9.0)
+  -> Thoi gian chay model 'gemma4:e4b' tren dataset 'Smart Grid': 317.91s (7 lan goi)
+
+============================================================
+MODEL: qwen3:8b  (dataset: Smart Grid)
+============================================================
+  [address scan] lan 1/1... OK (79.6s, risk=8.0)
+  [function code scan] lan 1/1... OK (18.8s, risk=8.0)
+  [device identification attack] lan 1/1... OK (16.3s, risk=7.0)
+  [naive sensor read] lan 1/1... OK (31.4s, risk=8.0)
+  [force listen mode] lan 1/1... OK (16.6s, risk=7.0)
+  [restart communication] lan 1/1... OK (17.6s, risk=7.0)
+  [data flood attack] lan 1/1... OK (20.1s, risk=9.0)
+  -> Thoi gian chay model 'qwen3:8b' tren dataset 'Smart Grid': 200.35s (7 lan goi)
+
+============================================================
+MODEL: openthinker:7b  (dataset: Smart Grid)
+============================================================
+  [BO QUA] Model 'openthinker:7b' chua san sang tren Ollama. Chay: ollama pull openthinker:7b
+
+============================================================
+MODEL: deepseek-r1:8b  (dataset: Smart Grid)
+============================================================
+  [address scan] lan 1/1... OK (130.8s, risk=6.0)
+  [function code scan] lan 1/1... OK (94.4s, risk=8.0)
+  [device identification attack] lan 1/1... OK (165.8s, risk=5.0)
+  [naive sensor read] lan 1/1... OK (135.1s, risk=6.0)
+  [force listen mode] lan 1/1... OK (98.6s, risk=7.0)
+  [restart communication] lan 1/1... OK (71.1s, risk=6.0)
+  [data flood attack] lan 1/1... OK (58.4s, risk=9.0)
+  -> Thoi gian chay model 'deepseek-r1:8b' tren dataset 'Smart Grid': 754.21s (7 lan goi)
+
+============================================================
+MODEL: gemma4:12b  (dataset: Smart Grid)
+============================================================
+  [address scan] lan 1/1... OK (102.2s, risk=7.0)
+  [function code scan] lan 1/1... OK (42.4s, risk=8.0)
+  [device identification attack] lan 1/1... OK (36.6s, risk=7.0)
+  [naive sensor read] lan 1/1... OK (56.0s, risk=9.0)
+  [force listen mode] lan 1/1... OK (39.2s, risk=8.0)
+  [restart communication] lan 1/1... OK (39.2s, risk=8.0)
+  [data flood attack] lan 1/1... OK (42.1s, risk=9.0)
+  -> Thoi gian chay model 'gemma4:12b' tren dataset 'Smart Grid': 357.69s (7 lan goi)
+
+============================================================
+MODEL: qwen3:14b  (dataset: Smart Grid)
+============================================================
+  [address scan] lan 1/1... OK (140.7s, risk=7.0)
+  [function code scan] lan 1/1... OK (40.2s, risk=8.0)
+  [device identification attack] lan 1/1... OK (41.8s, risk=7.0)
+  [naive sensor read] lan 1/1... OK (62.0s, risk=7.0)
+  [force listen mode] lan 1/1... OK (38.2s, risk=8.0)
+  [restart communication] lan 1/1... OK (36.5s, risk=7.0)
+  [data flood attack] lan 1/1... OK (37.0s, risk=9.0)
+  -> Thoi gian chay model 'qwen3:14b' tren dataset 'Smart Grid': 396.40s (7 lan goi)
+
+############################################################
+DATASET: Water Bottle Factory
+############################################################
+  [BO QUA] Khong co anomaly nao duoc AE phat hien cho attack 'sporadic sensor measurement injection' o dataset nay.
+
+============================================================
+MODEL: phi4-mini  (dataset: Water Bottle Factory)
+============================================================
+  [address scan] lan 1/1... OK (32.0s, risk=7.0)
+  [function code scan] lan 1/1... OK (7.8s, risk=7.0)
+  [device identification attack] lan 1/1... OK (8.1s, risk=7.0)
+  [naive sensor read] lan 1/1... OK (6.7s, risk=2.0)
+  [force listen mode] lan 1/1... OK (9.8s, risk=6.0)
+  [restart communication] lan 1/1... OK (7.6s, risk=7.0)
+  [data flood attack] lan 1/1... OK (7.5s, risk=8.0)
+  -> Thoi gian chay model 'phi4-mini' tren dataset 'Water Bottle Factory': 79.57s (7 lan goi)
+
+============================================================
+MODEL: qwen3:4b  (dataset: Water Bottle Factory)
+============================================================
+  [address scan] lan 1/1... OK (504.6s, risk=8.0)
+  [function code scan] lan 1/1... OK (321.5s, risk=None)
+  [device identification attack] lan 1/1... OK (381.3s, risk=4.0)
+  [naive sensor read] lan 1/1... OK (575.9s, risk=None)
+  [force listen mode] lan 1/1... OK (230.0s, risk=8.0)
+  [restart communication] lan 1/1... OK (249.6s, risk=7.0)
+  [data flood attack] lan 1/1... OK (356.1s, risk=9.0)
+  -> Thoi gian chay model 'qwen3:4b' tren dataset 'Water Bottle Factory': 2619.06s (7 lan goi)
+
+============================================================
+MODEL: gemma4:e4b  (dataset: Water Bottle Factory)
+============================================================
+  [address scan] lan 1/1... OK (105.7s, risk=7.0)
+  [function code scan] lan 1/1... OK (17.8s, risk=8.0)
+  [device identification attack] lan 1/1... OK (17.3s, risk=7.0)
+  [naive sensor read] lan 1/1... OK (16.5s, risk=6.0)
+  [force listen mode] lan 1/1... OK (17.6s, risk=8.0)
+  [restart communication] lan 1/1... OK (17.8s, risk=8.0)
+  [data flood attack] lan 1/1... OK (17.5s, risk=9.0)
+  -> Thoi gian chay model 'gemma4:e4b' tren dataset 'Water Bottle Factory': 210.12s (7 lan goi)
+
+============================================================
+MODEL: qwen3:8b  (dataset: Water Bottle Factory)
+============================================================
+  [address scan] lan 1/1... OK (67.9s, risk=8.0)
+  [function code scan] lan 1/1... OK (17.1s, risk=8.0)
+  [device identification attack] lan 1/1... OK (19.1s, risk=8.0)
+  [naive sensor read] lan 1/1... OK (15.3s, risk=7.0)
+  [force listen mode] lan 1/1... OK (16.0s, risk=8.0)
+  [restart communication] lan 1/1... OK (15.9s, risk=8.0)
+  [data flood attack] lan 1/1... OK (16.3s, risk=9.0)
+  -> Thoi gian chay model 'qwen3:8b' tren dataset 'Water Bottle Factory': 167.53s (7 lan goi)
+
+============================================================
+MODEL: openthinker:7b  (dataset: Water Bottle Factory)
+============================================================
+  [BO QUA] Model 'openthinker:7b' chua san sang tren Ollama. Chay: ollama pull openthinker:7b
+
+============================================================
+MODEL: deepseek-r1:8b  (dataset: Water Bottle Factory)
+============================================================
+  [address scan] lan 1/1... OK (181.0s, risk=7.0)
+  [function code scan] lan 1/1... OK (79.3s, risk=8.0)
+  [device identification attack] lan 1/1... OK (54.2s, risk=7.0)
+  [naive sensor read] lan 1/1... OK (60.7s, risk=6.0)
+  [force listen mode] lan 1/1... OK (98.8s, risk=9.0)
+  [restart communication] lan 1/1... OK (65.0s, risk=5.0)
+  [data flood attack] lan 1/1... OK (49.5s, risk=9.0)
+  -> Thoi gian chay model 'deepseek-r1:8b' tren dataset 'Water Bottle Factory': 588.50s (7 lan goi)
+
+============================================================
+MODEL: gemma4:12b  (dataset: Water Bottle Factory)
+============================================================
+  [address scan] lan 1/1... OK (106.7s, risk=6.0)
+  [function code scan] lan 1/1... OK (40.2s, risk=8.0)
+  [device identification attack] lan 1/1... OK (36.4s, risk=7.0)
+  [naive sensor read] lan 1/1... OK (35.5s, risk=6.0)
+  [force listen mode] lan 1/1... OK (38.7s, risk=8.0)
+  [restart communication] lan 1/1... OK (39.6s, risk=8.0)
+  [data flood attack] lan 1/1... OK (37.9s, risk=9.0)
+  -> Thoi gian chay model 'gemma4:12b' tren dataset 'Water Bottle Factory': 335.02s (7 lan goi)
+
+============================================================
+MODEL: qwen3:14b  (dataset: Water Bottle Factory)
+============================================================
+  [address scan] lan 1/1... OK (133.6s, risk=7.0)
+  [function code scan] lan 1/1... OK (36.7s, risk=9.0)
+  [device identification attack] lan 1/1... OK (43.7s, risk=8.0)
+  [naive sensor read] lan 1/1... OK (34.3s, risk=7.0)
+  [force listen mode] lan 1/1... OK (38.1s, risk=9.0)
+  [restart communication] lan 1/1... OK (38.6s, risk=9.0)
+  [data flood attack] lan 1/1... OK (38.8s, risk=9.0)
+  -> Thoi gian chay model 'qwen3:14b' tren dataset 'Water Bottle Factory': 363.94s (7 lan goi)
+
+Da luu chi tiet tung lan chay: local_multi_model_ae32_relu_structured_prompt/local_multi_model_results_run3.csv
+Da luu thoi gian chay theo tung dataset/model: local_multi_model_ae32_relu_structured_prompt/local_multi_model_dataset_timing_run3.csv
+Da luu bang tong hop cuoi cung: local_multi_model_ae32_relu_structured_prompt/local_multi_model_summary_run3.csv
+
+============================================================
+THOI GIAN CHAY THEO TUNG DATASET (tung model)
+============================================================
+ run_index          model                       dataset  total_time_sec  n_calls
+         1      phi4-mini Intelligent Electronic Device         1075.94        8
+         1       qwen3:4b Intelligent Electronic Device         4800.83        8
+         1     gemma4:e4b Intelligent Electronic Device         3785.25        8
+         1       qwen3:8b Intelligent Electronic Device         1792.99        8
+         1 deepseek-r1:8b Intelligent Electronic Device         3575.44        8
+         1     gemma4:12b Intelligent Electronic Device          547.18        8
+         1      qwen3:14b Intelligent Electronic Device          524.58        8
+         1      phi4-mini                    Smart Grid          103.70        7
+         1       qwen3:4b                    Smart Grid         2667.11        7
+         1     gemma4:e4b                    Smart Grid          317.91        7
+         1       qwen3:8b                    Smart Grid          200.35        7
+         1 deepseek-r1:8b                    Smart Grid          754.21        7
+         1     gemma4:12b                    Smart Grid          357.69        7
+         1      qwen3:14b                    Smart Grid          396.40        7
+         1      phi4-mini          Water Bottle Factory           79.57        7
+         1       qwen3:4b          Water Bottle Factory         2619.06        7
+         1     gemma4:e4b          Water Bottle Factory          210.12        7
+         1       qwen3:8b          Water Bottle Factory          167.53        7
+         1 deepseek-r1:8b          Water Bottle Factory          588.50        7
+         1     gemma4:12b          Water Bottle Factory          335.02        7
+         1      qwen3:14b          Water Bottle Factory          363.94        7
+
+============================================================
+BANG TONG HOP CUOI CUNG (gop ca 3 dataset, sap xep theo toc do)
+============================================================
+ run_index          model  success_rate_%  format_compliance_%  avg_latency_sec  p95_latency_sec avg_risk_score_stddev  avg_completion_tokens  total_time_sec
+         1     gemma4:12b           100.0                100.0            56.36           106.47                  None                  100.9         1239.89
+         1      phi4-mini           100.0                100.0            57.24           161.47                  None                   73.0         1259.21
+         1      qwen3:14b           100.0                100.0            58.41           140.33                  None                  109.2         1284.92
+         1       qwen3:8b           100.0                100.0            98.22           258.09                  None                   82.4         2160.87
+         1 deepseek-r1:8b            77.3                100.0           112.80           233.97                  None                  462.8         4918.15
+         1     gemma4:e4b            86.4                100.0           132.26           418.30                  None                  111.0         4313.28
+         1       qwen3:4b            59.1                 69.2           360.47           538.24                  None                 3094.2        10087.00

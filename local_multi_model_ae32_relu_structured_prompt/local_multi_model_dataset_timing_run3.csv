@@ -1,0 +1,22 @@
+run_index,model,dataset,total_time_sec,n_calls
+1,phi4-mini,Intelligent Electronic Device,1075.94,8
+1,qwen3:4b,Intelligent Electronic Device,4800.83,8
+1,gemma4:e4b,Intelligent Electronic Device,3785.25,8
+1,qwen3:8b,Intelligent Electronic Device,1792.99,8
+1,deepseek-r1:8b,Intelligent Electronic Device,3575.44,8
+1,gemma4:12b,Intelligent Electronic Device,547.18,8
+1,qwen3:14b,Intelligent Electronic Device,524.58,8
+1,phi4-mini,Smart Grid,103.7,7
+1,qwen3:4b,Smart Grid,2667.11,7
+1,gemma4:e4b,Smart Grid,317.91,7
+1,qwen3:8b,Smart Grid,200.35,7
+1,deepseek-r1:8b,Smart Grid,754.21,7
+1,gemma4:12b,Smart Grid,357.69,7
+1,qwen3:14b,Smart Grid,396.4,7
+1,phi4-mini,Water Bottle Factory,79.57,7
+1,qwen3:4b,Water Bottle Factory,2619.06,7
+1,gemma4:e4b,Water Bottle Factory,210.12,7
+1,qwen3:8b,Water Bottle Factory,167.53,7
+1,deepseek-r1:8b,Water Bottle Factory,588.5,7
+1,gemma4:12b,Water Bottle Factory,335.02,7
+1,qwen3:14b,Water Bottle Factory,363.94,7
