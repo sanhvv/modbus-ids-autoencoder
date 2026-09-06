@@ -6,8 +6,8 @@ Day la ban standalone, mo rong tu "local llms.py" (chi chay 1 dataset, phai
 chay trong notebook da co san bien/ham) - script nay tu load + clean dataset,
 tu load autoencoder 32-dim va nguong (threshold) da luu san cho ca 3 dataset,
 roi moi goi cac model local de risk-scoring, nen co the chay doc lap bang:
-    python local_multi_model.py --purpose "..." 2>&1 | tee local_multi_model/run_$(date +%Y%m%d_%H%M).log
-(output CSV cung gom vao local_multi_model/, tao ngay luc import de shell
+    python local_multi_model_ae32_relu.py --purpose "..." 2>&1 | tee local_multi_model_ae32_relu/run_$(date +%Y%m%d_%H%M).log
+(output CSV cung gom vao local_multi_model_ae32_relu/, tao ngay luc import de shell
 redirect vao day hoat dong duoc tu dau)
 
 CAC MODEL DUOC TEST (dang duoc pull ve, chay tren GPU GTX 3060):
@@ -102,7 +102,7 @@ OUTPUT_SUMMARY_CSV = "local_multi_model_summary.csv"
 # Ket qua CSV cua script nay gom vao day (xem ghi chu tuong tu trong
 # retrain_ae_9dim.py - tao ngay luc import de shell redirect vao day hoat
 # dong duoc tu dau).
-OUTPUT_DIR = Path("local_multi_model")
+OUTPUT_DIR = Path("local_multi_model_ae32_relu")
 OUTPUT_DIR.mkdir(exist_ok=True)
 
 
@@ -118,7 +118,13 @@ local_client = OpenAI(
 # ============================================================
 
 # CLASS:    AutoEncoder
-# PURPOSE:  Autoencoder 32-dim latent space dung de phat hien goi tin bat thuong.
+# PURPOSE:  Autoencoder 32-dim latent space, activation nn.ReLU() co dinh (khong
+#           tune) - kien truc GOC tu ics_simlab_sanh.ipynb (cell "Autoencoder
+#           (AE)"), khac voi cac bien the da tune/thu nghiem o retrain_ae_9dim.py
+#           (9-dim), tune_ae_9dim.py (Linear + nhieu activation), tune_ae_lstm_vae.py
+#           (LSTM/VAE). Phai khop 1-1 voi kien truc da dung khi train *_ae_model.pt
+#           (load qua load_ae_model()) - doi kien truc o day ma khong train lai se
+#           lam sai state_dict.
 class AutoEncoder(nn.Module):
     def __init__(self, input_dim):
         super(AutoEncoder, self).__init__()

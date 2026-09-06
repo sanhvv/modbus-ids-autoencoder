@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
-# Kiem tra model nao trong MODELS_TO_TEST (dinh nghia trong local_multi_model.py)
+# Kiem tra model nao trong MODELS_TO_TEST (dinh nghia trong local_multi_model_ae32_relu.py)
 # da duoc `ollama pull` ve, in ra danh sach co san/con thieu, roi chay
-# local_multi_model.py de so sanh risk-scoring giua cac model tren ca 3
+# local_multi_model_ae32_relu.py de so sanh risk-scoring giua cac model tren ca 3
 # dataset va xuat ket qua ra cac file CSV.
 #
-# Usage (redirect log vao local_multi_model/ de gom chung voi CSV output):
+# Usage (redirect log vao local_multi_model_ae32_relu/ de gom chung voi CSV output):
 #   ./run_local_multi_model.sh --purpose "mo ta muc dich lan chay" [--models ...] [--datasets ...] [--tag ...] [--runs N] \
-#     2>&1 | tee local_multi_model/run_$(date +%Y%m%d_%H%M).log
-# (--purpose la bat buoc, xem local_multi_model.py --help cho cac tuy chon con lai.
+#     2>&1 | tee local_multi_model_ae32_relu/run_$(date +%Y%m%d_%H%M).log
+# (--purpose la bat buoc, xem local_multi_model_ae32_relu.py --help cho cac tuy chon con lai.
 #  --runs N chay lai toan bo pipeline N lan doc lap, moi lan ra file CSV rieng
 #  hau to _run1.._runN de so sanh do on dinh giua cac lan chay.)
 
@@ -18,7 +18,7 @@ cd "$(dirname "${BASH_SOURCE[0]}")"
 # May nay chay 2 Ollama instance: mac dinh (port 11434, model dung chung/khong
 # lien quan) va instance rieng cua user (port 11435, noi cac model trong
 # MODELS_TO_TEST duoc pull vao, khop voi OLLAMA_BASE_URL trong
-# local_multi_model.py) - phai tro dung port 11435.
+# local_multi_model_ae32_relu.py) - phai tro dung port 11435.
 export OLLAMA_HOST="127.0.0.1:11435"
 
 echo "=== Kiem tra Ollama (OLLAMA_HOST=$OLLAMA_HOST) ==="
@@ -32,11 +32,11 @@ if ! ollama list >/dev/null 2>&1; then
     exit 1
 fi
 
-echo "=== Doc danh sach model can test tu local_multi_model.py ==="
-MODELS_TO_TEST="$(python3 -c "import local_multi_model as m; print('\n'.join(m.MODELS_TO_TEST))")"
+echo "=== Doc danh sach model can test tu local_multi_model_ae32_relu.py ==="
+MODELS_TO_TEST="$(python3 -c "import local_multi_model_ae32_relu as m; print('\n'.join(m.MODELS_TO_TEST))")"
 
 if [ -z "$MODELS_TO_TEST" ]; then
-    echo "Loi: khong doc duoc MODELS_TO_TEST tu local_multi_model.py." >&2
+    echo "Loi: khong doc duoc MODELS_TO_TEST tu local_multi_model_ae32_relu.py." >&2
     exit 1
 fi
 
@@ -66,13 +66,13 @@ if [ "${#AVAILABLE[@]}" -eq 0 ]; then
 fi
 
 if [ "${#MISSING[@]}" -gt 0 ]; then
-    echo "(Model con thieu se bi local_multi_model.py tu dong bo qua khi chay: ${MISSING[*]})"
+    echo "(Model con thieu se bi local_multi_model_ae32_relu.py tu dong bo qua khi chay: ${MISSING[*]})"
 fi
 
 echo
-echo "=== Chay local_multi_model.py ==="
-python3 local_multi_model.py "$@"
+echo "=== Chay local_multi_model_ae32_relu.py ==="
+python3 local_multi_model_ae32_relu.py "$@"
 
 echo
-echo "=== Hoan tat. File CSV da xuat (trong local_multi_model/) ==="
-ls -la local_multi_model/local_multi_model_results*.csv local_multi_model/local_multi_model_dataset_timing*.csv local_multi_model/local_multi_model_summary*.csv 2>/dev/null || true
+echo "=== Hoan tat. File CSV da xuat (trong local_multi_model_ae32_relu/) ==="
+ls -la local_multi_model_ae32_relu/local_multi_model_results*.csv local_multi_model_ae32_relu/local_multi_model_dataset_timing*.csv local_multi_model_ae32_relu/local_multi_model_summary*.csv 2>/dev/null || true

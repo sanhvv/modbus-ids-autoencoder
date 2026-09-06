@@ -78,7 +78,7 @@ RANDOM_SEED = 42
 # Hau to gan vao ten file CSV output (vd "--tag 2nd_attempt" -> ket qua
 # "..._ae_arch_tuning_results_2nd_attempt.csv"). De trong (None) = giu ten
 # mac dinh nhu cu. Dat qua CLI --tag, tranh phai doi ten file tay sau khi
-# chay xong (giong quy uoc --tag cua local_multi_model.py).
+# chay xong (giong quy uoc --tag cua local_multi_model_ae32_relu.py).
 RUN_TAG = None
 
 
