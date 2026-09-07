@@ -1,17 +1,18 @@
 """
-Bien the cua local_multi_model_ae32_relu.py: giu nguyen AE backend (32-dim,
-nn.ReLU() co dinh) va toan bo pipeline load/inference, chi doi PROMPT gui cho
-LLM tu dang tu do 250-ky-tu sang dang CO CAU TRUC 5 field (Source, Likely
-Cause, Affected Asset, Recommendation, Risk Score) - de operator doc duoc
-ngay nguon goc/nguyen nhan/vi tri anh huong/khuyen nghi khac phuc thay vi chi
-1 cau chung chung + diem so.
+Variant of local_multi_model_ae32_relu.py: keeps the same AE backend (32-dim,
+fixed nn.ReLU()) and the entire load/inference pipeline, only replaces the
+PROMPT sent to the LLM - from a free-form 250-character format to a
+STRUCTURED 5-field format (Source, Likely Cause, Affected Asset,
+Recommendation, Risk Score) - so the operator can immediately read the
+source/root cause/affected location/remediation instead of just a generic
+sentence + score.
 
-So sanh truc tiep 2 kieu prompt (vi du that, dataset Smart Grid, attack
-"function code scan", model phi4-mini):
+Direct comparison of the two prompt styles (real example, Smart Grid
+dataset, "function code scan" attack, phi4-mini model):
 
-  PROMPT CU  -> "The packet flow rate is significantly higher than normal,
+  OLD PROMPT -> "The packet flow rate is significantly higher than normal,
                  indicating potential malicious activity. Risk Score: 8/10."
-  PROMPT MOI -> "Source: 192.168.0.1
+  NEW PROMPT -> "Source: 192.168.0.1
                  Likely Cause: Modbus flooding attack - unusually high packet
                    rate indicating potential DoS; consistent with a flood attack
                  Affected Asset: 192.168.0.31
@@ -19,26 +20,27 @@ So sanh truc tiep 2 kieu prompt (vi du that, dataset Smart Grid, attack
                    increasing security measures to prevent further attacks
                  Risk Score: 9/10"
 
-Chay doc lap bang:
+Run standalone with:
     python local_multi_model_ae32_relu_structured_prompt.py --purpose "..." 2>&1 | tee local_multi_model_ae32_relu_structured_prompt/run_$(date +%Y%m%d_%H%M).log
-(output CSV cung gom vao local_multi_model_ae32_relu_structured_prompt/, tao ngay luc
-import de shell redirect vao day hoat dong duoc tu dau)
+(output CSVs also go into local_multi_model_ae32_relu_structured_prompt/,
+created right at import time so a shell redirect into that folder works
+from the very first run)
 
-CAC MODEL DUOC TEST (dang duoc pull ve, chay tren GPU GTX 3060):
+MODELS BEING TESTED (already pulled, running on a GTX 3060 GPU):
     phi4-mini, qwen3:4b, gemma4:e4b, qwen3:8b, openthinker:7b, deepseek-r1:8b,
     gemma4:12b, qwen3:14b
 
-YEU CAU TRUOC KHI CHAY:
-1. Da cai va dang chay Ollama (`ollama serve`).
-2. Da pull cac model can test (script se TU DONG bo qua model nao chua pull,
-   xem check_model_available()).
-3. Cac file model/threshold cua autoencoder 32-dim da co san trong repo:
+REQUIREMENTS BEFORE RUNNING:
+1. Ollama installed and running (`ollama serve`).
+2. The models to test already pulled (the script automatically skips any
+   model that hasn't been pulled, see check_model_available()).
+3. The 32-dim autoencoder's model/threshold files already present in the repo:
      <dataset>_ae_model.pt, <dataset>_threshold.txt
-   (vd: smart_grid_ae_model.pt, smart_grid_threshold.txt)
+   (e.g. smart_grid_ae_model.pt, smart_grid_threshold.txt)
 
-CANH BAO TOC DO: so lan goi model = so_model x so_dataset x so_attack_type x
-REPEATS_PER_PROMPT. Mac dinh REPEATS_PER_PROMPT=1 de chay thu nhanh; tang len
-2-3 neu muon do do on dinh (consistency) cua risk score.
+SPEED WARNING: number of model calls = n_models x n_datasets x n_attack_types x
+REPEATS_PER_PROMPT. Default REPEATS_PER_PROMPT=1 for a quick trial run;
+increase to 2-3 to measure the consistency of the risk score.
 """
 
 import re
@@ -60,10 +62,10 @@ from openai import OpenAI
 from retrain_ae_9dim import DATA_DIR, DATASET_FILENAMES, find_dataset_csv
 
 # ============================================================
-# 1. CAU HINH
+# 1. CONFIGURATION
 # ============================================================
 
-# Danh sach model theo thu tu NHE -> NANG. Chay tren GPU GTX 3060.
+# Model list ordered LIGHT -> HEAVY. Runs on a GTX 3060 GPU.
 MODELS_TO_TEST = [
     "phi4-mini",
     "qwen3:4b",
@@ -77,7 +79,7 @@ MODELS_TO_TEST = [
 
 DATASETS = list(DATASET_FILENAMES.keys())
 
-# Attack type -> ten hien thi (giong "Complete Pipeline" cell trong notebook)
+# Attack type -> display name (same as the "Complete Pipeline" cell in the notebook)
 ATTACKS = {
     1: "address scan",
     2: "function code scan",
@@ -89,54 +91,56 @@ ATTACKS = {
     8: "data flood attack",
 }
 
-REPEATS_PER_PROMPT = 1      # tang len de do do on dinh cua risk score
-REQUEST_TIMEOUT_SEC = 600   # model 12B/14B tren GPU 3060 co the van can vai chuc giay
-# Ollama mac dinh chay request voi context window 4096 token neu khong set
-# num_ctx. Cac model "thinking" (gemma4:12b, qwen3, deepseek-r1, ...) sinh
-# khoi <think>...</think> truoc khi tra loi va co the tieu het toan bo 4096
-# token do cho phan think, bi cat ngang truoc khi kip sinh cau tra loi that.
-# Prompt co cau truc moi sinh nhieu completion token hon prompt cu (~70-100
-# token thay vi ~20-30, da kiem chung thuc te voi phi4-mini) nhung van nam
-# rat xa duoi 16384 nen giu nguyen gia tri nay.
+REPEATS_PER_PROMPT = 1      # increase to measure risk score consistency
+REQUEST_TIMEOUT_SEC = 600   # 12B/14B models on a GTX 3060 can still take tens of seconds
+# Ollama defaults to a 4096-token context window if num_ctx isn't set.
+# "Thinking" models (gemma4:12b, qwen3, deepseek-r1, ...) generate a
+# <think>...</think> block before answering and can burn through the whole
+# 4096-token budget on that thinking, getting cut off before it can produce
+# the actual answer. The structured prompt also produces more completion
+# tokens than the old prompt (~70-100 tokens instead of ~20-30, verified in
+# practice with phi4-mini) but that's still far below 16384 so this value
+# is kept as-is.
 NUM_CTX = 16384
-# May nay chay 2 Ollama instance: mac dinh (11434, model dung chung/khong lien
-# quan) va instance rieng cua user (11435, noi cac model o MODELS_TO_TEST duoc
-# pull vao) - phai tro dung port 11435, khong dung mac dinh.
+# This machine runs 2 Ollama instances: the default one (11434, shared/
+# unrelated models) and the user's own instance (11435, where the models in
+# MODELS_TO_TEST are pulled to) - must point at port 11435, not the default.
 OLLAMA_BASE_URL = "http://localhost:11435/v1"
-# Dung cho check_model_available() (list model qua OpenAI-compat, khong bi
-# anh huong boi bug num_ctx o tren). use_llm_local() goi thang endpoint goc
-# ben duoi (khong co "/v1") de options.num_ctx duoc ap dung dung.
+# Used by check_model_available() (lists models via the OpenAI-compat API,
+# unaffected by the num_ctx bug below). use_llm_local() calls the native
+# endpoint directly below (no "/v1") so options.num_ctx is actually applied.
 OLLAMA_NATIVE_BASE_URL = OLLAMA_BASE_URL.removesuffix("/v1")
 
 OUTPUT_DETAIL_CSV = "local_multi_model_results.csv"
 OUTPUT_DATASET_TIMING_CSV = "local_multi_model_dataset_timing.csv"
 OUTPUT_SUMMARY_CSV = "local_multi_model_summary.csv"
 
-# Ket qua CSV cua script nay gom vao day (xem ghi chu tuong tu trong
-# retrain_ae_9dim.py - tao ngay luc import de shell redirect vao day hoat
-# dong duoc tu dau).
+# This script's output CSVs all go here (see the same note in
+# retrain_ae_9dim.py - created right at import time so a shell redirect
+# into this folder works from the very first run).
 OUTPUT_DIR = Path("local_multi_model_ae32_relu_structured_prompt")
 OUTPUT_DIR.mkdir(exist_ok=True)
 
 
 local_client = OpenAI(
     base_url=OLLAMA_BASE_URL,
-    api_key="ollama",       # Ollama khong kiem tra key, nhung SDK bat buoc phai co gia tri
+    api_key="ollama",       # Ollama doesn't check the key, but the SDK requires a value
     timeout=REQUEST_TIMEOUT_SEC,
 )
 
 
 # ============================================================
-# 2. AUTOENCODER 32-DIM + PIPELINE TIEN XU LY (tu cell "Complete Pipeline")
-#    - GIONG HET local_multi_model_ae32_relu.py, khong doi gi o phan nay.
+# 2. 32-DIM AUTOENCODER + PREPROCESSING PIPELINE (from the "Complete Pipeline" cell)
+#    - IDENTICAL to local_multi_model_ae32_relu.py, nothing changed here.
 # ============================================================
 
 # CLASS:    AutoEncoder
-# PURPOSE:  Autoencoder 32-dim latent space, activation nn.ReLU() co dinh (khong
-#           tune) - kien truc GOC tu ics_simlab_sanh.ipynb (cell "Autoencoder
-#           (AE)"). Phai khop 1-1 voi kien truc da dung khi train *_ae_model.pt
-#           (load qua load_ae_model()) - doi kien truc o day ma khong train lai se
-#           lam sai state_dict.
+# PURPOSE:  32-dim latent space autoencoder, fixed nn.ReLU() activation (not
+#           tuned) - the ORIGINAL architecture from ics_simlab_sanh.ipynb
+#           (cell "Autoencoder (AE)"). Must match 1:1 the architecture used
+#           when training *_ae_model.pt (loaded via load_ae_model()) -
+#           changing the architecture here without retraining would corrupt
+#           the state_dict.
 class AutoEncoder(nn.Module):
     def __init__(self, input_dim):
         super(AutoEncoder, self).__init__()
@@ -342,12 +346,13 @@ def extract_packet_info(original_packet, df_orig):
 
 
 # ============================================================
-# 2b. PROMPT CO CAU TRUC (khac voi local_multi_model_ae32_relu.py)
+# 2b. STRUCTURED PROMPT (differs from local_multi_model_ae32_relu.py)
 # ============================================================
 
-# Ten y nghia cua cac Modbus function code pho bien - dua vao prompt thay vi
-# chi dua so, giup model (dac biet model nho nhu phi4-mini) suy luan nguyen
-# nhan dung huong hon thay vi phai tu nho bang ma Modbus.
+# Human-readable names for common Modbus function codes - included in the
+# prompt instead of just the raw number, to help the model (especially a
+# small one like phi4-mini) reason about the cause more accurately instead
+# of having to recall the Modbus code table from memory.
 MODBUS_FUNC_NAMES = {
     1: "Read Coils",
     2: "Read Discrete Inputs",
@@ -405,8 +410,8 @@ Rate ratio vs baseline: {rate_ratio}
 
 
 def prepare_dataset(dataset_name):
-    """Load raw csv, chay autoencoder 32-dim da train san, tra ve
-    (df_orig, original_anomalies) de dung cho buoc risk-scoring."""
+    """Load the raw csv, run the already-trained 32-dim autoencoder, and
+    return (df_orig, original_anomalies) for the risk-scoring step."""
     csv_path = find_dataset_csv(DATASET_FILENAMES[dataset_name])
     df_orig = pd.read_csv(csv_path)
 
@@ -429,7 +434,7 @@ def prepare_dataset(dataset_name):
 
 
 # ============================================================
-# 3. GOI MODEL LOCAL (tu "local llms.py")
+# 3. CALLING THE LOCAL MODEL (from "local llms.py")
 # ============================================================
 
 def check_model_available(client, model_name: str) -> bool:
@@ -438,7 +443,7 @@ def check_model_available(client, model_name: str) -> bool:
         available = [m.id for m in models.data]
         return any(model_name in m for m in available)
     except Exception as e:
-        print(f"  [CANH BAO] Khong ket noi duoc Ollama server: {e}")
+        print(f"  [WARNING] Could not connect to Ollama server: {e}")
         return False
 
 
@@ -449,9 +454,9 @@ class _Usage:
 
 
 def use_llm_local(client, prompt: str, model_name: str):
-    # Xem giai thich chi tiet trong local_multi_model_ae32_relu.py: phai goi
-    # thang endpoint goc /api/chat (khong phai OpenAI-compat) de options/think
-    # duoc ap dung dung tren ban Ollama nay.
+    # See local_multi_model_ae32_relu.py for the detailed explanation: must
+    # call the native /api/chat endpoint (not OpenAI-compat) for
+    # options/think to actually be applied on this Ollama build.
     response = requests.post(
         f"{OLLAMA_NATIVE_BASE_URL}/api/chat",
         json={
@@ -481,9 +486,9 @@ def strip_think_block(text: str) -> str:
 
 
 def extract_field(text: str, field_name: str):
-    """Trich noi dung sau 1 field dang 'Ten field: gia tri' tren 1 dong,
-    dung chung cho ca 5 field cua prompt co cau truc (Source, Likely Cause,
-    Affected Asset, Recommendation, Risk Score)."""
+    """Extract the content after a 'Field name: value' field on a single
+    line, shared by all 5 fields of the structured prompt (Source, Likely
+    Cause, Affected Asset, Recommendation, Risk Score)."""
     if not text:
         return None
     text = strip_think_block(text)
@@ -518,9 +523,9 @@ def extract_risk_score(text: str):
 
 
 def check_format_compliance(text: str):
-    """Khac voi local_multi_model_ae32_relu.py (chi check co Risk Score +
-    gioi han do dai ky tu): prompt moi khong con gioi han ky tu, thay vao do
-    check ca 5 field bat buoc co mat hay khong."""
+    """Unlike local_multi_model_ae32_relu.py (which only checks for a Risk
+    Score + a character-length limit): the new prompt has no character
+    limit, instead checking that all 5 required fields are present."""
     text = strip_think_block(text)
     fields = {
         "has_source": extract_source(text) is not None,
@@ -534,16 +539,16 @@ def check_format_compliance(text: str):
 
 
 # ============================================================
-# 4. VONG LAP CHINH: tung dataset -> tung model -> tung attack type -> N lan lap
+# 4. MAIN LOOP: dataset -> model -> attack type -> N repeats
 # ============================================================
 
 def build_prompts_for_dataset(df_orig, original_anomalies, attacks):
-    """Tao san 1 prompt cho moi attack type (dung chung cho tat ca model/repeat
-    de dam bao so sanh cong bang tren cung 1 goi tin duoc chon)."""
+    """Build one prompt per attack type up front (shared across all models/
+    repeats to ensure a fair comparison on the same selected packet)."""
     prompts = {}
     for attack_specific, attack_name in attacks.items():
         if not (original_anomalies["attack_specific"] == attack_specific).any():
-            print(f"  [BO QUA] Khong co anomaly nao duoc AE phat hien cho attack '{attack_name}' o dataset nay.")
+            print(f"  [SKIPPED] No anomaly detected by the AE for attack '{attack_name}' on this dataset.")
             continue
         original_packet = select_anomalous_packet(original_anomalies, df_orig, attack_specific)
         orig_packet_info, orig_flow_info = extract_packet_info(original_packet, df_orig)
@@ -569,15 +574,15 @@ def run_comparison(models_to_test, datasets, attacks, run_purpose=""):
             print(f"{'='*60}")
 
             if not check_model_available(local_client, model_name):
-                print(f"  [BO QUA] Model '{model_name}' chua san sang tren Ollama. "
-                      f"Chay: ollama pull {model_name}")
+                print(f"  [SKIPPED] Model '{model_name}' not ready on Ollama. "
+                      f"Run: ollama pull {model_name}")
                 continue
 
             dataset_model_start = time.time()
 
             for attack_specific, (attack_name, prompt) in prompts.items():
                 for repeat_idx in range(REPEATS_PER_PROMPT):
-                    print(f"  [{attack_name}] lan {repeat_idx + 1}/{REPEATS_PER_PROMPT}...",
+                    print(f"  [{attack_name}] attempt {repeat_idx + 1}/{REPEATS_PER_PROMPT}...",
                           end=" ", flush=True)
 
                     start_t = time.time()
@@ -590,7 +595,7 @@ def run_comparison(models_to_test, datasets, attacks, run_purpose=""):
                         usage = None
                         latency = time.time() - start_t
                         error = str(e)
-                        print(f"LOI: {error}")
+                        print(f"ERROR: {error}")
 
                     if output:
                         format_fields = check_format_compliance(output)
@@ -635,19 +640,19 @@ def run_comparison(models_to_test, datasets, attacks, run_purpose=""):
                 "total_time_sec": round(dataset_model_time, 2),
                 "n_calls": n_calls,
             })
-            print(f"  -> Thoi gian chay model '{model_name}' tren dataset '{dataset_name}': "
-                  f"{dataset_model_time:.2f}s ({n_calls} lan goi)")
+            print(f"  -> Time to run model '{model_name}' on dataset '{dataset_name}': "
+                  f"{dataset_model_time:.2f}s ({n_calls} calls)")
 
     return pd.DataFrame(results), pd.DataFrame(dataset_timing)
 
 
 # ============================================================
-# 5. TONG HOP KET QUA CUOI CUNG (gop ca 3 dataset, theo tung model)
+# 5. FINAL RESULTS SUMMARY (all 3 datasets combined, per model)
 # ============================================================
 
 def summarize_results(df_results: pd.DataFrame, df_timing: pd.DataFrame) -> pd.DataFrame:
     if df_results.empty:
-        print("Khong co ket qua nao (co the khong model nao san sang tren Ollama).")
+        print("No results (no model may have been ready on Ollama).")
         return pd.DataFrame()
 
     summary_rows = []
@@ -701,36 +706,39 @@ def summarize_results(df_results: pd.DataFrame, df_timing: pd.DataFrame) -> pd.D
 
 
 # ============================================================
-# 6. CHAY
+# 6. RUN
 # ============================================================
 
 def parse_args():
     parser = argparse.ArgumentParser(
-        description="So sanh risk-scoring (prompt co cau truc) giua nhieu local LLM tren dataset ICS-SimLab.")
+        description="Compare risk-scoring (structured prompt) across several local LLMs on the ICS-SimLab dataset.")
     parser.add_argument(
         "--purpose", required=True,
-        help="Bat buoc: mo ta ngan gon muc dich lan chay nay, duoc ghi vao log va "
-             "cot run_purpose trong CSV de sau nay tong hop lai cac experiment.")
+        help="Required: a short description of this run's purpose, printed to "
+             "the log and stored in the run_purpose CSV column, for later "
+             "aggregation of experiments.")
     parser.add_argument(
         "--models", default=None,
-        help=f"Danh sach model can chay, cach nhau bang dau phay (mac dinh: ca "
-             f"{len(MODELS_TO_TEST)} model). Vd: --models gemma4:12b")
+        help=f"Comma-separated list of models to run (default: all "
+             f"{len(MODELS_TO_TEST)} models). E.g.: --models gemma4:12b")
     parser.add_argument(
         "--datasets", default=None,
-        help=f"Danh sach dataset can chay, cach nhau bang dau phay (mac dinh: ca 3 "
-             f"dataset). Vd: --datasets 'Smart Grid,Water Bottle Factory'")
+        help=f"Comma-separated list of datasets to run (default: all 3 "
+             f"datasets). E.g.: --datasets 'Smart Grid,Water Bottle Factory'")
     parser.add_argument(
         "--tag", default=None,
-        help="Hau to them vao ten file CSV output (vd 'test1') de khong de len "
-             "ket qua lan chay day du truoc do. Bo trong = dung ten file mac dinh.")
+        help="Suffix added to the output CSV filenames (e.g. 'test1') so it "
+             "doesn't overwrite a previous full run's results. Leave blank "
+             "to use the default filenames.")
     parser.add_argument(
         "--runs", type=int, default=1,
-        help="So lan chay lai TOAN BO pipeline (moi lan goi lai LLM tu dau) de so "
-             "sanh do on dinh giua cac lan chay doc lap. Moi lan ghi ra file CSV "
-             "rieng (hau to _run1, _run2, ...). Mac dinh 1.")
+        help="Number of times to re-run the ENTIRE pipeline (each run calls "
+             "the LLM again from scratch) to compare consistency across "
+             "independent runs. Each run writes its own CSV files "
+             "(suffixed _run1, _run2, ...). Default 1.")
     args = parser.parse_args()
     if args.runs < 1:
-        sys.exit("Loi: --runs phai >= 1")
+        sys.exit("Error: --runs must be >= 1")
     return args
 
 
@@ -742,7 +750,7 @@ if __name__ == "__main__":
         requested = [m.strip() for m in args.models.split(",") if m.strip()]
         unknown = [m for m in requested if m not in MODELS_TO_TEST]
         if unknown:
-            sys.exit(f"Loi: model khong ton tai trong MODELS_TO_TEST: {unknown}")
+            sys.exit(f"Error: model(s) not found in MODELS_TO_TEST: {unknown}")
         models_to_run = requested
 
     datasets_to_run = DATASETS
@@ -750,7 +758,7 @@ if __name__ == "__main__":
         requested = [d.strip() for d in args.datasets.split(",") if d.strip()]
         unknown = [d for d in requested if d not in DATASETS]
         if unknown:
-            sys.exit(f"Loi: dataset khong ton tai trong DATASETS: {unknown}")
+            sys.exit(f"Error: dataset(s) not found in DATASETS: {unknown}")
         datasets_to_run = requested
 
     base_suffix = f"_{args.tag}" if args.tag else ""
@@ -762,12 +770,12 @@ if __name__ == "__main__":
         output_summary_csv = OUTPUT_DIR / OUTPUT_SUMMARY_CSV.replace(".csv", f"{run_suffix}.csv")
 
         if args.runs > 1:
-            print(f"\n{'#'*60}\nLAN CHAY {run_idx}/{args.runs}\n{'#'*60}")
-        print(f"MUC DICH LAN CHAY NAY: {args.purpose}")
+            print(f"\n{'#'*60}\nRUN {run_idx}/{args.runs}\n{'#'*60}")
+        print(f"PURPOSE OF THIS RUN: {args.purpose}")
         print(f"Model: {models_to_run}")
         print(f"Dataset: {datasets_to_run}")
         print(f"Output: {output_detail_csv}, {output_timing_csv}, {output_summary_csv}")
-        print("Bat dau so sanh model (tu nhe -> nang)...")
+        print("Starting model comparison (light -> heavy)...")
         df_results, df_timing = run_comparison(
             models_to_run, datasets_to_run, ATTACKS, run_purpose=args.purpose)
 
@@ -775,30 +783,30 @@ if __name__ == "__main__":
         df_timing.insert(0, "run_index", run_idx)
 
         df_results.to_csv(output_detail_csv, index=False)
-        print(f"\nDa luu chi tiet tung lan chay: {output_detail_csv}")
+        print(f"\nSaved per-call details: {output_detail_csv}")
 
         if not df_timing.empty:
             df_timing.to_csv(output_timing_csv, index=False)
-            print(f"Da luu thoi gian chay theo tung dataset/model: {output_timing_csv}")
+            print(f"Saved per-dataset/model timing: {output_timing_csv}")
 
         df_summary = summarize_results(df_results, df_timing)
         if not df_summary.empty:
             df_summary.insert(0, "run_index", run_idx)
             df_summary.to_csv(output_summary_csv, index=False)
-            print(f"Da luu bang tong hop cuoi cung: {output_summary_csv}")
+            print(f"Saved final summary table: {output_summary_csv}")
 
         print("\n" + "=" * 60)
-        print("THOI GIAN CHAY THEO TUNG DATASET (tung model)")
+        print("TIME PER DATASET (PER MODEL)")
         print("=" * 60)
         if not df_timing.empty:
             print(df_timing.to_string(index=False))
 
         print("\n" + "=" * 60)
-        print("BANG TONG HOP CUOI CUNG (gop ca 3 dataset, sap xep theo toc do)")
+        print("FINAL SUMMARY TABLE (all 3 datasets combined, sorted by speed)")
         print("=" * 60)
         if not df_summary.empty:
             print(df_summary.to_string(index=False))
 
     if args.runs > 1:
-        print(f"\nDa chay xong {args.runs} lan doc lap, ket qua nam trong cac file "
-              f"co hau to _run1 .. _run{args.runs} de so sanh.")
+        print(f"\nFinished {args.runs} independent runs, results are in the "
+              f"files suffixed _run1 .. _run{args.runs} for comparison.")

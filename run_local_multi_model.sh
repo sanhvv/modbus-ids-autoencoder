@@ -1,42 +1,43 @@
 #!/usr/bin/env bash
-# Kiem tra model nao trong MODELS_TO_TEST (dinh nghia trong local_multi_model_ae32_relu.py)
-# da duoc `ollama pull` ve, in ra danh sach co san/con thieu, roi chay
-# local_multi_model_ae32_relu.py de so sanh risk-scoring giua cac model tren ca 3
-# dataset va xuat ket qua ra cac file CSV.
+# Check which models in MODELS_TO_TEST (defined in local_multi_model_ae32_relu.py)
+# have been `ollama pull`ed, print the available/missing list, then run
+# local_multi_model_ae32_relu.py to compare risk-scoring across models on
+# all 3 datasets and export results to CSV files.
 #
-# Usage (redirect log vao local_multi_model_ae32_relu/ de gom chung voi CSV output):
-#   ./run_local_multi_model.sh --purpose "mo ta muc dich lan chay" [--models ...] [--datasets ...] [--tag ...] [--runs N] \
+# Usage (redirect the log into local_multi_model_ae32_relu/ to keep it with the CSV output):
+#   ./run_local_multi_model.sh --purpose "run purpose description" [--models ...] [--datasets ...] [--tag ...] [--runs N] \
 #     2>&1 | tee local_multi_model_ae32_relu/run_$(date +%Y%m%d_%H%M).log
-# (--purpose la bat buoc, xem local_multi_model_ae32_relu.py --help cho cac tuy chon con lai.
-#  --runs N chay lai toan bo pipeline N lan doc lap, moi lan ra file CSV rieng
-#  hau to _run1.._runN de so sanh do on dinh giua cac lan chay.)
+# (--purpose is required, see local_multi_model_ae32_relu.py --help for the
+#  other options. --runs N re-runs the entire pipeline N independent times,
+#  each producing its own CSV files suffixed _run1.._runN to compare
+#  consistency across runs.)
 
 set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
-# May nay chay 2 Ollama instance: mac dinh (port 11434, model dung chung/khong
-# lien quan) va instance rieng cua user (port 11435, noi cac model trong
-# MODELS_TO_TEST duoc pull vao, khop voi OLLAMA_BASE_URL trong
-# local_multi_model_ae32_relu.py) - phai tro dung port 11435.
+# This machine runs 2 Ollama instances: the default one (port 11434,
+# shared/unrelated models) and the user's own instance (port 11435, where
+# the models in MODELS_TO_TEST are pulled to, matching OLLAMA_BASE_URL in
+# local_multi_model_ae32_relu.py) - must point at port 11435.
 export OLLAMA_HOST="127.0.0.1:11435"
 
-echo "=== Kiem tra Ollama (OLLAMA_HOST=$OLLAMA_HOST) ==="
+echo "=== Checking Ollama (OLLAMA_HOST=$OLLAMA_HOST) ==="
 if ! command -v ollama >/dev/null 2>&1; then
-    echo "Loi: khong tim thay lenh 'ollama'. Cai Ollama truoc: https://ollama.com" >&2
+    echo "Error: 'ollama' command not found. Install Ollama first: https://ollama.com" >&2
     exit 1
 fi
 
 if ! ollama list >/dev/null 2>&1; then
-    echo "Loi: khong ket noi duoc Ollama server tai $OLLAMA_HOST. Chay 'ollama serve' truoc." >&2
+    echo "Error: could not connect to the Ollama server at $OLLAMA_HOST. Run 'ollama serve' first." >&2
     exit 1
 fi
 
-echo "=== Doc danh sach model can test tu local_multi_model_ae32_relu.py ==="
+echo "=== Reading the model list to test from local_multi_model_ae32_relu.py ==="
 MODELS_TO_TEST="$(python3 -c "import local_multi_model_ae32_relu as m; print('\n'.join(m.MODELS_TO_TEST))")"
 
 if [ -z "$MODELS_TO_TEST" ]; then
-    echo "Loi: khong doc duoc MODELS_TO_TEST tu local_multi_model_ae32_relu.py." >&2
+    echo "Error: could not read MODELS_TO_TEST from local_multi_model_ae32_relu.py." >&2
     exit 1
 fi
 
@@ -49,30 +50,30 @@ while IFS= read -r model; do
     [ -z "$model" ] && continue
     if echo "$PULLED_MODELS" | grep -qF "$model"; then
         AVAILABLE+=("$model")
-        echo "  [OK]     $model"
+        echo "  [OK]       $model"
     else
         MISSING+=("$model")
-        echo "  [THIEU]  $model  (chay: ollama pull $model)"
+        echo "  [MISSING]  $model  (run: ollama pull $model)"
     fi
 done <<< "$MODELS_TO_TEST"
 
 TOTAL=$(( ${#AVAILABLE[@]} + ${#MISSING[@]} ))
 echo
-echo "=== ${#AVAILABLE[@]}/${TOTAL} model da san sang ==="
+echo "=== ${#AVAILABLE[@]}/${TOTAL} models ready ==="
 
 if [ "${#AVAILABLE[@]}" -eq 0 ]; then
-    echo "Loi: chua co model nao trong danh sach duoc pull. Dung lai, khong chay so sanh." >&2
+    echo "Error: none of the listed models have been pulled. Stopping, not running the comparison." >&2
     exit 1
 fi
 
 if [ "${#MISSING[@]}" -gt 0 ]; then
-    echo "(Model con thieu se bi local_multi_model_ae32_relu.py tu dong bo qua khi chay: ${MISSING[*]})"
+    echo "(Missing models will be automatically skipped by local_multi_model_ae32_relu.py: ${MISSING[*]})"
 fi
 
 echo
-echo "=== Chay local_multi_model_ae32_relu.py ==="
+echo "=== Running local_multi_model_ae32_relu.py ==="
 python3 local_multi_model_ae32_relu.py "$@"
 
 echo
-echo "=== Hoan tat. File CSV da xuat (trong local_multi_model_ae32_relu/) ==="
+echo "=== Done. Exported CSV files (in local_multi_model_ae32_relu/) ==="
 ls -la local_multi_model_ae32_relu/local_multi_model_results*.csv local_multi_model_ae32_relu/local_multi_model_dataset_timing*.csv local_multi_model_ae32_relu/local_multi_model_summary*.csv 2>/dev/null || true

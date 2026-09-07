@@ -26,11 +26,12 @@ from sklearn.metrics import classification_report, confusion_matrix
 
 DATA_DIR = Path("data").resolve()
 
-# Ket qua (model .pt, threshold .txt) va log cua script nay deu gom vao day,
-# de de quan ly thay vi nam rai rac o repo root. Tao ngay luc import (khong
-# doi den khi ghi file) de lenh redirect log qua shell (vd `> retrain_ae_9dim/
-# run.log`) hoat dong duoc ngay tu dau, vi shell tao file redirect TRUOC khi
-# Python kip chay, va se loi neu thu muc chua ton tai.
+# This script's output (model .pt, threshold .txt) and log all go here, so
+# they're easy to manage instead of scattered across the repo root. Created
+# right at import time (not lazily on first write) so a shell log redirect
+# (e.g. `> retrain_ae_9dim/run.log`) works from the very first run - the
+# shell creates the redirect target BEFORE Python even starts, and would
+# fail if the directory didn't already exist.
 OUTPUT_DIR = Path("retrain_ae_9dim")
 OUTPUT_DIR.mkdir(exist_ok=True)
 
@@ -45,8 +46,8 @@ def find_dataset_csv(filename: str) -> str:
     matches = list(DATA_DIR.rglob(filename))
     if not matches:
         raise FileNotFoundError(
-            f"Khong tim thay '{filename}' trong '{DATA_DIR}/'. "
-            f"Chay cell tai dataset (Kaggle) o duoi truoc, hoac copy file csv thu cong vao '{DATA_DIR}/'."
+            f"Could not find '{filename}' in '{DATA_DIR}/'. "
+            f"Run the dataset download (Kaggle) cell first, or copy the csv file manually into '{DATA_DIR}/'."
         )
     return str(matches[0])
 

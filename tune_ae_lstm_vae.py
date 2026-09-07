@@ -37,9 +37,9 @@ from sklearn.metrics import f1_score, precision_score, recall_score
 from retrain_ae_9dim import load_and_clean_datasets, preprocess_ae_9dim
 from tune_ae_9dim import ACTIVATIONS
 
-# Ket qua CSV cua script nay gom vao day (xem ghi chu tuong tu trong
-# retrain_ae_9dim.py - tao ngay luc import de shell redirect vao day hoat
-# dong duoc tu dau).
+# This script's output CSVs all go here (see the same note in
+# retrain_ae_9dim.py - created right at import time so a shell redirect
+# into this folder works from the very first run).
 OUTPUT_DIR = Path("tune_ae_lstm_vae")
 OUTPUT_DIR.mkdir(exist_ok=True)
 
@@ -75,10 +75,11 @@ TRAIN_SAMPLE_SIZE = 3000    # subsample training rows per dataset for speed (Non
 EVAL_PERCENTILE = 95
 RANDOM_SEED = 42
 
-# Hau to gan vao ten file CSV output (vd "--tag 2nd_attempt" -> ket qua
-# "..._ae_arch_tuning_results_2nd_attempt.csv"). De trong (None) = giu ten
-# mac dinh nhu cu. Dat qua CLI --tag, tranh phai doi ten file tay sau khi
-# chay xong (giong quy uoc --tag cua local_multi_model_ae32_relu.py).
+# Suffix added to output CSV filenames (e.g. "--tag 2nd_attempt" ->
+# "..._ae_arch_tuning_results_2nd_attempt.csv"). Leave blank (None) to keep
+# the old default filenames. Set via the CLI --tag flag, to avoid having to
+# rename files by hand after the run (same convention as --tag in
+# local_multi_model_ae32_relu.py).
 RUN_TAG = None
 
 
@@ -371,11 +372,11 @@ def main():
     global RUN_TAG
 
     parser = argparse.ArgumentParser(
-        description="Tune va so sanh LSTM vs VAE autoencoder cho ICS-IDS.")
+        description="Tune and compare LSTM vs VAE autoencoders for ICS-IDS.")
     parser.add_argument(
         "--tag", default=None,
-        help="Hau to gan vao ten cac file CSV output, vd --tag 2nd_attempt. "
-             "De trong = giu ten mac dinh (se bi de len o lan chay sau).")
+        help="Suffix added to the output CSV filenames, e.g. --tag 2nd_attempt. "
+             "Leave blank to keep the default filenames (will be overwritten by the next run).")
     args = parser.parse_args()
     RUN_TAG = args.tag
 
@@ -394,10 +395,10 @@ def main():
     summary_table.to_csv(summary_csv_name, index=False)
 
     print("=========================================")
-    print("BANG TONG HOP KET QUA CUOI CUNG (best config moi dataset x architecture)")
+    print("FINAL SUMMARY TABLE (best config per dataset x architecture)")
     print("=========================================")
     print(summary_table.to_string(index=False))
-    print(f"\nDa luu bang tong hop: {summary_csv_name}")
+    print(f"\nSaved summary table: {summary_csv_name}")
     print(f"Total time consumed for all datasets: {total_time:.2f}s")
 
 

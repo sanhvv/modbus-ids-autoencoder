@@ -1,44 +1,45 @@
-# Chuyển Ollama + pipeline sang lab232-a04
+# Moving Ollama + the pipeline to lab232-a04
 
-## Bước 0 — SSH sang máy mới
+## Step 0 — SSH into the new machine
 
 ```bash
 ssh 23532764@lab232-a04.cs.curtin.edu.au
 ```
 
-## Bước 1 — Kiểm tra xem home directory có dùng chung (NFS) không
+## Step 1 — Check whether the home directory is shared (NFS)
 
 ```bash
 mount | grep " /home "
 ```
 
-- Nếu thấy dòng `strdat01p:/linuxhome on /home type nfs` **giống hệt lab232-a01** → home directory dùng chung, mọi thứ dưới đây (Ollama binary, model đã pull, repo code) **đã có sẵn**, bỏ qua Bước 2 và 3, chuyển thẳng xuống Bước 4.
-- Nếu khác (không phải NFS, hoặc mount point khác) → làm đầy đủ Bước 2, 3.
+- If you see a line like `strdat01p:/linuxhome on /home type nfs` **identical to lab232-a01** -> the home directory is shared, everything below (Ollama binary, pulled models, repo code) is **already there**, skip Steps 2 and 3, go straight to Step 4.
+- If it's different (not NFS, or a different mount point) -> do Steps 2 and 3 in full.
 
-Kiểm tra nhanh xem file/model có sẵn chưa:
+Quick check of whether files/models are already present:
 
 ```bash
 ls -la ~/ollama/bin/ollama
-ls ~/.ollama/models 2>/dev/null && echo "models co san"
-ls ~/local-llms/modbus-ids-autoencoder/local_multi_model_ae32_relu.py 2>/dev/null && echo "repo co san"
+ls ~/.ollama/models 2>/dev/null && echo "models present"
+ls ~/local-llms/modbus-ids-autoencoder/local_multi_model_ae32_relu.py 2>/dev/null && echo "repo present"
 ```
 
-Nếu cả 3 lệnh trên đều ra kết quả (không lỗi) → home directory đúng là dùng chung, **bỏ qua Bước 2 và 3**.
+If all 3 commands above succeed (no error) -> the home directory is indeed shared, **skip Steps 2 and 3**.
 
-## Bước 2 — Cài Ollama (chỉ làm nếu Bước 1 xác nhận KHÔNG dùng chung home)
+## Step 2 — Install Ollama (only if Step 1 confirms the home is NOT shared)
 
-Máy lab không có quyền `sudo`, nên cài kiểu portable (giải nén vào home, không cần root) — đúng cách đã dùng trên lab232-a01:
+The lab machine has no `sudo` access, so install it portably (extract into home, no root needed) - the same approach already used on lab232-a01:
 
 ```bash
 mkdir -p ~/ollama && cd ~/ollama
 
-# Tai ban chinh thuc tu ollama.com (kiem tra version moi nhat tai
-# https://github.com/ollama/ollama/releases neu muon dung ban khac 0.32.14)
+# Download the official release from ollama.com (check for the latest
+# version at https://github.com/ollama/ollama/releases if you want a
+# version other than 0.32.14)
 curl -L https://ollama.com/download/ollama-linux-amd64.tgz -o ollama-linux-amd64.tgz
 tar -xzf ollama-linux-amd64.tgz
 
-# Them vao PATH + set port rieng (giong lab232-a01, tranh dung port 11434
-# mac dinh de khong dung voi instance dung chung khac neu co)
+# Add to PATH + set a dedicated port (same as lab232-a01, to avoid the
+# default port 11434 in case another shared instance is also running)
 echo 'export PATH=$HOME/ollama/bin:$PATH' >> ~/.bashrc
 echo 'export OLLAMA_HOST=127.0.0.1:11435' >> ~/.bashrc
 source ~/.bashrc
@@ -46,19 +47,19 @@ source ~/.bashrc
 ollama --version
 ```
 
-## Bước 3 — Pull các model (chỉ làm nếu Bước 1 xác nhận KHÔNG dùng chung home)
+## Step 3 — Pull the models (only if Step 1 confirms the home is NOT shared)
 
-Khởi động server trước:
+Start the server first:
 
 ```bash
 cd ~/ollama
 OLLAMA_HOST=127.0.0.1:11435 nohup ollama serve > ollama.log 2>&1 &
 disown
 sleep 3
-OLLAMA_HOST=127.0.0.1:11435 ollama list   # kiem tra server da chay
+OLLAMA_HOST=127.0.0.1:11435 ollama list   # check the server is running
 ```
 
-Pull đúng danh sách model dùng trong `local_multi_model_ae32_relu.py` (MODELS_TO_TEST), theo thứ tự nhẹ → nặng:
+Pull exactly the model list used in `local_multi_model_ae32_relu.py` (MODELS_TO_TEST), light -> heavy:
 
 ```bash
 export OLLAMA_HOST=127.0.0.1:11435
@@ -72,15 +73,15 @@ ollama pull gemma4:12b
 ollama pull qwen3:14b
 ```
 
-Lưu ý dung lượng: tổng ~44GB cho cả 8 model (qwen3:14b ~9.3GB, gemma4:12b ~7.6GB, gemma4:e4b ~9.6GB, deepseek-r1:8b ~5.2GB, qwen3:8b ~5.2GB, qwen3:4b ~2.5GB, phi4-mini ~2.5GB, openthinker:7b ~4.7GB) — kiểm tra dung lượng trống trước khi pull hết 1 lượt:
+Storage note: ~44GB total for all 8 models (qwen3:14b ~9.3GB, gemma4:12b ~7.6GB, gemma4:e4b ~9.6GB, deepseek-r1:8b ~5.2GB, qwen3:8b ~5.2GB, qwen3:4b ~2.5GB, phi4-mini ~2.5GB, openthinker:7b ~4.7GB) - check free space before pulling all of them in one go:
 
 ```bash
 df -h ~
 ```
 
-## Bước 4 — Khởi động Ollama server trên a04 (luôn cần làm, kể cả khi dùng chung home)
+## Step 4 — Start the Ollama server on a04 (always required, even if the home is shared)
 
-Model/binary có thể dùng chung qua NFS, nhưng **tiến trình `ollama serve` phải tự chạy trên từng máy** (mỗi máy có GPU riêng). Chạy từ 1 thư mục cố định để tránh lỗi cwd bị hỏng (đã từng gặp trên lab232-a01 do NFS remount):
+The model/binary can be shared via NFS, but the **`ollama serve` process must run on each machine itself** (each machine has its own GPU). Run it from a fixed directory to avoid a broken-cwd bug (previously seen on lab232-a01 due to an NFS remount):
 
 ```bash
 cd ~/ollama
@@ -90,29 +91,29 @@ sleep 3
 OLLAMA_HOST=127.0.0.1:11435 ollama list
 ```
 
-Nếu Bước 1 xác nhận dùng chung home, lệnh `ollama list` này sẽ hiện luôn cả 8 model mà không cần pull lại.
+If Step 1 confirmed a shared home, this `ollama list` command will already show all 8 models with no need to pull again.
 
-## Bước 5 — Kiểm tra GPU trống trên a04 trước khi chạy
+## Step 5 — Check free GPU on a04 before running
 
 ```bash
 nvidia-smi
 ```
 
-Xem `Memory-Usage` và mục `Processes` — đảm bảo không có process nào khác (của người dùng khác trên máy chung) đang chiếm phần lớn VRAM, giống tình huống đã gặp trên lab232-a01.
+Check `Memory-Usage` and the `Processes` section - make sure no other process (from another user on the shared machine) is holding most of the VRAM, as previously happened on lab232-a01.
 
-## Bước 6 — Chạy pipeline
+## Step 6 — Run the pipeline
 
-Nếu repo dùng chung qua NFS, code đã có sẵn ở `~/local-llms/modbus-ids-autoencoder/`, không cần clone lại. Chạy như bình thường:
+If the repo is shared via NFS, the code is already at `~/local-llms/modbus-ids-autoencoder/`, no need to clone again. Run as usual:
 
 ```bash
 cd ~/local-llms/modbus-ids-autoencoder
-./run_local_multi_model.sh --purpose "Chay tren lab232-a04 vi a01 dang busy" \
+./run_local_multi_model.sh --purpose "Running on lab232-a04 since a01 is busy" \
   2>&1 | tee local_multi_model_ae32_relu/run_$(date +%Y%m%d_%H%M)_a04.log
 ```
 
-(hoặc dùng `local_multi_model_ae32_relu_structured_prompt.py` nếu muốn chạy bản prompt_2 — xem README mục "Prompt 2")
+(or use `local_multi_model_ae32_relu_structured_prompt.py` to run the prompt_2 variant instead - see the README's "Prompt 2" section)
 
-## Ghi chú
+## Notes
 
-- `run_local_multi_model.sh` đã tự set `OLLAMA_HOST=127.0.0.1:11435` bên trong, không cần export lại thủ công khi chạy qua script này.
-- Nếu Python/pip package (`openai`, `torch`, `pandas`, ...) chưa có trên a04 do không dùng chung home Python packages riêng biệt theo máy, cài lại bằng: `python3 -m pip install --user openai` (các package còn lại thường có sẵn qua module hệ thống, kiểm tra bằng `python3 -c "import torch, pandas, sklearn"`).
+- `run_local_multi_model.sh` already sets `OLLAMA_HOST=127.0.0.1:11435` internally, no need to export it manually when running through this script.
+- If a Python/pip package (`openai`, `torch`, `pandas`, ...) isn't available on a04 because Python packages aren't shared across machines, reinstall it with: `python3 -m pip install --user openai` (the other packages are usually available via system modules - check with `python3 -c "import torch, pandas, sklearn"`).

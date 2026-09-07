@@ -1,139 +1,139 @@
 # Modbus ICS-IDS — Autoencoder + LLM Risk Scoring
 
-Intrusion Detection System (IDS) cho hệ thống điều khiển công nghiệp (ICS) mô phỏng bằng [Curtin ICS-SimLab](https://github.com/JaxsonBrownie/ICS-SimLab), phát hiện bất thường trên gói tin Modbus/TCP bằng autoencoder, phân loại kiểu tấn công bằng ML cổ điển, và chấm điểm rủi ro bằng LLM (OpenAI cloud hoặc model local qua Ollama).
+An Intrusion Detection System (IDS) for an Industrial Control System (ICS) simulated with [Curtin ICS-SimLab](https://github.com/JaxsonBrownie/ICS-SimLab), detecting anomalies in Modbus/TCP packets using an autoencoder, classifying attack types with classical ML, and scoring risk with an LLM (OpenAI cloud or a local model via Ollama).
 
-Toàn bộ pipeline nằm trong [`ics_simlab_sanh.ipynb`](ics_simlab_sanh.ipynb). File này hướng dẫn cách chạy nó từ đầu.
+The entire pipeline lives in [`ics_simlab_sanh.ipynb`](ics_simlab_sanh.ipynb). This file explains how to run it from scratch.
 
-## Mục lục
+## Table of Contents
 
-- [Tổng quan pipeline](#tổng-quan-pipeline)
-- [Yêu cầu trước khi chạy](#yêu-cầu-trước-khi-chạy)
-- [Thứ tự chạy cell](#thứ-tự-chạy-cell)
-- [File có sẵn trong repo](#file-có-sẵn-trong-repo)
-- [Các vấn đề đã gặp & cách xử lý](#các-vấn-đề-đã-gặp--cách-xử-lý)
-- [Nhật ký thực nghiệm](#nhật-ký-thực-nghiệm)
-- [So sánh kiến trúc autoencoder: Linear vs LSTM vs VAE](#so-sánh-kiến-trúc-autoencoder-linear-vs-lstm-vs-vae)
-- [Prompt 2: prompt có cấu trúc cho risk-scoring](#prompt-2-prompt-có-cấu-trúc-cho-risk-scoring)
+- [Pipeline Overview](#pipeline-overview)
+- [Requirements Before Running](#requirements-before-running)
+- [Cell Run Order](#cell-run-order)
+- [Files Already in the Repo](#files-already-in-the-repo)
+- [Issues Encountered & How They Were Resolved](#issues-encountered--how-they-were-resolved)
+- [Experiment Log](#experiment-log)
+- [Autoencoder Architecture Comparison: Linear vs LSTM vs VAE](#autoencoder-architecture-comparison-linear-vs-lstm-vs-vae)
+- [Prompt 2: Structured Prompt for Risk-Scoring](#prompt-2-structured-prompt-for-risk-scoring)
 
-## Tổng quan pipeline
+## Pipeline Overview
 
 ```mermaid
 flowchart LR
-    A["3 dataset CSV\n(IED / Smart Grid / WBF)"] -->|read_csv| B[Cleaning]
+    A["3 dataset CSVs\n(IED / Smart Grid / WBF)"] -->|read_csv| B[Cleaning]
     B --> C["Classical ML\nDT · SVM · KNN · RF"]
-    C -->|predict| D["Nhãn tấn công\n(attack_specific)"]
-    B --> E["Autoencoder\n(không giám sát)"]
-    E -->|ngưỡng 95th pct| F["Gói tin bất thường\n(original_anomalies)"]
-    F -->|prompt| G["LLM risk scoring\nOpenAI cloud / Ollama local"]
-    G --> H["Risk Score: X/10\n+ giải thích"]
+    C -->|predict| D["Attack label\n(attack_specific)"]
+    B --> E["Autoencoder\n(unsupervised)"]
+    E -->|95th pct threshold| F["Anomalous packets\n(original_anomalies)"]
+    F -->|prompt| G["LLM risk scoring\nOpenAI cloud / local Ollama"]
+    G --> H["Risk Score: X/10\n+ explanation"]
 ```
 
-`Cleaning` tạo ra một dataset dùng chung cho **hai nhánh độc lập**:
+`Cleaning` produces a dataset shared by **two independent branches**:
 
-- **Classical ML** (Decision Tree, SVM, KNN, Random Forest) — chỉ phân loại kiểu tấn công, không liên quan tới LLM.
-- **Autoencoder** — phát hiện bất thường không giám sát, gói tin bất thường mới được đưa tiếp vào LLM để chấm risk score.
+- **Classical ML** (Decision Tree, SVM, KNN, Random Forest) — only classifies the attack type, unrelated to the LLM.
+- **Autoencoder** — unsupervised anomaly detection; anomalous packets are then fed to the LLM for risk scoring.
 
-## Yêu cầu trước khi chạy
+## Requirements Before Running
 
-| Thành phần | Ghi chú |
+| Component | Note |
 |---|---|
-| Python venv | Cần `pandas`, `numpy`, `scikit-learn`, `torch`, `matplotlib`, `requests`, `scipy`, `openai`, `kaggle`. Chọn đúng kernel này trong VS Code/Jupyter trước khi chạy. |
-| Dữ liệu | Notebook đọc dataset từ đường dẫn cố định trong biến `DATA_DIR` (cell "Load Datasets", "Download Dataset (Kaggle)", "Cleaning"). **Đổi lại đường dẫn này cho khớp máy bạn** trước khi chạy — mặc định đang trỏ tới máy phát triển gốc. Cần 3 file: `dataset_ied_packetv4.csv`, `dataset_sg_packetv4.csv`, `dataset_wbf_packetv4.csv`. |
-| Model weight có sẵn | Repo này đã kèm sẵn các file `.pt`/`.pkl` đã train (xem [File có sẵn trong repo](#file-có-sẵn-trong-repo)) — không bắt buộc chạy lại cell "Load Models"/"Download Dataset". |
-| `OPENAI_API_KEY` | Chỉ cần nếu chạy pipeline LLM cloud (cell "Complete Pipeline"). Tốn phí — xem cảnh báo bên dưới. |
-| Ollama | Chỉ cần nếu chạy so sánh LLM local (cell "Local LLM Comparison"). Cần `ollama serve` đang chạy và đã `ollama pull` các model muốn test. |
+| Python venv | Needs `pandas`, `numpy`, `scikit-learn`, `torch`, `matplotlib`, `requests`, `scipy`, `openai`, `kaggle`. Select this kernel in VS Code/Jupyter before running. |
+| Data | The notebook reads the dataset from a fixed path in the `DATA_DIR` variable (cells "Load Datasets", "Download Dataset (Kaggle)", "Cleaning"). **Change this path to match your machine** before running — it defaults to the original development machine. Needs 3 files: `dataset_ied_packetv4.csv`, `dataset_sg_packetv4.csv`, `dataset_wbf_packetv4.csv`. |
+| Pretrained model weights | This repo already includes trained `.pt`/`.pkl` files (see [Files Already in the Repo](#files-already-in-the-repo)) — no need to re-run the "Load Models"/"Download Dataset" cells. |
+| `OPENAI_API_KEY` | Only needed to run the cloud LLM pipeline (cell "Complete Pipeline"). Costs money — see the warning below. |
+| Ollama | Only needed to run the local LLM comparison (cell "Local LLM Comparison"). Requires `ollama serve` running and the models to test already `ollama pull`ed. |
 
-> Máy không có GPU vẫn chạy được bình thường trên CPU — `torch.cuda.is_available()` trả `False` là chuyện thường, không phải lỗi. Autoencoder và các model Ollama chỉ chậm hơn, không hỏng.
+> A machine without a GPU still runs fine on CPU — `torch.cuda.is_available()` returning `False` is normal, not an error. The autoencoder and Ollama models are just slower, not broken.
 
-## Thứ tự chạy cell
+## Cell Run Order
 
-Notebook chia theo section, chạy tuần tự từ trên xuống:
+The notebook is organized into sections, run sequentially top to bottom:
 
-1. **Datasets** — `Load Datasets` (bắt buộc) → `Download Dataset (Kaggle)` (tuỳ chọn, chỉ khi chưa có data) → `Load Models` (tuỳ chọn, tải sẵn weight từ GitHub gốc — 3 file RF sẽ luôn báo 404 vì repo gốc không có bản `v4` cho RF, không sao vì cell RF bên dưới tự train lại).
-2. **Data Processing** — `Cleaning` (bắt buộc) → `Data Splitting` (bắt buộc trước phần ML).
-3. **Visualisation** — tuỳ chọn, chỉ để xem thống kê/t-SNE.
-4. **Classical ML** — `DT`, `SVM`, `KNN`, `RF`: 4 cell độc lập, tự train + đánh giá + test chéo giữa 3 dataset.
-5. **Deep Learning** — `AutoEncoder` (mặc định load lại weight có sẵn, không train lại) và `AutoEncoder_Test` (biến thể latent nhỏ hơn, mặc định tự train lại từ đầu).
-6. **Intrusion Detection Pipeline** — 2 cell "Complete Pipeline" giống nhau, chỉ khác model (`o4-mini` cũ và `gpt-5.6-luna` mới hơn — nên chạy bản mới). Cần `OPENAI_API_KEY`. **Cell này định nghĩa các biến/hàm dùng chung cho bước 7** (`attacks`, `original_anomalies`, `df_orig`, `select_anomalous_packet`, `extract_packet_info`, `create_prompt`) — phải chạy ít nhất 1 trong 2 cell này trước, kể cả khi không dùng OpenAI.
-7. **So sánh Local LLM (Ollama)** — thay OpenAI bằng model local, miễn phí nhưng chậm hơn nhiều trên CPU. Mặc định 4 model × 8 loại tấn công × 3 lần lặp = 96 lần gọi.
-8. **Random Stuff** (cuối notebook) — các cell scratch vẽ timeline, phụ thuộc biến từ bước 6, không cần thiết cho pipeline chính.
+1. **Datasets** — `Load Datasets` (required) → `Download Dataset (Kaggle)` (optional, only if data isn't present yet) → `Load Models` (optional, downloads pretrained weights from the original GitHub repo — the 3 RF files will always 404 since the original repo has no `v4` build for RF, which is fine since the RF cell below retrains it anyway).
+2. **Data Processing** — `Cleaning` (required) → `Data Splitting` (required before the ML section).
+3. **Visualisation** — optional, just for viewing stats/t-SNE.
+4. **Classical ML** — `DT`, `SVM`, `KNN`, `RF`: 4 independent cells, each trains + evaluates + cross-tests across the 3 datasets.
+5. **Deep Learning** — `AutoEncoder` (loads the existing weights by default, doesn't retrain) and `AutoEncoder_Test` (a smaller-latent variant, retrains from scratch by default).
+6. **Intrusion Detection Pipeline** — 2 identical "Complete Pipeline" cells, differing only in model (the older `o4-mini` and the newer `gpt-5.6-luna` — run the newer one). Requires `OPENAI_API_KEY`. **This cell defines the variables/functions shared by step 7** (`attacks`, `original_anomalies`, `df_orig`, `select_anomalous_packet`, `extract_packet_info`, `create_prompt`) — at least one of these two cells must be run first, even if you're not using OpenAI.
+7. **Local LLM Comparison (Ollama)** — replaces OpenAI with local models, free but much slower on CPU. Default: 4 models × 8 attack types × 3 repeats = 96 calls.
+8. **Random Stuff** (end of notebook) — scratch cells plotting timelines, depend on variables from step 6, not needed for the main pipeline.
 
-## File có sẵn trong repo
+## Files Already in the Repo
 
-| File | Sinh ra từ |
+| File | Produced by |
 |---|---|
-| `*_ae_model.pt` | Autoencoder đã train (Deep Learning) — **32-dim latent, activation `nn.ReLU()` cố định**, kiến trúc gốc từ cell "Autoencoder (AE)" trong `ics_simlab_sanh.ipynb`. Đây là AE backend cho toàn bộ `local_multi_model_ae32_relu.py` (tầng lọc anomaly trước khi đưa vào LLM chấm risk score) — khác với các AE đã tune/thử nghiệm kiến trúc khác ở `retrain_ae_9dim.py`/`tune_ae_9dim.py`/`tune_ae_lstm_vae.py` (9-dim, nhiều activation, LSTM, VAE). |
-| `*_dt_model.pkl`, `*_knn_model.pkl` | Model ML cổ điển đã train |
-| `*_threshold.txt` | Ngưỡng reconstruction error (95th percentile) của autoencoder |
-| `local_llm_comparison_results.csv` | Chi tiết từng lần gọi model local qua Ollama |
-| `local_llm_comparison_summary.csv` | Bảng so sánh tốc độ / độ ổn định / độ tuân thủ format giữa các model |
-| `local llms.py` | Bản script độc lập tương đương cell "Local LLM Comparison", chạy được ngoài notebook nếu đã có sẵn các biến cần thiết trong kernel |
+| `*_ae_model.pt` | Trained autoencoder (Deep Learning) — **32-dim latent, fixed `nn.ReLU()` activation**, the original architecture from the "Autoencoder (AE)" cell in `ics_simlab_sanh.ipynb`. This is the AE backend for the entire `local_multi_model_ae32_relu.py` pipeline (the anomaly-filtering stage before feeding into the LLM for risk scoring) — different from the tuned/experimental AE variants in `retrain_ae_9dim.py`/`tune_ae_9dim.py`/`tune_ae_lstm_vae.py` (9-dim, several activations, LSTM, VAE). |
+| `*_dt_model.pkl`, `*_knn_model.pkl` | Trained classical ML models |
+| `*_threshold.txt` | The autoencoder's reconstruction-error threshold (95th percentile) |
+| `local_llm_comparison_results.csv` | Per-call details from the local Ollama model comparison |
+| `local_llm_comparison_summary.csv` | Comparison table of speed / consistency / format compliance across models |
+| `local llms.py` | A standalone script equivalent to the "Local LLM Comparison" cell, runnable outside the notebook if the required variables already exist in the kernel |
 
-Các file trên nằm ở repo root vì được dùng chung giữa nhiều script/notebook (vd `smart_grid_ae_model.pt` được `ics_simlab_sanh.ipynb` và `local_multi_model_ae32_relu.py` cùng load).
+The files above live in the repo root because they're shared across several scripts/notebooks (e.g. `smart_grid_ae_model.pt` is loaded by both `ics_simlab_sanh.ipynb` and `local_multi_model_ae32_relu.py`).
 
-### Log + kết quả của 5 script standalone (`retrain_ae_9dim.py`, `tune_ae_9dim.py`, `tune_ae_lstm_vae.py`, `local_multi_model_ae32_relu.py`, `local_multi_model_ae32_relu_structured_prompt.py`)
+### Log + results for 5 standalone scripts (`retrain_ae_9dim.py`, `tune_ae_9dim.py`, `tune_ae_lstm_vae.py`, `local_multi_model_ae32_relu.py`, `local_multi_model_ae32_relu_structured_prompt.py`)
 
-Mỗi script gom log + CSV/`.pt`/`.txt` output riêng của nó vào 1 folder cùng tên (tạo tự động lúc import, kể cả khi chỉ import làm dependency):
+Each script collects its own log + CSV/`.pt`/`.txt` output into a folder of the same name (created automatically at import time, even when only imported as a dependency):
 
 ```
 retrain_ae_9dim/    ← retrain_ae_9dim.py   (*_ae_model_9dim.pt, *_threshold_test.txt, log)
 tune_ae_9dim/       ← tune_ae_9dim.py      (*_ae_tuning_results.csv, log)
 tune_ae_lstm_vae/   ← tune_ae_lstm_vae.py  (*_ae_arch_tuning_results*.csv, *summary*.csv, log)
-local_multi_model_ae32_relu/       ← local_multi_model_ae32_relu.py (*_results*.csv, *_dataset_timing*.csv, *_summary*.csv, *_risk_score_pivot_*.csv, log) — prompt gốc (250 ký tự, không có cấu trúc)
-local_multi_model_ae32_relu_structured_prompt/ ← local_multi_model_ae32_relu_structured_prompt.py (cung dinh dang output nhu tren) — prompt_2, xem mục "Prompt 2" bên dưới
+local_multi_model_ae32_relu/       ← local_multi_model_ae32_relu.py (*_results*.csv, *_dataset_timing*.csv, *_summary*.csv, *_risk_score_pivot_*.csv, log) — original prompt (250 characters, unstructured)
+local_multi_model_ae32_relu_structured_prompt/ ← local_multi_model_ae32_relu_structured_prompt.py (same output format as above) — prompt_2, see the "Prompt 2" section below
 ```
 
-Bản thân file `.py` vẫn ở repo root (chạy `python3 <ten_script>.py` bình thường) — chỉ output đi vào folder. Vì thư mục được tạo ngay lúc import (trước khi ghi file bất kỳ), redirect log qua shell vào đúng folder đó cũng hoạt động ngay từ lần chạy đầu, ví dụ:
+The `.py` files themselves stay in the repo root (run `python3 <script_name>.py` as usual) — only the output goes into the folder. Since the folder is created right at import time (before any file is written), redirecting the log via shell into that folder also works from the very first run, e.g.:
 
 ```bash
 python3 tune_ae_lstm_vae.py --tag 4th_attempt 2>&1 | tee tune_ae_lstm_vae/run_$(date +%Y%m%d_%H%M).log
 ```
 
-Các file `.pt`/`.pkl`/`.txt` dùng chung giữa nhiều script (bảng ở trên) **không** nằm trong các folder này — di chuyển sẽ gây `FileNotFoundError` ở script khác đang load chúng.
+The `.pt`/`.pkl`/`.txt` files shared across multiple scripts (table above) are **not** in these folders — moving them would cause a `FileNotFoundError` in whichever other script loads them.
 
-## Các vấn đề đã gặp & cách xử lý
+## Issues Encountered & How They Were Resolved
 
-Ghi lại để đỡ mất công debug lại từ đầu:
+Recorded here to avoid re-debugging from scratch:
 
-- **`Request timed out.` khi gọi model Ollama** — SDK `openai` mặc định tự retry 2 lần khi timeout, nên 1 lần gọi thất bại thực chất chờ tới ~3× `REQUEST_TIMEOUT_SEC` mới báo lỗi. Đã set `max_retries=0` trong `OpenAI(...)` ở cell "Local LLM Comparison" để fail nhanh đúng 1 lần thử.
-- **CPU bị chiếm dụng bất thường sau khi timeout/interrupt** — Ollama không huỷ job đang generate khi client timeout hoặc bị interrupt; job cũ tiếp tục chạy ngầm, tranh CPU với các lần gọi sau. Nếu nghi ngờ, chạy `ollama ps` kiểm tra model đang load, và `sudo snap restart ollama` (hoặc restart service Ollama tương ứng) để dọn sạch trước khi chạy lại.
-- **`qwen3:4b` và `deepseek-r1:8b` chậm hơn hẳn `phi4-mini`** — cả hai đều là reasoning model, tự động sinh khối `<think>...</think>` suy luận nội bộ trước khi trả lời. Đã thử tắt qua `think: false` (cả OpenAI-compat client lẫn API gốc Ollama) và quy ước `/no_think` trong prompt — **không cách nào tắt được** với bản model đang dùng, đây là giới hạn của model/Ollama chứ không phải lỗi code.
-  - **Retest 06/09/2026 (`local_multi_model_ae32_relu_structured_prompt.py`, prompt_2, `--tag run2`):** đã retest cả 2 model bằng đúng `use_llm_local()` hiện tại (gọi native `/api/chat` + `think: false`). Kết quả **khác nhau rõ rệt**:
-    - **`deepseek-r1:8b` đã FIX** — `think:false` hoạt động đúng, 100% success rate, 100% format compliance, tốc độ hợp lý (avg 42s/lần, tổng 928s cho 22 lần gọi cả 3 dataset).
-    - **`qwen3:4b` VẪN CHƯA FIX được** — output bắt đầu bằng `"We are given the following packet data: ..."`, tức model viết toàn bộ chuỗi suy luận thẳng vào `content` thay vì đưa vào `<think>` (hoặc field `thinking` riêng), không tôn trọng `think:false`. Hậu quả: `avg_completion_tokens` 3536 (gấp 8-50 lần các model khác), `format_compliance_%` chỉ 65% (nhiều lần không kịp sinh dòng `Risk Score:`), 2/22 lần gọi timeout hẳn (>600s), tổng thời gian 3980s — riêng model này chiếm gần bằng tổng thời gian của 6 model còn lại cộng lại. Kết luận: `qwen3:4b` nên coi là model có giới hạn đã biết (not comparable fairly) khi so sánh format compliance/tốc độ, trừ khi Ollama/model có bản cập nhật khác.
-- **File `.pt`/`.pkl` tải về là trang lỗi HTML** — cell "Load Models" ban đầu không kiểm tra HTTP status trước khi ghi file, khiến response lỗi bị ghi đè lên làm file corrupt. Đã thêm kiểm tra status code, bỏ qua (skip) rõ ràng các file không tồn tại (như 3 file RF ở trên) thay vì ghi rác.
-- **`ModuleNotFoundError` dù đã cài thư viện** — do VS Code chọn nhầm kernel Python (không phải kernel của `.venv` trong repo này). Chọn lại kernel đúng qua "Select Kernel" ở góc trên phải notebook.
-- **Sửa code nhưng chạy vẫn ra lỗi cũ** — nếu file `.ipynb` bị sửa từ bên ngoài VS Code (script, git, ...) trong khi đang mở, editor có thể vẫn hiển thị bản cũ trong bộ nhớ. Dùng `Ctrl+Shift+P` → "Revert File" để nạp lại từ đĩa trước khi chạy lại.
-- **Attack "sporadic sensor measurement injection" (attack #5) vắng mặt trong kết quả LLM của Smart Grid và Water Bottle Factory** — không phải lỗi tổng hợp CSV. `build_prompts_for_dataset()` (`local_multi_model_ae32_relu.py`) chỉ tạo prompt cho 1 attack type nếu autoencoder gắn nhãn *anomaly* (MSE > threshold) cho ít nhất 1 gói tin loại đó; nếu không, nó in `[BO QUA] Khong co anomaly nao duoc AE phat hien...` và bỏ qua hẳn attack đó — xem log ở `local_multi_model_ae32_relu/local_multi_model_log.txt`. Kiểm tra lại bằng cách chạy AE trên toàn bộ dữ liệu (không downsample) cho thấy attack #5 không bao giờ vượt threshold ở Smart Grid (0/370 gói, MSE cao nhất 0.0028 so với threshold 0.0097) lẫn Water Bottle Factory (0/5200 gói, MSE cao nhất 0.0076 so với threshold 0.0096) — trong khi ở Intelligent Electronic Device thì có (37/8600, 0.4%) vì threshold của dataset này thấp hơn ~500 lần (1.97e-05, tính theo percentile 95 của MSE trên tập normal — xem cell `detect_anomaly()` trong notebook, mỗi dataset tính threshold độc lập nên không đồng nhất giữa 3 dataset). Ở cả 3 dataset, attack #5 luôn là loại có MSE reconstruction thấp nhất trong 8 loại tấn công (đúng bản chất: tiêm giá trị sensor lệch nhẹ/rải rác nên gói tin trông gần giống traffic bình thường) — nó chỉ lọt qua được ở IED nhờ threshold cực thấp một cách bất thường của dataset đó, chứ không phải AE "phát hiện tốt hơn". Đây là giới hạn thật của pipeline 2 tầng AE → LLM (không phải bug code): tầng AE lọc trước, LLM chỉ thấy gói tin AE đã đánh dấu bất thường, nên attack nào AE bỏ sót thì LLM không bao giờ được chấm điểm cho attack đó.
-- **`gemma4:12b` trả về risk-score rỗng ở gần như mọi lần gọi (cả 3 dataset)** — không phải lỗi/timeout: `completion_tokens` mỗi lần luôn xấp xỉ ~3800 (`prompt_tokens` ~270-310 + completion ≈ 4096), đúng bằng **context window mặc định của Ollama (`num_ctx=4096`)** khi request không set giá trị này. `gemma4:12b` là model có capability `"thinking"` (kiểm tra qua `ollama` `/api/tags`) — với endpoint gốc `/api/chat`, phần suy luận nằm ở field `message.thinking` tách riêng khỏi `message.content` (câu trả lời thật); nếu model tiêu hết toàn bộ ngân sách token cho `thinking` mà chưa xong, nó bị cắt ngang **trước khi bắt đầu sinh `content`** → `content` rỗng hoàn toàn (không phải rỗng do bị cắt giữa chừng). Vì request vẫn "thành công" (HTTP 200, không exception) nên code cũ không bắt được lỗi này — thất bại âm thầm, không in `OK` cũng không in `LOI:` trong log, chỉ để lại ô trống trong CSV.
-  - **Lần sửa đầu (24/08/2026, không hiệu quả):** thêm `NUM_CTX = 16384`, truyền qua `extra_body={"options": {"num_ctx": NUM_CTX}}` trong `use_llm_local()` (vẫn gọi qua client OpenAI-compat `client.chat.completions.create`). Chạy lại (`--tag gemma4_ctxfix`) vẫn ra kết quả giống hệt lần trước (20/22 lần gọi vẫn `completion_tokens` dừng đúng ở tổng 4096, chỉ 1/22 có risk score) — **vì endpoint OpenAI-compat `/v1/chat/completions` của bản Ollama đang dùng (0.32.14) âm thầm bỏ qua field `options`/`num_ctx`** (đã xác minh bằng tay: gửi request `options.num_ctx=16384` qua `/v1/chat/completions` rồi kiểm tra `curl :11435/api/ps` → vẫn báo `context_length: 4096`; cùng request y hệt gửi qua endpoint gốc `/api/chat` thì `ollama ps` báo đúng `context_length: 16384` và `size_vram` tăng tương ứng).
-  - **Lần sửa thứ 2 (24/08/2026, đúng hướng nhưng chưa đủ):** đổi `use_llm_local()` sang gọi thẳng endpoint gốc `POST /api/chat` bằng `requests` thay vì qua SDK `openai`/OpenAI-compat (`check_model_available()` vẫn dùng SDK vì chỉ list model, không bị ảnh hưởng). Xác nhận qua `ollama ps` model được load đúng với `context_length: 16384`. Nhưng rerun (`--tag gemma4_ctxfix2`) cho thấy `num_ctx` lớn hơn không giải quyết được gốc rễ: dataset IED mất **56 phút cho 8 lần gọi**, vẫn chỉ 1/8 có risk score — model chỉ "nghĩ" lâu hơn (tới tận 16k token) chứ không nghĩ *xong*. Đã dừng giữa chừng (không đợi hết 3 dataset, ước tính mất thêm 1.5-2h) để thử hướng khác.
-  - **Lần sửa thứ 3 (24/08/2026, thành công):** thêm `"think": false` ở top-level body khi gọi `/api/chat` (bên cạnh `num_ctx=16384` giữ nguyên làm lưới an toàn). Test tay qua endpoint gốc xác nhận `think:false` tắt hẳn suy luận cho `gemma4:12b` (field `thinking` trả về `None`, `content` có ngay câu trả lời), rút thời gian từ hàng trăm giây/rỗng hoàn toàn xuống **~2-3 giây/lần gọi**. Rerun cuối (`--tag gemma4_thinkfix`) đạt **100% success, 100% format compliance**, tổng 22 lần gọi (3 dataset) chỉ mất **66 giây**. Lưu ý: mục ngay trên (về `qwen3:4b`/`deepseek-r1:8b`) ghi nhận đã thử `think:false` qua **cả 2 đường** (OpenAI-compat lẫn API gốc) và vẫn không tắt được — khác với trường hợp `gemma4:12b` này chỉ mới xác nhận đường OpenAI-compat có bug, còn đường gốc lại tắt được. Hai model đó **chưa được retest bằng cú pháp `"think": false` chính xác đang dùng ở đây** (`use_llm_local()` hiện tại) nên chưa rõ có cải thiện được không — nếu cần dùng lại `qwen3:4b`/`deepseek-r1:8b`, nên thử lại trước khi kết luận.
-  - **Bài học:** với Ollama bản này (0.32.14), muốn set `options`/`think` đáng tin cậy cho model "thinking", phải gọi endpoint gốc `/api/chat`/`/api/generate` bằng `requests` — client OpenAI-compat (`openai` SDK trỏ `/v1/...`) âm thầm bỏ qua các field này thay vì báo lỗi, rất dễ nhầm là "model tự nó chậm/không hỗ trợ tắt thinking" trong khi thực ra là bug ở lớp tương thích. `client.models.list()` (OpenAI-compat) vẫn dùng bình thường cho việc kiểm tra model đã pull hay chưa vì không liên quan tới generate.
-- **`qwen3:14b` lỗi `400 Client Error: Bad Request for url: http://localhost:11435/api/chat` liên tục** (25/08/2026, xem `local_multi_model_ae32_relu/local_multi_model_run_20260824_0949.log`) — lần gọi đầu tiên cho model này ở dataset Smart Grid thành công nhưng rất chậm (126.8s, bất thường so với các model khác), sau đó **mọi lần gọi tiếp theo cho model này trong dataset đó đều lỗi 400** cho tới khi dataset kết thúc. Nguyên nhân gốc **chưa xác định được** vì `use_llm_local()` lúc đó chỉ bắt `response.raise_for_status()`, log ra dòng status (`"400 Client Error: ..."`) mà không có response body — trong khi body mới là nơi Ollama ghi lý do thật (hết VRAM, model runner crash, v.v.).
-  - **Đã fix (25/08/2026):** đổi `use_llm_local()` sang tự kiểm tra `response.ok` và raise kèm `response.text` (tối đa 1000 ký tự) thay vì dùng `raise_for_status()` — lần lỗi tiếp theo log sẽ cho biết Ollama báo lỗi gì cụ thể thay vì chỉ dòng status chung chung.
-  - **Giả thuyết chưa xác nhận:** `qwen3:14b` là model nặng nhất trong 8 model đang test (9.3GB), chạy chung `NUM_CTX=16384` (tăng lên ban đầu để fix `gemma4:12b`, hiện áp dụng cho cả 8 model) trên GPU GTX 3060 — context lớn + model 14B có thể khiến model runner hết VRAM/crash sau lần generate đầu (127s là dấu hiệu bất thường), các request sau bị 400 vì runner đó đã hỏng. Nếu lỗi lặp lại, kiểm tra `ollama ps` (xem `size_vram`) và log Ollama server đúng lúc lỗi xảy ra để xác nhận; nếu đúng, cân nhắc set `NUM_CTX` thấp hơn riêng cho các model nặng (`qwen3:14b`, `gemma4:12b`) thay vì dùng chung 16384 cho mọi model.
-- **`FileNotFoundError: Khong tim thay 'dataset_wbf_packetv4.csv'`** xuất hiện giữa log `local_multi_model_ae32_relu/local_multi_model_run_20260824_0949.log` dù dataset Intelligent Electronic Device và Smart Grid load thành công ngay trước đó trong **cùng 1 process** (nên `DATA_DIR` — resolve theo cwd 1 lần lúc import `retrain_ae_9dim.py` — chắc chắn đúng, không phải do đổi thư mục làm việc giữa chừng). File `dataset_wbf_packetv4.csv` **thực sự tồn tại** (88MB, xác nhận ngay trong chính log này qua lệnh `ll data/`). File log này thực chất là bản paste thô từ terminal (lẫn ký tự điều khiển ANSI, lịch sử lệnh, `ll`/`git status` chen giữa), không phải stdout sạch, nên nhiều khả năng đây là traceback của **một lần chạy cũ hơn bị lẫn vào**, không chắc thuộc đúng lần chạy được đặt tên trong log. Chưa tìm thấy bug trong code (`find_dataset_csv`/`DATA_DIR` không đổi, logic đơn giản). **Khuyến nghị:** chạy lại bình thường (data đã có sẵn); lần sau redirect log sạch bằng `python3 local_multi_model_ae32_relu.py ... > run.log 2>&1` thay vì copy-paste terminal, để tránh lẫn rác và dễ debug hơn nếu lỗi thật sự xảy ra.
+- **`Request timed out.` when calling an Ollama model** — the `openai` SDK automatically retries twice on timeout by default, so a single failed call actually waits up to ~3× `REQUEST_TIMEOUT_SEC` before reporting an error. Set `max_retries=0` in `OpenAI(...)` in the "Local LLM Comparison" cell to fail fast after exactly one attempt.
+- **Unusual CPU usage after a timeout/interrupt** — Ollama doesn't cancel a generation job when the client times out or is interrupted; the old job keeps running in the background, competing for CPU with subsequent calls. If suspected, run `ollama ps` to check the loaded model, and `sudo snap restart ollama` (or restart the corresponding Ollama service) to clean up before running again.
+- **`qwen3:4b` and `deepseek-r1:8b` much slower than `phi4-mini`** — both are reasoning models that automatically generate an internal `<think>...</think>` block before answering. Tried disabling it via `think: false` (both the OpenAI-compat client and the native Ollama API) and the `/no_think` prompt convention — **no way to turn it off** with the model build in use; this is a limitation of the model/Ollama, not a code bug.
+  - **Retest 2026-09-06 (`local_multi_model_ae32_relu_structured_prompt.py`, prompt_2, `--tag run2`):** retested both models with the current `use_llm_local()` (calling the native `/api/chat` + `think: false`). Results were **clearly different**:
+    - **`deepseek-r1:8b` is now FIXED** — `think:false` works correctly, 100% success rate, 100% format compliance, reasonable speed (avg 42s/call, 928s total for 22 calls across all 3 datasets).
+    - **`qwen3:4b` is STILL NOT FIXED** — output starts with `"We are given the following packet data: ..."`, meaning the model writes its entire reasoning chain straight into `content` instead of a `<think>` block (or a separate `thinking` field), ignoring `think:false`. Consequences: `avg_completion_tokens` 3536 (8-50x more than other models), `format_compliance_%` only 65% (often fails to produce the `Risk Score:` line in time), 2/22 calls timed out outright (>600s), total time 3980s — this one model alone took almost as long as the other 6 models combined. Conclusion: `qwen3:4b` should be treated as a model with a known limitation (not fairly comparable) when comparing format compliance/speed, unless Ollama/the model gets a different update.
+- **Downloaded `.pt`/`.pkl` file is an HTML error page** — the original "Load Models" cell didn't check the HTTP status before writing the file, so an error response got written over the file, corrupting it. Added a status code check, explicitly skipping files that don't exist (like the 3 RF files above) instead of writing garbage.
+- **`ModuleNotFoundError` despite the library being installed** — caused by VS Code selecting the wrong Python kernel (not this repo's `.venv` kernel). Reselect the correct kernel via "Select Kernel" in the notebook's top-right corner.
+- **Code fixed but running still produces the old error** — if the `.ipynb` file was edited from outside VS Code (script, git, ...) while open, the editor may still be showing the old version from memory. Use `Ctrl+Shift+P` → "Revert File" to reload from disk before running again.
+- **Attack "sporadic sensor measurement injection" (attack #5) missing from the LLM results for Smart Grid and Water Bottle Factory** — not a CSV-aggregation bug. `build_prompts_for_dataset()` (`local_multi_model_ae32_relu.py`) only builds a prompt for an attack type if the autoencoder labels at least one packet of that type as an *anomaly* (MSE > threshold); if not, it prints `[SKIPPED] No anomaly detected by the AE...` and skips that attack entirely — see the log at `local_multi_model_ae32_relu/local_multi_model_log.txt`. Re-checking by running the AE on the full dataset (no downsampling) shows attack #5 never exceeds the threshold on Smart Grid (0/370 packets, highest MSE 0.0028 vs threshold 0.0097) or Water Bottle Factory (0/5200 packets, highest MSE 0.0076 vs threshold 0.0096) — while on Intelligent Electronic Device it does (37/8600, 0.4%) because that dataset's threshold is ~500x lower (1.97e-05, computed as the 95th percentile of MSE on the normal set — see the `detect_anomaly()` cell in the notebook; each dataset computes its threshold independently so they're not consistent across the 3 datasets). Across all 3 datasets, attack #5 always has the lowest reconstruction MSE of the 8 attack types (makes sense: it injects slight/scattered sensor value deviations, so the packet looks close to normal traffic) — it only slips through on IED thanks to that dataset's unusually low threshold, not because the AE "detects it better" there. This is a genuine limitation of the 2-stage AE → LLM pipeline (not a code bug): the AE stage filters first, the LLM only ever sees packets the AE has already flagged as anomalous, so whatever attack the AE misses, the LLM never gets a chance to score.
+- **`gemma4:12b` returns an empty risk-score on almost every call (all 3 datasets)** — not an error/timeout: `completion_tokens` is consistently ~3800 each time (`prompt_tokens` ~270-310 + completion ≈ 4096), exactly matching **Ollama's default context window (`num_ctx=4096`)** when the request doesn't set that value. `gemma4:12b` is a model with "thinking" capability (checked via `ollama`'s `/api/tags`) — with the native `/api/chat` endpoint, the reasoning lives in the `message.thinking` field, separate from `message.content` (the actual answer); if the model burns through its entire token budget on `thinking` without finishing, it gets cut off **before it even starts generating `content`** → `content` ends up completely empty (not empty from being cut off mid-generation). Since the request still "succeeds" (HTTP 200, no exception), the old code couldn't catch this — a silent failure, printing neither `OK` nor `ERROR` in the log, just leaving a blank cell in the CSV.
+  - **First fix attempt (2026-08-24, ineffective):** added `NUM_CTX = 16384`, passed via `extra_body={"options": {"num_ctx": NUM_CTX}}` in `use_llm_local()` (still calling through the OpenAI-compat client `client.chat.completions.create`). Rerunning (`--tag gemma4_ctxfix`) produced results identical to before (20/22 calls still stopped at exactly 4096 total `completion_tokens`, only 1/22 got a risk score) — **because the OpenAI-compat endpoint `/v1/chat/completions` on the Ollama build in use (0.32.14) silently ignores the `options`/`num_ctx` field** (manually verified: sending a request with `options.num_ctx=16384` via `/v1/chat/completions` then checking `curl :11435/api/ps` → still reports `context_length: 4096`; the identical request sent via the native `/api/chat` endpoint makes `ollama ps` correctly report `context_length: 16384` with `size_vram` increasing accordingly).
+  - **Second fix attempt (2026-08-24, right direction but not enough):** changed `use_llm_local()` to call the native `POST /api/chat` endpoint directly via `requests` instead of the `openai` SDK/OpenAI-compat (`check_model_available()` still uses the SDK since it only lists models, unaffected). Confirmed via `ollama ps` that the model loads correctly with `context_length: 16384`. But rerunning (`--tag gemma4_ctxfix2`) showed a larger `num_ctx` doesn't fix the root cause: the IED dataset took **56 minutes for 8 calls**, still only 1/8 got a risk score — the model just "thinks" longer (up to the full 16k tokens) rather than actually *finishing* thinking. Stopped partway through (didn't wait for all 3 datasets, estimated another 1.5-2h) to try a different approach.
+  - **Third fix attempt (2026-08-24, successful):** added `"think": false` at the top level of the body when calling `/api/chat` (alongside keeping `num_ctx=16384` as a safety net). Manual testing via the native endpoint confirmed `think:false` fully disables reasoning for `gemma4:12b` (the `thinking` field returns `None`, `content` has the answer immediately), cutting time from hundreds of seconds/completely empty down to **~2-3 seconds per call**. The final rerun (`--tag gemma4_thinkfix`) achieved **100% success, 100% format compliance**, with all 22 calls (3 datasets) taking only **66 seconds total**. Note: the entry just above (about `qwen3:4b`/`deepseek-r1:8b`) recorded that `think:false` was tried via **both paths** (OpenAI-compat and the native API) and still couldn't be disabled — different from this `gemma4:12b` case, where only the OpenAI-compat path was confirmed buggy, while the native path did disable it. Those two models **haven't been retested with the exact `"think": false` syntax used here** (the current `use_llm_local()`) so it's unclear whether they'd improve — if `qwen3:4b`/`deepseek-r1:8b` are needed again, retest before drawing conclusions.
+  - **Lesson learned:** with this Ollama build (0.32.14), to reliably set `options`/`think` for a "thinking" model, you must call the native `/api/chat`/`/api/generate` endpoint via `requests` — the OpenAI-compat client (the `openai` SDK pointed at `/v1/...`) silently ignores these fields instead of raising an error, which is easy to misdiagnose as "the model itself is just slow/doesn't support disabling thinking" when it's actually a bug in the compatibility layer. `client.models.list()` (OpenAI-compat) is still fine to use for checking whether a model has been pulled, since it's unrelated to generation.
+- **`qwen3:14b` repeatedly fails with `400 Client Error: Bad Request for url: http://localhost:11435/api/chat`** (2026-08-25, see `local_multi_model_ae32_relu/local_multi_model_run_20260824_0949.log`) — the first call for this model on the Smart Grid dataset succeeded but was very slow (126.8s, abnormal compared to other models), and after that **every subsequent call for this model on that dataset failed with a 400** until the dataset finished. The root cause **could not be determined** because `use_llm_local()` at the time only caught `response.raise_for_status()`, logging just the status line (`"400 Client Error: ..."`) without the response body — while the body is exactly where Ollama writes the real reason (out of VRAM, model runner crash, etc.).
+  - **Fixed (2026-08-25):** changed `use_llm_local()` to check `response.ok` itself and raise with `response.text` attached (up to 1000 characters) instead of using `raise_for_status()` — the next time this error occurs, the log will show exactly what Ollama reported instead of just a generic status line.
+  - **Unconfirmed hypothesis:** `qwen3:14b` is the heaviest of the 8 models being tested (9.3GB), running with the shared `NUM_CTX=16384` (originally raised to fix `gemma4:12b`, now applied to all 8 models) on a GTX 3060 GPU — the large context + 14B model may cause the model runner to run out of VRAM/crash after the first generation (127s is an abnormal sign), with subsequent requests failing with 400 because that runner is already broken. If the error recurs, check `ollama ps` (look at `size_vram`) and the Ollama server log right when it happens to confirm; if confirmed, consider setting a lower `NUM_CTX` specifically for the heavy models (`qwen3:14b`, `gemma4:12b`) instead of sharing 16384 across every model.
+- **`FileNotFoundError: Could not find 'dataset_wbf_packetv4.csv'`** appeared partway through the log `local_multi_model_ae32_relu/local_multi_model_run_20260824_0949.log`, even though the Intelligent Electronic Device and Smart Grid datasets had loaded successfully right before it in the **same process** (so `DATA_DIR` — resolved once from cwd at `retrain_ae_9dim.py` import time — must have been correct, not a case of the working directory changing mid-run). The file `dataset_wbf_packetv4.csv` **genuinely exists** (88MB, confirmed right within that same log via an `ll data/` command). This log file is actually a raw terminal paste (mixed with ANSI control characters, shell history, `ll`/`git status` output interleaved), not clean stdout, so this is most likely a traceback from **an older run that got mixed in**, not necessarily belonging to the run named in that log. No bug found in the code (`find_dataset_csv`/`DATA_DIR` unchanged, simple logic). **Recommendation:** just rerun normally (the data is already there); next time, redirect a clean log with `python3 local_multi_model_ae32_relu.py ... > run.log 2>&1` instead of copy-pasting the terminal, to avoid noise and make debugging easier if a real error occurs.
 
-## Nhật ký thực nghiệm
+## Experiment Log
 
-Ghi lại mục đích + kết quả từng lần chạy `local_multi_model_ae32_relu.py` để sau này tổng hợp lại các experiment. Từ 24/08/2026, script bắt buộc cờ `--purpose "..."` (xem `python3 local_multi_model_ae32_relu.py --help`); mục đích được in vào log và lưu vào cột `run_purpose` trong CSV. Có thể chạy riêng 1 phần bằng `--models`/`--datasets`, dùng `--tag` để không đè lên kết quả lần chạy trước.
+Records the purpose + outcome of each `local_multi_model_ae32_relu.py` run for later aggregation of experiments. As of 2026-08-24, the script requires a `--purpose "..."` flag (see `python3 local_multi_model_ae32_relu.py --help`); the purpose is printed to the log and stored in the `run_purpose` CSV column. A partial run can be done with `--models`/`--datasets`, and `--tag` avoids overwriting a previous run's results.
 
-**Lưu ý áp dụng cho TẤT CẢ các lần chạy trong bảng dưới:** tầng anomaly detection dùng autoencoder **32-dim latent, `nn.ReLU()` cố định** (class `AutoEncoder` trong `local_multi_model_ae32_relu.py`, load từ `*_ae_model.pt`) — không phải bất kỳ biến thể đã tune/VAE/LSTM nào ở các script khác. Nếu sau này thay AE backend (vd sang VAE đã tune), các dòng lịch sử cũ trong bảng này không còn phản ánh đúng hành vi hiện tại và cần ghi chú rõ phiên bản AE tương ứng.
+**Note applying to ALL runs in the table below:** the anomaly detection stage uses the autoencoder with **32-dim latent, fixed `nn.ReLU()`** (the `AutoEncoder` class in `local_multi_model_ae32_relu.py`, loaded from `*_ae_model.pt`) — not any of the tuned/VAE/LSTM variants in the other scripts. If the AE backend is swapped later (e.g. to a tuned VAE), the older rows in this table will no longer reflect current behavior and should be annotated with the AE version they used.
 
-| Ngày | File output | Mục đích | Phạm vi | Kết quả |
+| Date | Output files | Purpose | Scope | Result |
 |---|---|---|---|---|
-| ~19/08/2026 | `local_multi_model_results_1.csv`, `..._dataset_timing_1.csv`, `..._summary_1.csv` | So sánh risk-scoring giữa 8 model local (phi4-mini → qwen3:14b) trên cả 3 dataset (chưa có cờ `--purpose`, suy ra từ log) | 8 model × 3 dataset × 8 attack type | Phát hiện 2 vấn đề: (1) attack #5 "sporadic sensor measurement injection" vắng mặt ở Smart Grid/WBF do threshold AE quá cao — xem giải thích ở mục trên; (2) `gemma4:12b` trả risk-score rỗng ở mọi lần gọi do `num_ctx` mặc định 4096 quá nhỏ — xem giải thích ở mục trên. `openthinker:7b` bị skip toàn bộ (chưa `ollama pull`). |
-| 24/08/2026 | `local_multi_model_results_gemma4_ctxfix.csv`, `..._dataset_timing_gemma4_ctxfix.csv`, `..._summary_gemma4_ctxfix.csv` | Rerun riêng `gemma4:12b` trên cả 3 dataset sau khi thêm `num_ctx=16384` qua `extra_body` của client OpenAI-compat | `gemma4:12b` × 3 dataset × 8 attack type | **Fix không hiệu quả** — kết quả gần như giống hệt lần đầu (`format_compliance_% = 4.5`, chỉ 1/22 lần gọi có risk score). Điều tra thêm phát hiện `/v1/chat/completions` bỏ qua `options.num_ctx` — xem mục "Các vấn đề đã gặp" ở trên. |
-| 24/08/2026 | _(không lưu — bị dừng giữa chừng, script chỉ ghi CSV sau khi chạy xong toàn bộ)_ | Rerun lần 2 sau khi đổi `use_llm_local()` sang gọi thẳng endpoint gốc `/api/chat` (đã xác nhận bằng `ollama ps` là `num_ctx=16384` lần này áp dụng thật) | `gemma4:12b` × 3 dataset × 8 attack type | **Dừng giữa chừng** — dataset IED xong sau 56 phút (8 lần gọi) nhưng vẫn chỉ 1/8 có risk score; `num_ctx` lớn hơn chỉ khiến model "nghĩ" lâu hơn chứ không nghĩ xong. Ước tính cần thêm 1.5-2h cho 2 dataset còn lại với tỷ lệ thành công tương tự → không đáng, chuyển sang thử `think: false`. |
-| 24/08/2026 | `local_multi_model_results_gemma4_thinkfix.csv`, `..._dataset_timing_gemma4_thinkfix.csv`, `..._summary_gemma4_thinkfix.csv` | Rerun lần 3 sau khi thêm `"think": false` vào request `/api/chat` để tắt hẳn suy luận nội bộ của `gemma4:12b` thay vì chỉ tăng ngân sách token cho nó | `gemma4:12b` × 3 dataset × 8 attack type | **Thành công** — 100% success rate, 100% format compliance, tổng 22 lần gọi chỉ mất 66s (trung bình 3s/lần, trước đó hàng trăm giây hoặc rỗng hoàn toàn). |
-| 06/09/2026 | `local_multi_model_results_run2.csv`, `..._dataset_timing_run2.csv`, `..._summary_run2.csv` (script: `local_multi_model_ae32_relu_structured_prompt.py`, prompt_2, chạy trên lab232-a04) | So sánh full 7 model đã pull (thiếu `openthinker:7b`) × 3 dataset với prompt có cấu trúc (5 field), sau khi sửa lỗi prompt lẫn tiếng Việt | 7 model × 3 dataset × 8 attack type | Xem chi tiết ở mục "Các vấn đề đã gặp" — `deepseek-r1:8b` xác nhận đã fix (100% success/compliance), `qwen3:4b` vẫn không tắt được thinking (format_compliance 65%, 2 timeout), 1 crash CUDA transient ở `phi4-mini`/WBF, và Water Bottle Factory làm chậm hẳn các model reasoning (qwen3:14b/deepseek-r1:8b/gemma4:12b) so với 2 dataset kia. |
+| ~2026-08-19 | `local_multi_model_results_1.csv`, `..._dataset_timing_1.csv`, `..._summary_1.csv` | Compare risk-scoring across 8 local models (phi4-mini → qwen3:14b) on all 3 datasets (no `--purpose` flag yet, inferred from the log) | 8 models × 3 datasets × 8 attack types | Found 2 issues: (1) attack #5 "sporadic sensor measurement injection" missing on Smart Grid/WBF due to the AE threshold being too high — see the explanation above; (2) `gemma4:12b` returns an empty risk-score on every call because the default `num_ctx` of 4096 is too small — see the explanation above. `openthinker:7b` was skipped entirely (not `ollama pull`ed yet). |
+| 2026-08-24 | `local_multi_model_results_gemma4_ctxfix.csv`, `..._dataset_timing_gemma4_ctxfix.csv`, `..._summary_gemma4_ctxfix.csv` | Rerun `gemma4:12b` alone on all 3 datasets after adding `num_ctx=16384` via the OpenAI-compat client's `extra_body` | `gemma4:12b` × 3 datasets × 8 attack types | **Fix ineffective** — results almost identical to the first run (`format_compliance_% = 4.5`, only 1/22 calls got a risk score). Further investigation found `/v1/chat/completions` ignores `options.num_ctx` — see "Issues Encountered" above. |
+| 2026-08-24 | _(not saved — stopped partway through; the script only writes CSVs after the entire run finishes)_ | 2nd rerun after changing `use_llm_local()` to call the native `/api/chat` endpoint directly (confirmed via `ollama ps` that `num_ctx=16384` was actually applied this time) | `gemma4:12b` × 3 datasets × 8 attack types | **Stopped partway through** — the IED dataset finished after 56 minutes (8 calls) but still only 1/8 got a risk score; a larger `num_ctx` only made the model "think" longer, not finish thinking. Estimated another 1.5-2h needed for the remaining 2 datasets at a similar success rate → not worth it, switched to trying `think: false`. |
+| 2026-08-24 | `local_multi_model_results_gemma4_thinkfix.csv`, `..._dataset_timing_gemma4_thinkfix.csv`, `..._summary_gemma4_thinkfix.csv` | 3rd rerun after adding `"think": false` to the `/api/chat` request to fully disable `gemma4:12b`'s internal reasoning instead of just giving it a bigger token budget | `gemma4:12b` × 3 datasets × 8 attack types | **Successful** — 100% success rate, 100% format compliance, all 22 calls (3 datasets) took only 66s total (previously hundreds of seconds or completely empty). |
+| 2026-09-06 | `local_multi_model_results_run2.csv`, `..._dataset_timing_run2.csv`, `..._summary_run2.csv` (script: `local_multi_model_ae32_relu_structured_prompt.py`, prompt_2, run on lab232-a04) | Compare all 7 pulled models (missing `openthinker:7b`) × 3 datasets with the structured (5-field) prompt, after fixing the prompt's Vietnamese-text leak | 7 models × 3 datasets × 8 attack types | See details in "Issues Encountered" — `deepseek-r1:8b` confirmed fixed (100% success/compliance), `qwen3:4b` still can't disable thinking (format_compliance 65%, 2 timeouts), 1 transient CUDA crash on `phi4-mini`/WBF, and Water Bottle Factory noticeably slowed down the reasoning-capable models (qwen3:14b/deepseek-r1:8b/gemma4:12b) compared to the other 2 datasets. |
 
-## So sánh kiến trúc autoencoder: Linear vs LSTM vs VAE
+## Autoencoder Architecture Comparison: Linear vs LSTM vs VAE
 
-Ngoài autoencoder Linear/MLP gốc (`retrain_ae_9dim.py`, `tune_ae_9dim.py`), đã thử tune thêm 2 kiến trúc thay thế bằng `tune_ae_lstm_vae.py`: autoencoder dùng `nn.LSTM` (coi vector 18-feature của 1 packet như 1 "chuỗi" 18 bước — dữ liệu không có thứ tự thời gian thật giữa các feature, nên đây là một phép gán ghép, không phải sequence modeling đúng nghĩa) và Variational Autoencoder (VAE, vẫn dùng Linear nhưng bottleneck là latent phân phối `(mu, logvar)` thay vì deterministic).
+Besides the original Linear/MLP autoencoder (`retrain_ae_9dim.py`, `tune_ae_9dim.py`), 2 alternative architectures were tuned via `tune_ae_lstm_vae.py`: an autoencoder using `nn.LSTM` (treating a packet's 18-feature vector as an 18-step "sequence" — the data has no real temporal order between features, so this is a forced mapping, not genuine sequence modeling) and a Variational Autoencoder (VAE, still using Linear layers but with a `(mu, logvar)` distributional latent bottleneck instead of a deterministic one).
 
-Kết quả random search (16 trial LSTM + 20 trial VAE mỗi dataset, seed cố định để so sánh công bằng — xem [`tune_ae_lstm_vae_log.txt`](tune_ae_lstm_vae_log.txt)):
+Random search results (16 LSTM trials + 20 VAE trials per dataset, fixed seed for a fair comparison — see [`tune_ae_lstm_vae_log.txt`](tune_ae_lstm_vae_log.txt)):
 
 | Dataset | Model | F1 (attack) | Precision | Recall | Best trial time |
 |---|---|---|---|---|---|
@@ -144,20 +144,20 @@ Kết quả random search (16 trial LSTM + 20 trial VAE mỗi dataset, seed cố
 | Water Bottle Factory | **VAE** | **0.9501** | 0.9500 | 0.9502 | 0.93s |
 | Water Bottle Factory | LSTM | 0.8487 | 0.9393 | 0.7741 | 3.18s |
 
-**Nhận xét:**
+**Observations:**
 
-- **VAE thắng LSTM ở cả 3/3 dataset**, chênh 6-10 điểm F1, đến từ **recall** (VAE ~0.90-0.95 vs LSTM ~0.77-0.81) — precision 2 bên gần bằng nhau (~0.94). LSTM bỏ lọt tấn công nhiều hơn hẳn, hợp lý vì kiến trúc LSTM không có gì để khai thác từ "chuỗi" feature giả (không có thứ tự thời gian thật).
-- **LSTM nhạy hyperparameter hơn nhiều**: F1 dao động 0.53–0.85 chỉ do đổi batch_size/epochs/hidden_size (Smart Grid), khó chọn cấu hình tin cậy.
-- **VAE nhanh hơn ~2.7 lần/trial** trung bình (VAE ~1.3-1.4s vs LSTM ~3.8s) vì không cần unroll tuần tự như LSTM.
-- **Phát hiện quan trọng về `beta` (trọng số KL-divergence) của VAE**: hầu hết cấu hình tệ nhất đều rơi vào `beta=1.0` (regularize latent quá mạnh, làm mất chi tiết reconstruction cần để phân biệt gói tin bất thường), trong khi best config ở **cả 3 dataset đều dùng `beta=0.1`**. Đã thu hẹp `VAE_SEARCH_SPACE["beta"]` từ `[0.1, 0.5, 1.0]` xuống `[0.05, 0.1, 0.2]` trong `tune_ae_lstm_vae.py` để tập trung trial vào vùng tốt thay vì lặp lại xác nhận `beta=1.0` kém.
+- **VAE beats LSTM on all 3/3 datasets**, by 6-10 F1 points, driven by **recall** (VAE ~0.90-0.95 vs LSTM ~0.77-0.81) — precision is close on both sides (~0.94). LSTM misses far more attacks, which makes sense since the LSTM architecture has nothing real to exploit from a fake feature "sequence" (no genuine temporal order).
+- **LSTM is much more hyperparameter-sensitive**: F1 ranges from 0.53–0.85 just from changing batch_size/epochs/hidden_size (Smart Grid), making it hard to pick a reliable configuration.
+- **VAE is ~2.7x faster per trial** on average (VAE ~1.3-1.4s vs LSTM ~3.8s) since it doesn't need sequential unrolling like LSTM.
+- **Important finding about VAE's `beta` (KL-divergence weight)**: most of the worst configs land on `beta=1.0` (over-regularizing the latent space, losing the reconstruction detail needed to distinguish anomalous packets), while the best config on **all 3 datasets uses `beta=0.1`**. Narrowed `VAE_SEARCH_SPACE["beta"]` from `[0.1, 0.5, 1.0]` down to `[0.05, 0.1, 0.2]` in `tune_ae_lstm_vae.py` to focus trials on the good region instead of repeatedly reconfirming `beta=1.0` is bad.
 
-**Kết luận:** VAE phù hợp hơn LSTM cho dữ liệu dạng bảng (tabular) như packet Modbus này, cả về chất lượng phát hiện lẫn tốc độ train. Đã thu hẹp search space VAE dựa trên phát hiện về `beta`; lần chạy tiếp theo dùng để kiểm chứng lại kết quả này với search space đã tinh chỉnh.
+**Conclusion:** VAE fits this tabular Modbus packet data better than LSTM, both in detection quality and training speed. The VAE search space has been narrowed based on the `beta` finding; the next run will verify this result with the refined search space.
 
-## Prompt 2: prompt có cấu trúc cho risk-scoring
+## Prompt 2: Structured Prompt for Risk-Scoring
 
-`local_multi_model_ae32_relu.py` dùng prompt gốc (giới hạn 250 ký tự, không yêu cầu format cụ thể) — LLM chỉ trả về 1-2 câu chung chung + `Risk Score: X/10`, không đủ thông tin để operator xác định nguồn gốc, nguyên nhân, thiết bị bị ảnh hưởng, hay hành động cần làm.
+`local_multi_model_ae32_relu.py` uses the original prompt (250-character limit, no specific format required) — the LLM just returns 1-2 generic sentences + `Risk Score: X/10`, not enough information for an operator to determine the source, root cause, affected device, or the action to take.
 
-`local_multi_model_ae32_relu_structured_prompt.py` (**prompt_2**) thay bằng prompt yêu cầu đúng 5 field, mỗi field 1 dòng:
+`local_multi_model_ae32_relu_structured_prompt.py` (**prompt_2**) replaces it with a prompt requiring exactly 5 fields, one per line:
 
 ```
 Source: <suspected source IP/MAC, and whether it is internal or external to the local network>
@@ -167,19 +167,19 @@ Recommendation: <one specific action the operator should take right now>
 Risk Score: X/10
 ```
 
-Input đưa vào prompt cũng được bổ sung so với bản gốc: thêm MAC source/destination (đã tính sẵn ở `extract_packet_info()` nhưng bản gốc không dùng tới), và dịch nghĩa Modbus function code (vd `3 (Read Holding Registers)` thay vì chỉ số `3`) để model nhỏ (phi4-mini...) suy luận nguyên nhân đúng hướng hơn thay vì phải tự nhớ bảng mã Modbus.
+The input fed into the prompt was also expanded compared to the original: added source/destination MAC (already computed in `extract_packet_info()` but unused by the original), and translated Modbus function codes into their meaning (e.g. `3 (Read Holding Registers)` instead of just the number `3`) so a small model (phi4-mini...) reasons about the cause more accurately instead of having to recall the Modbus code table from memory.
 
-**Ví dụ thật** (Smart Grid, attack "function code scan", model `phi4-mini`, function code `102` — không hợp lệ trong chuẩn Modbus, flow rate 39 pkt/s so với baseline 15.07 pkt/s):
+**Real example** (Smart Grid, "function code scan" attack, `phi4-mini` model, function code `102` — not valid under the Modbus standard, flow rate 39 pkt/s vs a baseline of 15.07 pkt/s):
 
-| | Prompt gốc | Prompt 2 |
+| | Original Prompt | Prompt 2 |
 |---|---|---|
 | Output | `The packet flow rate is significantly higher than normal, indicating potential malicious activity. Risk Score: 8/10.` | `Source: 192.168.0.1`<br>`Likely Cause: Modbus flooding attack - high packet rate indicating potential DoS; Modbus function code 102 suggests probing/fuzzing`<br>`Affected Asset: 192.168.0.31`<br>`Recommendation: Block source IP 192.168.0.1, increase network monitoring for further investigation`<br>`Risk Score: 8/10` |
-| Parse tự động | Chỉ `risk_score` | `source`, `likely_cause`, `affected_asset`, `recommendation`, `risk_score` — mỗi field 1 cột CSV riêng |
+| Automatic parsing | Only `risk_score` | `source`, `likely_cause`, `affected_asset`, `recommendation`, `risk_score` — each field its own CSV column |
 
-**Lưu ý:** cấu trúc field giúp output dễ đọc/dễ parse hơn, nhưng **không đảm bảo model chẩn đoán đúng bản chất tấn công** — đây là giới hạn của năng lực model, không phải lỗi prompt. Ground truth ở ví dụ trên là "function code scan" (tín hiệu then chốt là function code `102` không hợp lệ), nhưng `phi4-mini` (3.8B) thiên về diễn giải "flooding/DoS" do bị flow-rate cao thu hút sự chú ý hơn.
+**Note:** the field structure makes the output easier to read/parse, but **does not guarantee the model diagnoses the attack correctly** — that's a limitation of the model's capability, not a prompt bug. The ground truth in the example above is "function code scan" (the key signal being the invalid function code `102`), but `phi4-mini` (3.8B) leans toward interpreting it as "flooding/DoS" since it's drawn more to the high flow rate.
 
-Cột `format_all_fields_present` (thay cho `format_ok_has_score`/`format_ok_length` ở bản gốc) đo tỉ lệ % lần gọi có đủ cả 5 field, dùng trong `summarize_results()` để tính `format_compliance_%`.
+The `format_all_fields_present` column (replacing `format_ok_has_score`/`format_ok_length` from the original) measures the % of calls with all 5 fields present, used in `summarize_results()` to compute `format_compliance_%`.
 
-## Nguồn dữ liệu & mô phỏng
+## Data Source & Simulation
 
-Dataset và weight gốc từ [ICS-SimLab-IDS](https://github.com/JaxsonBrownie/ICS-SimLab-IDS) của Jaxson Brownie, dựa trên simulator [Curtin ICS-SimLab](https://github.com/JaxsonBrownie/ICS-SimLab).
+Original dataset and weights from [ICS-SimLab-IDS](https://github.com/JaxsonBrownie/ICS-SimLab-IDS) by Jaxson Brownie, based on the [Curtin ICS-SimLab](https://github.com/JaxsonBrownie/ICS-SimLab) simulator.

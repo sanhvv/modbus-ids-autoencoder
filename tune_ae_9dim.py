@@ -27,9 +27,9 @@ from sklearn.metrics import f1_score, precision_score, recall_score
 
 from retrain_ae_9dim import load_and_clean_datasets, preprocess_ae_9dim
 
-# Ket qua CSV cua script nay gom vao day (xem ghi chu tuong tu trong
-# retrain_ae_9dim.py - tao ngay luc import de shell redirect vao day hoat
-# dong duoc tu dau).
+# This script's output CSVs all go here (see the same note in
+# retrain_ae_9dim.py - created right at import time so a shell redirect
+# into this folder works from the very first run).
 OUTPUT_DIR = Path("tune_ae_9dim")
 OUTPUT_DIR.mkdir(exist_ok=True)
 
