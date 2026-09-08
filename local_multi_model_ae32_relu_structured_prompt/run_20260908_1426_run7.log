@@ -1,0 +1,343 @@
+/home/23532764/local-llms/modbus-ids-autoencoder/local_multi_model_ae32_relu_structured_prompt.py:77: DeprecationWarning: 
+Pyarrow will become a required dependency of pandas in the next major release of pandas (pandas 3.0),
+(to allow more performant data types, such as the Arrow string type, and better interoperability with other libraries)
+but was not found to be installed on your system.
+If this would cause problems for you,
+please provide us feedback at https://github.com/pandas-dev/pandas/issues/54466
+        
+  import pandas as pd
+PURPOSE OF THIS RUN: Verify placeholder-example fix stops small models copy-pasting fake evidence numbers
+Model: ['phi4-mini', 'qwen3:4b', 'gemma4:e4b', 'qwen3:8b', 'openthinker:7b', 'deepseek-r1:8b', 'gemma4:12b', 'qwen3:14b']
+Dataset: ['Intelligent Electronic Device', 'Smart Grid', 'Water Bottle Factory']
+Output: local_multi_model_ae32_relu_structured_prompt/local_multi_model_results_run7.csv, local_multi_model_ae32_relu_structured_prompt/local_multi_model_dataset_timing_run7.csv, local_multi_model_ae32_relu_structured_prompt/local_multi_model_summary_run7.csv
+Starting model comparison (light -> heavy)...
+
+############################################################
+DATASET: Intelligent Electronic Device
+############################################################
+
+============================================================
+MODEL: phi4-mini  (dataset: Intelligent Electronic Device)
+============================================================
+  [address scan] attempt 1/1... OK (7.4s, risk=8.0)
+  [function code scan] attempt 1/1... OK (1.3s, risk=9.0)
+  [device identification attack] attempt 1/1... OK (1.2s, risk=7.0)
+  [naive sensor read] attempt 1/1... OK (1.2s, risk=7.0)
+  [sporadic sensor measurement injection] attempt 1/1... OK (1.3s, risk=7.0)
+  [force listen mode] attempt 1/1... OK (1.1s, risk=7.0)
+  [restart communication] attempt 1/1... OK (1.2s, risk=7.0)
+  [data flood attack] attempt 1/1... OK (1.1s, risk=9.0)
+  -> Time to run model 'phi4-mini' on dataset 'Intelligent Electronic Device': 15.78s (8 calls)
+
+============================================================
+MODEL: qwen3:4b  (dataset: Intelligent Electronic Device)
+============================================================
+  [address scan] attempt 1/1... OK (68.0s, risk=None)
+  [function code scan] attempt 1/1... OK (52.0s, risk=None)
+  [device identification attack] attempt 1/1... OK (44.2s, risk=None)
+  [naive sensor read] attempt 1/1... OK (63.2s, risk=None)
+  [sporadic sensor measurement injection] attempt 1/1... OK (51.1s, risk=None)
+  [force listen mode] attempt 1/1... OK (66.1s, risk=None)
+  [restart communication] attempt 1/1... OK (33.1s, risk=None)
+  [data flood attack] attempt 1/1... OK (51.4s, risk=None)
+  -> Time to run model 'qwen3:4b' on dataset 'Intelligent Electronic Device': 429.08s (8 calls)
+
+============================================================
+MODEL: gemma4:e4b  (dataset: Intelligent Electronic Device)
+============================================================
+  [address scan] attempt 1/1... OK (94.5s, risk=8.0)
+  [function code scan] attempt 1/1... OK (2.3s, risk=8.0)
+  [device identification attack] attempt 1/1... OK (2.4s, risk=7.0)
+  [naive sensor read] attempt 1/1... OK (2.2s, risk=6.0)
+  [sporadic sensor measurement injection] attempt 1/1... OK (2.2s, risk=7.0)
+  [force listen mode] attempt 1/1... OK (2.2s, risk=8.0)
+  [restart communication] attempt 1/1... OK (2.3s, risk=7.0)
+  [data flood attack] attempt 1/1... OK (2.3s, risk=8.0)
+  -> Time to run model 'gemma4:e4b' on dataset 'Intelligent Electronic Device': 110.33s (8 calls)
+
+============================================================
+MODEL: qwen3:8b  (dataset: Intelligent Electronic Device)
+============================================================
+  [address scan] attempt 1/1... OK (10.0s, risk=8.0)
+  [function code scan] attempt 1/1... OK (2.0s, risk=8.0)
+  [device identification attack] attempt 1/1... OK (2.0s, risk=8.0)
+  [naive sensor read] attempt 1/1... OK (2.1s, risk=7.0)
+  [sporadic sensor measurement injection] attempt 1/1... OK (2.1s, risk=8.0)
+  [force listen mode] attempt 1/1... OK (2.1s, risk=8.0)
+  [restart communication] attempt 1/1... OK (1.9s, risk=7.0)
+  [data flood attack] attempt 1/1... OK (2.2s, risk=8.0)
+  -> Time to run model 'qwen3:8b' on dataset 'Intelligent Electronic Device': 24.39s (8 calls)
+
+============================================================
+MODEL: openthinker:7b  (dataset: Intelligent Electronic Device)
+============================================================
+  [SKIPPED] Model 'openthinker:7b' not ready on Ollama. Run: ollama pull openthinker:7b
+
+============================================================
+MODEL: deepseek-r1:8b  (dataset: Intelligent Electronic Device)
+============================================================
+  [address scan] attempt 1/1... OK (60.6s, risk=6.0)
+  [function code scan] attempt 1/1... OK (12.9s, risk=8.0)
+  [device identification attack] attempt 1/1... OK (9.0s, risk=6.0)
+  [naive sensor read] attempt 1/1... OK (12.1s, risk=4.0)
+  [sporadic sensor measurement injection] attempt 1/1... OK (12.1s, risk=7.0)
+  [force listen mode] attempt 1/1... OK (9.0s, risk=6.0)
+  [restart communication] attempt 1/1... OK (11.8s, risk=6.0)
+  [data flood attack] attempt 1/1... OK (12.0s, risk=8.0)
+  -> Time to run model 'deepseek-r1:8b' on dataset 'Intelligent Electronic Device': 139.61s (8 calls)
+
+============================================================
+MODEL: gemma4:12b  (dataset: Intelligent Electronic Device)
+============================================================
+  [address scan] attempt 1/1... OK (77.7s, risk=8.0)
+  [function code scan] attempt 1/1... OK (3.9s, risk=9.0)
+  [device identification attack] attempt 1/1... OK (4.1s, risk=8.0)
+  [naive sensor read] attempt 1/1... OK (3.9s, risk=7.0)
+  [sporadic sensor measurement injection] attempt 1/1... OK (3.9s, risk=8.0)
+  [force listen mode] attempt 1/1... OK (4.2s, risk=8.0)
+  [restart communication] attempt 1/1... OK (3.9s, risk=8.0)
+  [data flood attack] attempt 1/1... OK (4.0s, risk=9.0)
+  -> Time to run model 'gemma4:12b' on dataset 'Intelligent Electronic Device': 105.59s (8 calls)
+
+============================================================
+MODEL: qwen3:14b  (dataset: Intelligent Electronic Device)
+============================================================
+  [address scan] attempt 1/1... OK (96.6s, risk=9.0)
+  [function code scan] attempt 1/1... OK (9.4s, risk=9.0)
+  [device identification attack] attempt 1/1... OK (8.8s, risk=8.0)
+  [naive sensor read] attempt 1/1... OK (9.8s, risk=7.0)
+  [sporadic sensor measurement injection] attempt 1/1... OK (11.2s, risk=8.0)
+  [force listen mode] attempt 1/1... OK (10.3s, risk=8.0)
+  [restart communication] attempt 1/1... OK (8.3s, risk=8.0)
+  [data flood attack] attempt 1/1... OK (8.7s, risk=9.0)
+  -> Time to run model 'qwen3:14b' on dataset 'Intelligent Electronic Device': 163.05s (8 calls)
+
+############################################################
+DATASET: Smart Grid
+############################################################
+  [SKIPPED] No anomaly detected by the AE for attack 'sporadic sensor measurement injection' on this dataset.
+
+============================================================
+MODEL: phi4-mini  (dataset: Smart Grid)
+============================================================
+  [address scan] attempt 1/1... OK (30.4s, risk=7.0)
+  [function code scan] attempt 1/1... OK (1.2s, risk=8.0)
+  [device identification attack] attempt 1/1... OK (1.4s, risk=2.0)
+  [naive sensor read] attempt 1/1... OK (1.2s, risk=7.0)
+  [force listen mode] attempt 1/1... OK (1.2s, risk=7.0)
+  [restart communication] attempt 1/1... OK (1.1s, risk=7.0)
+  [data flood attack] attempt 1/1... OK (1.1s, risk=9.0)
+  -> Time to run model 'phi4-mini' on dataset 'Smart Grid': 37.58s (7 calls)
+
+============================================================
+MODEL: qwen3:4b  (dataset: Smart Grid)
+============================================================
+  [address scan] attempt 1/1... OK (65.9s, risk=None)
+  [function code scan] attempt 1/1... OK (45.9s, risk=None)
+  [device identification attack] attempt 1/1... OK (68.3s, risk=None)
+  [naive sensor read] attempt 1/1... OK (70.6s, risk=None)
+  [force listen mode] attempt 1/1... OK (36.3s, risk=None)
+  [restart communication] attempt 1/1... OK (61.6s, risk=None)
+  [data flood attack] attempt 1/1... OK (41.8s, risk=None)
+  -> Time to run model 'qwen3:4b' on dataset 'Smart Grid': 390.46s (7 calls)
+
+============================================================
+MODEL: gemma4:e4b  (dataset: Smart Grid)
+============================================================
+  [address scan] attempt 1/1... OK (93.3s, risk=6.0)
+  [function code scan] attempt 1/1... OK (2.4s, risk=8.0)
+  [device identification attack] attempt 1/1... OK (2.3s, risk=6.0)
+  [naive sensor read] attempt 1/1... OK (2.4s, risk=4.0)
+  [force listen mode] attempt 1/1... OK (2.3s, risk=7.0)
+  [restart communication] attempt 1/1... OK (2.1s, risk=7.0)
+  [data flood attack] attempt 1/1... OK (2.2s, risk=9.0)
+  -> Time to run model 'gemma4:e4b' on dataset 'Smart Grid': 106.83s (7 calls)
+
+============================================================
+MODEL: qwen3:8b  (dataset: Smart Grid)
+============================================================
+  [address scan] attempt 1/1... OK (53.4s, risk=7.0)
+  [function code scan] attempt 1/1... OK (2.0s, risk=8.0)
+  [device identification attack] attempt 1/1... OK (2.0s, risk=6.0)
+  [naive sensor read] attempt 1/1... OK (2.4s, risk=7.0)
+  [force listen mode] attempt 1/1... OK (2.0s, risk=7.0)
+  [restart communication] attempt 1/1... OK (2.0s, risk=7.0)
+  [data flood attack] attempt 1/1... OK (2.2s, risk=9.0)
+  -> Time to run model 'qwen3:8b' on dataset 'Smart Grid': 66.05s (7 calls)
+
+============================================================
+MODEL: openthinker:7b  (dataset: Smart Grid)
+============================================================
+  [SKIPPED] Model 'openthinker:7b' not ready on Ollama. Run: ollama pull openthinker:7b
+
+============================================================
+MODEL: deepseek-r1:8b  (dataset: Smart Grid)
+============================================================
+  [address scan] attempt 1/1... OK (64.3s, risk=5.0)
+  [function code scan] attempt 1/1... OK (11.1s, risk=6.0)
+  [device identification attack] attempt 1/1... OK (13.3s, risk=5.0)
+  [naive sensor read] attempt 1/1... OK (10.7s, risk=5.0)
+  [force listen mode] attempt 1/1... OK (11.4s, risk=7.0)
+  [restart communication] attempt 1/1... OK (11.1s, risk=5.0)
+  [data flood attack] attempt 1/1... OK (7.4s, risk=7.0)
+  -> Time to run model 'deepseek-r1:8b' on dataset 'Smart Grid': 129.36s (7 calls)
+
+============================================================
+MODEL: gemma4:12b  (dataset: Smart Grid)
+============================================================
+  [address scan] attempt 1/1... OK (77.9s, risk=7.0)
+  [function code scan] attempt 1/1... OK (3.9s, risk=8.0)
+  [device identification attack] attempt 1/1... OK (3.7s, risk=7.0)
+  [naive sensor read] attempt 1/1... OK (5.1s, risk=7.0)
+  [force listen mode] attempt 1/1... OK (4.4s, risk=7.0)
+  [restart communication] attempt 1/1... OK (3.7s, risk=7.0)
+  [data flood attack] attempt 1/1... OK (4.0s, risk=9.0)
+  -> Time to run model 'gemma4:12b' on dataset 'Smart Grid': 102.61s (7 calls)
+
+============================================================
+MODEL: qwen3:14b  (dataset: Smart Grid)
+============================================================
+  [address scan] attempt 1/1... OK (97.3s, risk=7.0)
+  [function code scan] attempt 1/1... OK (5.9s, risk=9.0)
+  [device identification attack] attempt 1/1... OK (6.2s, risk=3.0)
+  [naive sensor read] attempt 1/1... OK (6.6s, risk=7.0)
+  [force listen mode] attempt 1/1... OK (5.9s, risk=8.0)
+  [restart communication] attempt 1/1... OK (6.0s, risk=6.0)
+  [data flood attack] attempt 1/1... OK (6.5s, risk=9.0)
+  -> Time to run model 'qwen3:14b' on dataset 'Smart Grid': 134.37s (7 calls)
+
+############################################################
+DATASET: Water Bottle Factory
+############################################################
+  [SKIPPED] No anomaly detected by the AE for attack 'sporadic sensor measurement injection' on this dataset.
+
+============================================================
+MODEL: phi4-mini  (dataset: Water Bottle Factory)
+============================================================
+  [address scan] attempt 1/1... OK (28.3s, risk=7.0)
+  [function code scan] attempt 1/1... OK (1.1s, risk=7.0)
+  [device identification attack] attempt 1/1... OK (1.1s, risk=7.0)
+  [naive sensor read] attempt 1/1... OK (1.2s, risk=7.0)
+  [force listen mode] attempt 1/1... OK (1.3s, risk=7.0)
+  [restart communication] attempt 1/1... OK (1.2s, risk=7.0)
+  [data flood attack] attempt 1/1... OK (1.2s, risk=9.0)
+  -> Time to run model 'phi4-mini' on dataset 'Water Bottle Factory': 35.44s (7 calls)
+
+============================================================
+MODEL: qwen3:4b  (dataset: Water Bottle Factory)
+============================================================
+  [address scan] attempt 1/1... OK (86.1s, risk=None)
+  [function code scan] attempt 1/1... OK (57.5s, risk=None)
+  [device identification attack] attempt 1/1... OK (81.9s, risk=None)
+  [naive sensor read] attempt 1/1... OK (47.1s, risk=None)
+  [force listen mode] attempt 1/1... OK (39.2s, risk=None)
+  [restart communication] attempt 1/1... OK (58.9s, risk=None)
+  [data flood attack] attempt 1/1... OK (53.8s, risk=None)
+  -> Time to run model 'qwen3:4b' on dataset 'Water Bottle Factory': 424.59s (7 calls)
+
+============================================================
+MODEL: gemma4:e4b  (dataset: Water Bottle Factory)
+============================================================
+  [address scan] attempt 1/1... OK (93.2s, risk=7.0)
+  [function code scan] attempt 1/1... OK (2.2s, risk=8.0)
+  [device identification attack] attempt 1/1... OK (2.4s, risk=7.0)
+  [naive sensor read] attempt 1/1... OK (2.2s, risk=6.0)
+  [force listen mode] attempt 1/1... OK (2.1s, risk=8.0)
+  [restart communication] attempt 1/1... OK (2.2s, risk=7.0)
+  [data flood attack] attempt 1/1... OK (2.2s, risk=9.0)
+  -> Time to run model 'gemma4:e4b' on dataset 'Water Bottle Factory': 106.43s (7 calls)
+
+============================================================
+MODEL: qwen3:8b  (dataset: Water Bottle Factory)
+============================================================
+  [address scan] attempt 1/1... OK (54.2s, risk=8.0)
+  [function code scan] attempt 1/1... OK (1.8s, risk=8.0)
+  [device identification attack] attempt 1/1... OK (2.0s, risk=8.0)
+  [naive sensor read] attempt 1/1... OK (2.0s, risk=7.0)
+  [force listen mode] attempt 1/1... OK (1.7s, risk=8.0)
+  [restart communication] attempt 1/1... OK (1.7s, risk=7.0)
+  [data flood attack] attempt 1/1... OK (2.0s, risk=9.0)
+  -> Time to run model 'qwen3:8b' on dataset 'Water Bottle Factory': 65.30s (7 calls)
+
+============================================================
+MODEL: openthinker:7b  (dataset: Water Bottle Factory)
+============================================================
+  [SKIPPED] Model 'openthinker:7b' not ready on Ollama. Run: ollama pull openthinker:7b
+
+============================================================
+MODEL: deepseek-r1:8b  (dataset: Water Bottle Factory)
+============================================================
+  [address scan] attempt 1/1... OK (61.5s, risk=6.0)
+  [function code scan] attempt 1/1... OK (9.0s, risk=8.0)
+  [device identification attack] attempt 1/1... OK (175.8s, risk=7.0)
+  [naive sensor read] attempt 1/1... OK (12.9s, risk=5.0)
+  [force listen mode] attempt 1/1... OK (10.8s, risk=6.0)
+  [restart communication] attempt 1/1... OK (9.5s, risk=5.0)
+  [data flood attack] attempt 1/1... OK (9.8s, risk=9.0)
+  -> Time to run model 'deepseek-r1:8b' on dataset 'Water Bottle Factory': 289.24s (7 calls)
+
+============================================================
+MODEL: gemma4:12b  (dataset: Water Bottle Factory)
+============================================================
+  [address scan] attempt 1/1... OK (79.3s, risk=8.0)
+  [function code scan] attempt 1/1... OK (4.0s, risk=8.0)
+  [device identification attack] attempt 1/1... OK (3.6s, risk=8.0)
+  [naive sensor read] attempt 1/1... OK (3.9s, risk=7.0)
+  [force listen mode] attempt 1/1... OK (3.7s, risk=8.0)
+  [restart communication] attempt 1/1... OK (4.3s, risk=8.0)
+  [data flood attack] attempt 1/1... OK (3.6s, risk=9.0)
+  -> Time to run model 'gemma4:12b' on dataset 'Water Bottle Factory': 102.46s (7 calls)
+
+============================================================
+MODEL: qwen3:14b  (dataset: Water Bottle Factory)
+============================================================
+  [address scan] attempt 1/1... OK (94.1s, risk=7.0)
+  [function code scan] attempt 1/1... OK (5.8s, risk=8.0)
+  [device identification attack] attempt 1/1... OK (5.9s, risk=8.0)
+  [naive sensor read] attempt 1/1... OK (6.3s, risk=7.0)
+  [force listen mode] attempt 1/1... OK (5.6s, risk=8.0)
+  [restart communication] attempt 1/1... OK (4.8s, risk=8.0)
+  [data flood attack] attempt 1/1... OK (4.9s, risk=9.0)
+  -> Time to run model 'qwen3:14b' on dataset 'Water Bottle Factory': 127.34s (7 calls)
+
+Saved per-call details: local_multi_model_ae32_relu_structured_prompt/local_multi_model_results_run7.csv
+Saved per-dataset/model timing: local_multi_model_ae32_relu_structured_prompt/local_multi_model_dataset_timing_run7.csv
+Saved final summary table: local_multi_model_ae32_relu_structured_prompt/local_multi_model_summary_run7.csv
+
+============================================================
+TIME PER DATASET (PER MODEL)
+============================================================
+ run_index          model                       dataset  total_time_sec  n_calls
+         1      phi4-mini Intelligent Electronic Device           15.78        8
+         1       qwen3:4b Intelligent Electronic Device          429.08        8
+         1     gemma4:e4b Intelligent Electronic Device          110.33        8
+         1       qwen3:8b Intelligent Electronic Device           24.39        8
+         1 deepseek-r1:8b Intelligent Electronic Device          139.61        8
+         1     gemma4:12b Intelligent Electronic Device          105.59        8
+         1      qwen3:14b Intelligent Electronic Device          163.05        8
+         1      phi4-mini                    Smart Grid           37.58        7
+         1       qwen3:4b                    Smart Grid          390.46        7
+         1     gemma4:e4b                    Smart Grid          106.83        7
+         1       qwen3:8b                    Smart Grid           66.05        7
+         1 deepseek-r1:8b                    Smart Grid          129.36        7
+         1     gemma4:12b                    Smart Grid          102.61        7
+         1      qwen3:14b                    Smart Grid          134.37        7
+         1      phi4-mini          Water Bottle Factory           35.44        7
+         1       qwen3:4b          Water Bottle Factory          424.59        7
+         1     gemma4:e4b          Water Bottle Factory          106.43        7
+         1       qwen3:8b          Water Bottle Factory           65.30        7
+         1 deepseek-r1:8b          Water Bottle Factory          289.24        7
+         1     gemma4:12b          Water Bottle Factory          102.46        7
+         1      qwen3:14b          Water Bottle Factory          127.34        7
+
+============================================================
+FINAL SUMMARY TABLE (all 3 datasets combined, sorted by speed)
+============================================================
+ run_index          model  success_rate_%  format_compliance_%  avg_latency_sec  p95_latency_sec avg_risk_score_stddev  avg_completion_tokens  total_time_sec
+         1      phi4-mini           100.0                100.0             4.04            27.28                  None                   84.1           88.80
+         1       qwen3:8b           100.0                100.0             7.08            51.22                  None                   97.8          155.74
+         1     gemma4:12b           100.0                100.0            14.12            77.87                  None                  106.1          310.66
+         1     gemma4:e4b           100.0                100.0            14.71            93.28                  None                  110.0          323.59
+         1      qwen3:14b           100.0                100.0            19.31            96.50                  None                  114.4          424.76
+         1 deepseek-r1:8b           100.0                100.0            25.37            64.20                  None                  961.3          558.21
+         1       qwen3:4b           100.0                  0.0            56.55            81.37                  None                 4270.1         1244.13

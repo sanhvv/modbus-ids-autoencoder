@@ -1,0 +1,10 @@
+Dataset,Architecture,F1 (attack) mean,F1 (attack) std,Precision mean,Precision std,Recall mean,Recall std,F1 (weighted) mean,Accuracy mean
+Intelligent Electronic Device,linear32_relu,0.7871,0.0432,0.7481,0.0187,0.832,0.0755,0.9332,0.932
+Intelligent Electronic Device,linear9_relu,0.7933,0.0265,0.7503,0.0108,0.8421,0.0463,0.9348,0.9333
+Intelligent Electronic Device,vae_best,0.7806,0.0157,0.7477,0.0066,0.8168,0.0269,0.9314,0.9302
+Smart Grid,linear32_relu,0.8491,0.0021,0.81,0.0034,0.8923,0.007,0.9383,0.9372
+Smart Grid,linear9_relu,0.8561,0.0102,0.8142,0.0048,0.9028,0.0209,0.9411,0.94
+Smart Grid,vae_best,0.8163,0.0246,0.8009,0.0095,0.8328,0.0436,0.9264,0.926
+Water Bottle Factory,linear32_relu,0.6481,0.0047,0.6154,0.008,0.6846,0.0033,0.9237,0.9219
+Water Bottle Factory,linear9_relu,0.649,0.0122,0.6172,0.0119,0.6843,0.0151,0.924,0.9223
+Water Bottle Factory,vae_best,0.5971,0.0165,0.5863,0.0114,0.6085,0.0252,0.9145,0.9138
