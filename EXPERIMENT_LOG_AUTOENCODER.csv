@@ -27,3 +27,9 @@ IED: honest F1=0.9168 vs leaky 0.8169
 Smart Grid: honest F1=0.9530 vs leaky 0.8747
 WBF: honest F1=0.9374 vs leaky 0.7937
 Total time: 1733.28s (~29 min)","*_ae_model_3way.pt, *_threshold_3way.txt, leaky_vs_3way_comparison.csv, run_20260908_0925.log",Experimental - Paused
+AE-7,2026-09-08,retrain_ae_vae_best.py,retrain_ae_vae_best/,"Final production training of the VAE architecture using the best hyperparameters found per dataset in AE-5's tuning run (tune_ae_lstm_vae.py, 3rd attempt). Unlike the tuning run (trained on a 3000-row normal subsample for speed), this trains on 100% of each dataset's normal rows - the actual production/final model, not a tuning trial.","IED, Smart Grid, WBF","latent_dim=9, epochs=20, batch_size=64, lr=0.001; IED/SG activation=elu, WBF activation=relu; beta=0.2 (all)","F1 (attack) / Precision / Recall:
+IED: 0.87 / 0.94 / 0.80
+Smart Grid: 0.89 / 0.94 / 0.84
+WBF: 0.69 / 0.92 / 0.55
+Total time: 182.58s (~3 min)
+NOTE: WBF full-data F1 (0.69) is notably worse than its tuning-run F1 on the 3000-row sample (0.9343) - IED/SG stayed close to their tuning numbers. Possible convergence issue specific to WBF at full data scale with this beta/epoch combo - not yet root-caused.","*_ae_vae_model.pt, *_threshold_vae.txt, run_20260908_1125.log",Complete

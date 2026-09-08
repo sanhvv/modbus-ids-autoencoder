@@ -1,0 +1,166 @@
+/home/23532764/local-llms/modbus-ids-autoencoder/retrain_ae_vae_best.py:30: DeprecationWarning: 
+Pyarrow will become a required dependency of pandas in the next major release of pandas (pandas 3.0),
+(to allow more performant data types, such as the Arrow string type, and better interoperability with other libraries)
+but was not found to be installed on your system.
+If this would cause problems for you,
+please provide us feedback at https://github.com/pandas-dev/pandas/issues/54466
+        
+  import pandas as pd
+===================================
+Dataset: Intelligent Electronic Device
+Shape: (262589, 19)
+Column Names: Index(['ip_len', 'ip_frag_offset', 'ip_id', 'ip_ttl', 'ip_proto',
+       'tcp_window_size', 'tcp_ack', 'tcp_seq', 'tcp_len',
+       'tcp_urgent_pointer', 'tcp_flags', 'tcp_analysis_ack_rtt',
+       'tcp_analysis_push_bytes_sent', 'tcp_analysis_bytes_in_flight',
+       'frame_time_delta', 'attack_specific', 'modbus_func_code',
+       'ip_flags_df', 'ip_flags_mf'],
+      dtype='object')
+===================================
+Dataset: Smart Grid
+Shape: (58847, 19)
+Column Names: Index(['ip_len', 'ip_frag_offset', 'ip_id', 'ip_ttl', 'ip_proto',
+       'tcp_window_size', 'tcp_ack', 'tcp_seq', 'tcp_len',
+       'tcp_urgent_pointer', 'tcp_flags', 'tcp_analysis_ack_rtt',
+       'tcp_analysis_push_bytes_sent', 'tcp_analysis_bytes_in_flight',
+       'frame_time_delta', 'attack_specific', 'modbus_func_code',
+       'ip_flags_df', 'ip_flags_mf'],
+      dtype='object')
+===================================
+Dataset: Water Bottle Factory
+Shape: (186482, 19)
+Column Names: Index(['ip_len', 'ip_frag_offset', 'ip_id', 'ip_ttl', 'ip_proto',
+       'tcp_window_size', 'tcp_ack', 'tcp_seq', 'tcp_len',
+       'tcp_urgent_pointer', 'tcp_flags', 'tcp_analysis_ack_rtt',
+       'tcp_analysis_push_bytes_sent', 'tcp_analysis_bytes_in_flight',
+       'frame_time_delta', 'attack_specific', 'modbus_func_code',
+       'ip_flags_df', 'ip_flags_mf'],
+      dtype='object')
+=========================================
+Dataset: Intelligent Electronic Device
+Best VAE config: {'epochs': 20, 'batch_size': 64, 'learning_rate': 0.001, 'activation': 'elu', 'beta': 0.2}
+Epoch 1/20, Loss: 0.001189, Time: 8.20s
+Epoch 2/20, Loss: 0.001039, Time: 8.72s
+Epoch 3/20, Loss: 0.001016, Time: 7.96s
+Epoch 4/20, Loss: 0.001011, Time: 4.03s
+Epoch 5/20, Loss: 0.001008, Time: 3.94s
+Epoch 6/20, Loss: 0.001007, Time: 3.89s
+Epoch 7/20, Loss: 0.001006, Time: 4.35s
+Epoch 8/20, Loss: 0.001007, Time: 4.15s
+Epoch 9/20, Loss: 0.001009, Time: 3.50s
+Epoch 10/20, Loss: 0.001006, Time: 3.40s
+Epoch 11/20, Loss: 0.001008, Time: 3.39s
+Epoch 12/20, Loss: 0.001008, Time: 3.68s
+Epoch 13/20, Loss: 0.001007, Time: 3.39s
+Epoch 14/20, Loss: 0.001006, Time: 3.85s
+Epoch 15/20, Loss: 0.001009, Time: 3.49s
+Epoch 16/20, Loss: 0.001007, Time: 3.56s
+Epoch 17/20, Loss: 0.001009, Time: 4.00s
+Epoch 18/20, Loss: 0.001009, Time: 4.32s
+Epoch 19/20, Loss: 0.001009, Time: 3.41s
+Epoch 20/20, Loss: 0.001007, Time: 3.42s
+Dataset Intelligent Electronic Device total time: 90.52s
+=========================================
+Dataset: Smart Grid
+Best VAE config: {'epochs': 20, 'batch_size': 64, 'learning_rate': 0.001, 'activation': 'elu', 'beta': 0.2}
+Epoch 1/20, Loss: 0.002149, Time: 0.74s
+Epoch 2/20, Loss: 0.001472, Time: 0.71s
+Epoch 3/20, Loss: 0.001439, Time: 0.70s
+Epoch 4/20, Loss: 0.001402, Time: 0.72s
+Epoch 5/20, Loss: 0.001389, Time: 0.70s
+Epoch 6/20, Loss: 0.002883, Time: 0.71s
+Epoch 7/20, Loss: 0.001368, Time: 0.72s
+Epoch 8/20, Loss: 0.001351, Time: 0.74s
+Epoch 9/20, Loss: 0.001349, Time: 0.74s
+Epoch 10/20, Loss: 0.001339, Time: 0.76s
+Epoch 11/20, Loss: 0.001317, Time: 0.70s
+Epoch 12/20, Loss: 0.001297, Time: 0.71s
+Epoch 13/20, Loss: 0.001278, Time: 0.70s
+Epoch 14/20, Loss: 0.001285, Time: 0.82s
+Epoch 15/20, Loss: 0.001270, Time: 0.85s
+Epoch 16/20, Loss: 0.001262, Time: 0.71s
+Epoch 17/20, Loss: 0.001254, Time: 0.87s
+Epoch 18/20, Loss: 0.001251, Time: 0.87s
+Epoch 19/20, Loss: 0.001252, Time: 0.99s
+Epoch 20/20, Loss: 0.001243, Time: 0.74s
+Dataset Smart Grid total time: 15.25s
+=========================================
+Dataset: Water Bottle Factory
+Best VAE config: {'epochs': 20, 'batch_size': 64, 'learning_rate': 0.001, 'activation': 'relu', 'beta': 0.2}
+Epoch 1/20, Loss: 0.001738, Time: 6.61s
+Epoch 2/20, Loss: 0.001188, Time: 8.54s
+Epoch 3/20, Loss: 0.001121, Time: 7.73s
+Epoch 4/20, Loss: 0.001101, Time: 2.80s
+Epoch 5/20, Loss: 0.001094, Time: 2.80s
+Epoch 6/20, Loss: 0.001106, Time: 3.19s
+Epoch 7/20, Loss: 0.001085, Time: 3.33s
+Epoch 8/20, Loss: 0.001099, Time: 3.48s
+Epoch 9/20, Loss: 0.001087, Time: 3.00s
+Epoch 10/20, Loss: 0.001094, Time: 2.97s
+Epoch 11/20, Loss: 0.001081, Time: 2.98s
+Epoch 12/20, Loss: 0.001071, Time: 3.23s
+Epoch 13/20, Loss: 0.001062, Time: 3.21s
+Epoch 14/20, Loss: 0.001056, Time: 3.00s
+Epoch 15/20, Loss: 0.001064, Time: 3.02s
+Epoch 16/20, Loss: 0.001052, Time: 3.63s
+Epoch 17/20, Loss: 0.001055, Time: 3.11s
+Epoch 18/20, Loss: 0.001057, Time: 3.13s
+Epoch 19/20, Loss: 0.001051, Time: 3.48s
+Epoch 20/20, Loss: 0.001050, Time: 3.55s
+Dataset Water Bottle Factory total time: 76.82s
+=========================================
+Model for dataset (VAE): Intelligent Electronic Device
+Threshold: 0.04988923296332359
+Confusion Matrix:
+ [[37982  1999]
+ [ 7829 32152]]
+
+Classification Report:
+               precision    recall  f1-score   support
+
+           0       0.83      0.95      0.89     39981
+           1       0.94      0.80      0.87     39981
+
+    accuracy                           0.88     79962
+   macro avg       0.89      0.88      0.88     79962
+weighted avg       0.89      0.88      0.88     79962
+
+=========================================
+Model for dataset (VAE): Smart Grid
+Threshold: 0.055891056358814244
+Confusion Matrix:
+ [[11066   583]
+ [ 1837  9812]]
+
+Classification Report:
+               precision    recall  f1-score   support
+
+           0       0.86      0.95      0.90     11649
+           1       0.94      0.84      0.89     11649
+
+    accuracy                           0.90     23298
+   macro avg       0.90      0.90      0.90     23298
+weighted avg       0.90      0.90      0.90     23298
+
+=========================================
+Model for dataset (VAE): Water Bottle Factory
+Threshold: 0.19732774049043655
+Confusion Matrix:
+ [[18606   980]
+ [ 8741 10845]]
+
+Classification Report:
+               precision    recall  f1-score   support
+
+           0       0.68      0.95      0.79     19586
+           1       0.92      0.55      0.69     19586
+
+    accuracy                           0.75     39172
+   macro avg       0.80      0.75      0.74     39172
+weighted avg       0.80      0.75      0.74     39172
+
+=========================================
+Intelligent Electronic Device: 90.52s
+Smart Grid: 15.25s
+Water Bottle Factory: 76.82s
+Total time consumed for all datasets: 182.58s
