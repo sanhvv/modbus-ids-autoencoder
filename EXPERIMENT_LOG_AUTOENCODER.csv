@@ -1,0 +1,29 @@
+Test ID,Date,Code File,Output Folder,Description / What Changed,Dataset(s),Key Parameters,Result Summary,Output Files,Status
+AE-1,(pre-dates tracking),"ics_simlab_sanh.ipynb (cell ""Autoencoder (AE)"")",repo root,"Original AE architecture: 32-dim latent, fixed nn.ReLU(). Trained once on 100% normal data. Notebook currently has build_ae_model=False by default, so it only loads these weights rather than retraining them.","IED, Smart Grid, WBF","epochs=30, batch_size=16, lr=0.001, latent_dim=32, activation=ReLU",Not logged (predates experiment tracking). These weights are the frozen AE backend used by local_multi_model_ae32_relu*.py (see xAI log).,"*_ae_model.pt, *_threshold.txt",Baseline / reference only
+AE-2,2026-08-18,retrain_ae_9dim.py,retrain_ae_9dim/,"Retrain with a smaller latent space (9-dim instead of 32-dim), same fixed ReLU activation, to test whether a smaller bottleneck affects anomaly detection quality.","IED, Smart Grid, WBF","epochs=30, batch_size=16, lr=0.001, latent_dim=9, activation=ReLU","F1 (attack) / Precision / Recall:
+IED: 0.86 / 0.94 / 0.79
+Smart Grid: 0.93 / 0.95 / 0.91
+WBF: 0.82 / 0.94 / 0.72
+Total time: 4772.67s (~79.5 min)","*_ae_model_9dim.pt, *_threshold_test.txt, retrain_ae_9dim_log.txt",Complete
+AE-3,2026-08-18,tune_ae_9dim.py,tune_ae_9dim/,"Random search over epochs/batch_size/learning_rate/activation (relu/leaky_relu/elu/gelu/tanh) for the 9-dim Linear AE, 12 trials per dataset.","IED, Smart Grid, WBF","N_TRIALS=12, TRAIN_SAMPLE_SIZE=5000, latent_dim=9","Best config per dataset (elu activation won on all 3):
+IED: F1=0.9419 (10ep, bs128, lr0.01)
+Smart Grid: F1=0.9416 (10ep, bs128, lr0.01)
+WBF: F1=0.9595 (20ep, bs64, lr0.0005)
+Total time: 4074.01s (~68 min)","*_ae_tuning_results.csv, tune_ae_9dim_log.txt",Complete
+AE-4,2026-08-25,tune_ae_lstm_vae.py (1st attempt),tune_ae_lstm_vae/,"Compare an LSTM-based AE and a VAE (Linear with distributional latent) as alternatives to the plain Linear AE. Wide VAE beta search space: [0.1, 0.5, 1.0].","IED, Smart Grid, WBF","16 LSTM trials + 20 VAE trials per dataset, latent_dim=9","VAE beat LSTM on all 3 datasets:
+IED: VAE F1=0.9239 vs LSTM 0.8622
+Smart Grid: VAE F1=0.9280 vs LSTM 0.8449
+WBF: VAE F1=0.9501 vs LSTM 0.8487
+Found beta=1.0 consistently hurts VAE performance.
+Total time: 269.95s (~4.5 min)","*_ae_arch_tuning_results_untagged.csv, tune_ae_lstm_vae_log_1st attemp.txt",Complete
+AE-5,2026-08-25,"tune_ae_lstm_vae.py (3rd attempt, narrowed beta)",tune_ae_lstm_vae/,"Re-run after narrowing the VAE beta search space to [0.05, 0.1, 0.2] based on AE-4's finding.","IED, Smart Grid, WBF","16 LSTM trials + 20 VAE trials per dataset, latent_dim=9","VAE still beat LSTM on all 3 datasets:
+IED: VAE F1=0.9249 vs LSTM 0.8759
+Smart Grid: VAE F1=0.9335 vs LSTM 0.8533
+WBF: VAE F1=0.9343 vs LSTM 0.8631
+Confirmed beta 0.1-0.2 region is optimal.
+Total time: 331.86s (~5.5 min)","*_ae_arch_tuning_results_3rd_attempt.csv, tune_ae_lstm_vae_3rd_attempt_summary.csv, tune_ae_lstm_vae_run_20260825_1311.log",Complete
+AE-6,2026-09-08,retrain_ae_3way_split.py,retrain_ae_3way_split/,"Test a proper train/validation/test 3-way split (70/15/15 of normal data) against the leaky methodology used everywhere else (threshold + eval computed on data the model was trained on). Controlled comparison: same model (trained on 70% of normal data only), only the evaluation methodology differs between the two reported results.","IED, Smart Grid, WBF","epochs=30, batch_size=16, lr=0.001, latent_dim=32, activation=ReLU, TRAIN_FRAC=0.70, VAL_FRAC=0.15, TEST_FRAC=0.15","Honest (3-way) scored HIGHER F1 than leaky on all 3 datasets (opposite of the usual leakage assumption - gap driven by precision, not recall):
+IED: honest F1=0.9168 vs leaky 0.8169
+Smart Grid: honest F1=0.9530 vs leaky 0.8747
+WBF: honest F1=0.9374 vs leaky 0.7937
+Total time: 1733.28s (~29 min)","*_ae_model_3way.pt, *_threshold_3way.txt, leaky_vs_3way_comparison.csv, run_20260908_0925.log",Experimental - Paused
