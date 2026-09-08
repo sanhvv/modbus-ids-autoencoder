@@ -22,8 +22,8 @@ REQUIREMENTS BEFORE RUNNING:
 2. The models to test already pulled (the script automatically skips any
    model that hasn't been pulled, see check_model_available()).
 3. The 32-dim autoencoder's model/threshold files already present in the repo:
-     <dataset>_ae_model.pt, <dataset>_threshold.txt
-   (e.g. smart_grid_ae_model.pt, smart_grid_threshold.txt)
+     <dataset>_ae32_relu_model.pt, <dataset>_threshold.txt
+   (e.g. smart_grid_ae32_relu_model.pt, smart_grid_threshold.txt)
 
 SPEED WARNING: number of model calls = n_models x n_datasets x n_attack_types x
 REPEATS_PER_PROMPT. Default REPEATS_PER_PROMPT=1 for a quick trial run;
@@ -127,7 +127,7 @@ local_client = OpenAI(
 #           (cell "Autoencoder (AE)"), as opposed to the tuned/experimental
 #           variants in retrain_ae_9dim.py (9-dim), tune_ae_9dim.py (Linear
 #           + several activations), tune_ae_lstm_vae.py (LSTM/VAE). Must
-#           match 1:1 the architecture used when training *_ae_model.pt
+#           match 1:1 the architecture used when training *_ae32_relu_model.pt
 #           (loaded via load_ae_model()) - changing the architecture here
 #           without retraining would corrupt the state_dict.
 class AutoEncoder(nn.Module):
@@ -385,7 +385,7 @@ def prepare_dataset(dataset_name):
     X_tensor, inference_indices, df_orig_with_indicies, df_orig_with_indicies_sampled = process_dl_dataset(df_orig)
 
     file_prefix = dataset_name.lower().replace(" ", "_")
-    model_file = file_prefix + "_ae_model.pt"
+    model_file = file_prefix + "_ae32_relu_model.pt"
     threshold_file = file_prefix + "_threshold.txt"
 
     autoencoder = load_ae_model(X_tensor, model_file)

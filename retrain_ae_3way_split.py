@@ -74,7 +74,7 @@ OUTPUT_DIR.mkdir(exist_ok=True)
 # PURPOSE:  Identical architecture to the one in local_multi_model_ae32_relu.py
 #           (32-dim latent, fixed nn.ReLU()) - kept as a separate definition
 #           here (not imported) since this script trains its own fresh
-#           weights rather than loading the existing *_ae_model.pt files.
+#           weights rather than loading the existing *_ae32_relu_model.pt files.
 class AutoEncoder(nn.Module):
     def __init__(self, input_dim):
         super().__init__()

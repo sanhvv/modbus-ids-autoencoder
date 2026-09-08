@@ -63,14 +63,14 @@ The notebook is organized into sections, run sequentially top to bottom:
 
 | File | Produced by |
 |---|---|
-| `*_ae_model.pt` | Trained autoencoder (Deep Learning) — **32-dim latent, fixed `nn.ReLU()` activation**, the original architecture from the "Autoencoder (AE)" cell in `ics_simlab_sanh.ipynb`. This is the AE backend for the entire `local_multi_model_ae32_relu.py` pipeline (the anomaly-filtering stage before feeding into the LLM for risk scoring) — different from the tuned/experimental AE variants in `retrain_ae_9dim.py`/`tune_ae_9dim.py`/`tune_ae_lstm_vae.py` (9-dim, several activations, LSTM, VAE). |
+| `*_ae32_relu_model.pt` | Trained autoencoder (Deep Learning) — **32-dim latent, fixed `nn.ReLU()` activation**, the original architecture from the "Autoencoder (AE)" cell in `ics_simlab_sanh.ipynb`. This is the AE backend for the entire `local_multi_model_ae32_relu.py` pipeline (the anomaly-filtering stage before feeding into the LLM for risk scoring) — different from the tuned/experimental AE variants in `retrain_ae_9dim.py`/`tune_ae_9dim.py`/`tune_ae_lstm_vae.py` (9-dim, several activations, LSTM, VAE). |
 | `*_dt_model.pkl`, `*_knn_model.pkl` | Trained classical ML models |
 | `*_threshold.txt` | The autoencoder's reconstruction-error threshold (95th percentile) |
 | `local_llm_comparison_results.csv` | Per-call details from the local Ollama model comparison |
 | `local_llm_comparison_summary.csv` | Comparison table of speed / consistency / format compliance across models |
 | `local llms.py` | A standalone script equivalent to the "Local LLM Comparison" cell, runnable outside the notebook if the required variables already exist in the kernel |
 
-The files above live in the repo root because they're shared across several scripts/notebooks (e.g. `smart_grid_ae_model.pt` is loaded by both `ics_simlab_sanh.ipynb` and `local_multi_model_ae32_relu.py`).
+The files above live in the repo root because they're shared across several scripts/notebooks (e.g. `smart_grid_ae32_relu_model.pt` is loaded by both `ics_simlab_sanh.ipynb` and `local_multi_model_ae32_relu.py`).
 
 ### Log + results for 5 standalone scripts (`retrain_ae_9dim.py`, `tune_ae_9dim.py`, `tune_ae_lstm_vae.py`, `local_multi_model_ae32_relu.py`, `local_multi_model_ae32_relu_structured_prompt.py`)
 
@@ -120,7 +120,7 @@ Recorded here to avoid re-debugging from scratch:
 
 Records the purpose + outcome of each `local_multi_model_ae32_relu.py` run for later aggregation of experiments. As of 2026-08-24, the script requires a `--purpose "..."` flag (see `python3 local_multi_model_ae32_relu.py --help`); the purpose is printed to the log and stored in the `run_purpose` CSV column. A partial run can be done with `--models`/`--datasets`, and `--tag` avoids overwriting a previous run's results.
 
-**Note applying to ALL runs in the table below:** the anomaly detection stage uses the autoencoder with **32-dim latent, fixed `nn.ReLU()`** (the `AutoEncoder` class in `local_multi_model_ae32_relu.py`, loaded from `*_ae_model.pt`) — not any of the tuned/VAE/LSTM variants in the other scripts. If the AE backend is swapped later (e.g. to a tuned VAE), the older rows in this table will no longer reflect current behavior and should be annotated with the AE version they used.
+**Note applying to ALL runs in the table below:** the anomaly detection stage uses the autoencoder with **32-dim latent, fixed `nn.ReLU()`** (the `AutoEncoder` class in `local_multi_model_ae32_relu.py`, loaded from `*_ae32_relu_model.pt`) — not any of the tuned/VAE/LSTM variants in the other scripts. If the AE backend is swapped later (e.g. to a tuned VAE), the older rows in this table will no longer reflect current behavior and should be annotated with the AE version they used.
 
 | Date | Output files | Purpose | Scope | Result |
 |---|---|---|---|---|
