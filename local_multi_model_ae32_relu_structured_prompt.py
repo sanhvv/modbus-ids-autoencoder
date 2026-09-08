@@ -20,6 +20,17 @@ dataset, "function code scan" attack, phi4-mini model):
                    increasing security measures to prevent further attacks
                  Risk Score: 9/10"
 
+UPDATE (2026-09-08): runs 1-5 showed several models (e.g. qwen3:8b) writing a
+vague "Likely Cause" ("elevated packet rate", "unusual function code") even
+though the exact baseline/observed numbers were already in the prompt data -
+they just weren't citing them. create_prompt() now explicitly requires the
+Likely Cause sentence to cite the exact number(s) backing the claim (e.g.
+"function code 40 ... 7.7x vs baseline"), with a GOOD/BAD example pair in the
+prompt itself. This changes the prompt content, so any run from this point
+on (run6+) is not directly comparable to runs 1-5's Likely Cause text quality
+(risk_score/format_compliance/latency stayed on the same measurement, so
+those columns are still comparable across all runs).
+
 Run standalone with:
     python local_multi_model_ae32_relu_structured_prompt.py --purpose "..." 2>&1 | tee local_multi_model_ae32_relu_structured_prompt/run_$(date +%Y%m%d_%H%M).log
 (output CSVs also go into local_multi_model_ae32_relu_structured_prompt/,
@@ -390,10 +401,13 @@ Control System (Modbus/TCP) network. Based on the data below, respond in
 EXACTLY this format (one short line per field, no extra commentary):
 
 Source: <suspected source IP/MAC, and whether it is internal or external to the local network>
-Likely Cause: <one sentence - the suspected type of behavior and why, based on the signals below>
+Likely Cause: <one sentence citing the SPECIFIC evidence and its EXACT value(s) from the data below (e.g. the function code number, the rate ratio, the RTT) that support this conclusion - do not use vague words like "elevated", "unusual", or "high" without the number that backs it up>
 Affected Asset: <the destination IP/device being affected>
 Recommendation: <one specific action the operator should take right now>
 Risk Score: X/10
+
+GOOD Likely Cause (cites exact numbers): "Non-standard function code 40 combined with a high packet rate (7.7x vs baseline) suggests active scanning or probing."
+BAD Likely Cause (too vague, do NOT write like this): "Unusual Modbus function code usage with elevated packet rate indicating potential reconnaissance."
 
 --- Packet data ---
 IP Source: {orig_packet_info["ip_src"]}
