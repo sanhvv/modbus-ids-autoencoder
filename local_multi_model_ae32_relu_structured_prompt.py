@@ -31,6 +31,17 @@ on (run6+) is not directly comparable to runs 1-5's Likely Cause text quality
 (risk_score/format_compliance/latency stayed on the same measurement, so
 those columns are still comparable across all runs).
 
+UPDATE (2026-09-08, same day, after run6): run6 showed a regression from the
+above fix - the GOOD example originally used real-looking numbers ("function
+code 40", "7.7x"), and 2 of the smaller/weaker models (phi4-mini 9/22 calls,
+qwen3:8b 4/22 calls) just copy-pasted that example's numbers verbatim as
+their answer, including on attacks whose actual data was completely
+different (wrong function code, wrong ratio). Fixed by changing the example
+to obviously-fake numbers ("function code 99", "12.3x") plus an explicit
+"these are NOT this packet's data" warning, so the example can't be
+mistaken for a valid literal answer. Not yet re-verified with a full run
+(see run7+ once available).
+
 Run standalone with:
     python local_multi_model_ae32_relu_structured_prompt.py --purpose "..." 2>&1 | tee local_multi_model_ae32_relu_structured_prompt/run_$(date +%Y%m%d_%H%M).log
 (output CSVs also go into local_multi_model_ae32_relu_structured_prompt/,
@@ -406,8 +417,13 @@ Affected Asset: <the destination IP/device being affected>
 Recommendation: <one specific action the operator should take right now>
 Risk Score: X/10
 
-GOOD Likely Cause (cites exact numbers): "Non-standard function code 40 combined with a high packet rate (7.7x vs baseline) suggests active scanning or probing."
-BAD Likely Cause (too vague, do NOT write like this): "Unusual Modbus function code usage with elevated packet rate indicating potential reconnaissance."
+GOOD Likely Cause style (fill in the placeholders below with THIS packet's own
+values from the "Packet data" section further down - do not invent numbers,
+and do not reuse any number shown elsewhere in this instructions section):
+  "Non-standard function code <the function code number from Packet data>
+   combined with a high packet rate (<the rate ratio from Packet data>x vs
+   baseline) suggests active scanning or probing."
+BAD Likely Cause style (too vague, do NOT write like this): "Unusual Modbus function code usage with elevated packet rate indicating potential reconnaissance."
 
 --- Packet data ---
 IP Source: {orig_packet_info["ip_src"]}
