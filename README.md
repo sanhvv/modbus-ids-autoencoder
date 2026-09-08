@@ -14,6 +14,7 @@ The entire pipeline lives in [`ics_simlab_sanh.ipynb`](ics_simlab_sanh.ipynb). T
 - [Experiment Log](#experiment-log)
 - [Autoencoder Architecture Comparison: Linear vs LSTM vs VAE](#autoencoder-architecture-comparison-linear-vs-lstm-vs-vae)
 - [Prompt 2: Structured Prompt for Risk-Scoring](#prompt-2-structured-prompt-for-risk-scoring)
+- [3-Way Split for AE Evaluation (Experimental, Paused)](#3-way-split-for-ae-evaluation-experimental-paused)
 
 ## Pipeline Overview
 
@@ -179,6 +180,50 @@ The input fed into the prompt was also expanded compared to the original: added 
 **Note:** the field structure makes the output easier to read/parse, but **does not guarantee the model diagnoses the attack correctly** — that's a limitation of the model's capability, not a prompt bug. The ground truth in the example above is "function code scan" (the key signal being the invalid function code `102`), but `phi4-mini` (3.8B) leans toward interpreting it as "flooding/DoS" since it's drawn more to the high flow rate.
 
 The `format_all_fields_present` column (replacing `format_ok_has_score`/`format_ok_length` from the original) measures the % of calls with all 5 fields present, used in `summarize_results()` to compute `format_compliance_%`.
+
+## 3-Way Split for AE Evaluation (Experimental, Paused)
+
+**Status: paused after one exploratory run — needs more testing before being adopted anywhere else in the repo.** Notes below are so this can be picked back up later without re-deriving the context.
+
+### Motivation
+
+Every AE evaluation method elsewhere in this repo (the original notebook's `preprocess_ae()`/`detect_anomaly()`, and `evaluate_config()`/`eval_ae_9dim()` in the tuning scripts) computes the anomaly threshold from the training data itself, then evaluates on a set that still includes those training rows — a form of data leakage. `retrain_ae_3way_split.py` was built to test whether this leakage was making reported metrics look artificially good.
+
+### What it does
+
+Trains the same 32-dim architecture as `local_multi_model_ae32_relu.py` (fixed `nn.ReLU()`), but splits the **normal-only** data three ways instead of the usual "train on all normal, evaluate on everything":
+
+```
+Normal data → split 3 ways:
+  - Train      (70%) → only this is used to fit the AE
+  - Validation (15%) → only this is used to compute the anomaly threshold (never trained on)
+  - Test       (15%) → held out completely, combined with ALL attack rows for final evaluation
+```
+
+For direct comparison, it also reproduces the original leaky methodology (threshold from train data, evaluate on everything) **on the exact same trained model**, so only the evaluation methodology differs between the two reported rows — training data volume and model weights are held constant.
+
+Output goes into `retrain_ae_3way_split/`: `*_ae_model_3way.pt`, `*_threshold_3way.txt`, and `leaky_vs_3way_comparison.csv`.
+
+### Result from the one full run so far (2026-09-08, all 3 datasets, 30 epochs)
+
+| Dataset | Method | Precision (attack) | Recall (attack) | F1 (attack) |
+|---|---|---|---|---|
+| IED | 3-way split (honest) | **0.9549** | 0.8815 | **0.9168** |
+| IED | Leaky (original method) | 0.7621 | 0.8802 | 0.8169 |
+| Smart Grid | 3-way split (honest) | **0.9709** | 0.9357 | **0.9530** |
+| Smart Grid | Leaky (original method) | 0.8203 | 0.9368 | 0.8747 |
+| Water Bottle Factory | 3-way split (honest) | **0.9364** | 0.9383 | **0.9374** |
+| Water Bottle Factory | Leaky (original method) | 0.6879 | 0.9380 | 0.7937 |
+
+**Surprising finding: the honest 3-way split scores HIGHER on all 3/3 datasets** (by 0.078–0.144 F1 points) — the opposite of the usual assumption that leakage makes results look better. Recall is nearly identical between the two methods; the gap comes almost entirely from precision. Root cause: the leaky threshold is calibrated from training data the model already fits well (low reconstruction error → a low/strict threshold), then applied to a much larger normal population that's mostly *unseen* (val+test rows never used in training, which naturally reconstruct with higher error) — so that too-strict threshold flags a lot of genuinely normal traffic as false positives when evaluated broadly.
+
+### Important caveats before trusting this comparison further
+
+- **The "leaky" numbers above are NOT the historical numbers reported elsewhere in this repo.** Both rows in the table use a model trained on only 70% of normal data (the 3-way split's train portion) — this was a controlled experiment isolating "evaluation methodology" as the only variable, not a reproduction of what `tune_ae_9dim.py`/`local_multi_model_ae32_relu.py` actually reported (those trained on 100% of normal data). If revisiting this, consider also comparing against a model trained on 100% of normal data to see whether the extra 30% of training data changes the picture.
+- **Test-set class imbalance (normal vs attack ratio) does not cause overfitting/underfitting** — that's determined entirely during training (which only ever sees normal data, and only the train split of it), before any evaluation happens. Imbalance only affects the statistical reliability of precision/recall estimates, which isn't a serious concern here since test-set attack counts are large (11.6k–40k per dataset).
+- The raw dataset's `attack_specific` column encodes normal packets as `NaN`, not `0` — the existing `is_attack = (attack_specific != 0)` logic is still correct because `clean_dataset()`/`clean_dataset_dl()` calls `fillna(0)` earlier in the pipeline, but this is worth remembering if touching that logic again. The raw data also already provides an `attack_binary` column that agrees with this derivation 99.5–100% of the time and could be used directly instead of re-deriving it.
+- This is packet-capture data with a time dimension (`frame_time_relative`); the current split is a pure random row-level split, which risks leaking temporal/session correlation between adjacent packets across splits. A time-block split might be worth testing as a stricter alternative.
+- Only tested on the 32-dim architecture so far - not yet applied to the 9-dim variant (`retrain_ae_9dim.py`) or the tuning scripts (`tune_ae_9dim.py`, `tune_ae_lstm_vae.py`), which have the same leakage pattern.
 
 ## Data Source & Simulation
 
