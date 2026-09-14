@@ -1,10 +1,10 @@
-Dataset,Architecture,F1 (attack) mean,F1 (attack) std,Precision mean,Precision std,Recall mean,Recall std,F1 (weighted) mean,F1 (weighted) std,Accuracy mean,Accuracy std
-Intelligent Electronic Device,linear32_relu,0.7871,0.0432,0.7481,0.0187,0.832,0.0755,0.9332,0.0122,0.932,0.0116
-Intelligent Electronic Device,linear9_relu,0.7933,0.0265,0.7503,0.0108,0.8421,0.0463,0.9348,0.0077,0.9333,0.0074
-Intelligent Electronic Device,vae_best,0.7806,0.0157,0.7477,0.0066,0.8168,0.0269,0.9314,0.0044,0.9302,0.0042
-Smart Grid,linear32_relu,0.8491,0.0021,0.81,0.0034,0.8923,0.007,0.9383,0.0006,0.9372,0.0005
-Smart Grid,linear9_relu,0.8561,0.0102,0.8142,0.0048,0.9028,0.0209,0.9411,0.0037,0.94,0.0036
-Smart Grid,vae_best,0.8163,0.0246,0.8009,0.0095,0.8328,0.0436,0.9264,0.009,0.926,0.0085
-Water Bottle Factory,linear32_relu,0.6481,0.0047,0.6154,0.008,0.6846,0.0033,0.9237,0.0008,0.9219,0.0009
-Water Bottle Factory,linear9_relu,0.649,0.0122,0.6172,0.0119,0.6843,0.0151,0.924,0.0027,0.9223,0.0027
-Water Bottle Factory,vae_best,0.5971,0.0165,0.5863,0.0114,0.6085,0.0252,0.9145,0.0026,0.9138,0.0021
+Dataset,Architecture,Normal:Attack ratio (test) mean,F1 (attack) mean,F1 (attack) std,Precision mean,Precision std,Recall mean,Recall std,F1 (weighted) mean,F1 (weighted) std,Accuracy mean,Accuracy std
+Intelligent Electronic Device,linear32_relu,5.57,0.7871,0.0432,0.7481,0.0187,0.832,0.0755,0.9332,0.0122,0.932,0.0116
+Intelligent Electronic Device,linear9_relu,5.57,0.7933,0.0265,0.7503,0.0108,0.8421,0.0463,0.9348,0.0077,0.9333,0.0074
+Intelligent Electronic Device,vae_best,5.57,0.7806,0.0157,0.7477,0.0066,0.8168,0.0269,0.9314,0.0044,0.9302,0.0042
+Smart Grid,linear32_relu,4.05,0.8491,0.0021,0.81,0.0034,0.8923,0.007,0.9383,0.0006,0.9372,0.0005
+Smart Grid,linear9_relu,4.05,0.8561,0.0102,0.8142,0.0048,0.9028,0.0209,0.9411,0.0037,0.94,0.0036
+Smart Grid,vae_best,4.05,0.8163,0.0246,0.8009,0.0095,0.8328,0.0436,0.9264,0.009,0.926,0.0085
+Water Bottle Factory,linear32_relu,8.52,0.6481,0.0047,0.6154,0.008,0.6846,0.0033,0.9237,0.0008,0.9219,0.0009
+Water Bottle Factory,linear9_relu,8.52,0.649,0.0122,0.6172,0.0119,0.6843,0.0151,0.924,0.0027,0.9223,0.0027
+Water Bottle Factory,vae_best,8.52,0.5971,0.0165,0.5863,0.0114,0.6085,0.0252,0.9145,0.0026,0.9138,0.0021

@@ -189,9 +189,16 @@ def build_stability_summary(all_results: pd.DataFrame) -> pd.DataFrame:
     on which subset was held out (stable); a high std means it does."""
     rows = []
     for (dataset_name, arch), group in all_results.groupby(["dataset", "architecture"]):
+        # Same held-out subsets are reused across all 3 architectures for a
+        # given dataset, so this ratio is identical across architecture rows
+        # of the same dataset - included per row anyway so each row is
+        # self-contained (no need to cross-reference all_folds_results.csv).
+        normal_attack_ratio = (group["n_test_normal"] / group["n_test_attack"]).mean()
+
         rows.append({
             "Dataset": dataset_name,
             "Architecture": arch,
+            "Normal:Attack ratio (test) mean": round(normal_attack_ratio, 2),
             "F1 (attack) mean": round(group["f1_attack"].mean(), 4),
             "F1 (attack) std": round(group["f1_attack"].std(), 4),
             "Precision mean": round(group["precision_attack"].mean(), 4),
