@@ -199,7 +199,9 @@ def build_stability_summary(all_results: pd.DataFrame) -> pd.DataFrame:
             "Recall mean": round(group["recall_attack"].mean(), 4),
             "Recall std": round(group["recall_attack"].std(), 4),
             "F1 (weighted) mean": round(group["f1_weighted"].mean(), 4),
+            "F1 (weighted) std": round(group["f1_weighted"].std(), 4),
             "Accuracy mean": round(group["accuracy"].mean(), 4),
+            "Accuracy std": round(group["accuracy"].std(), 4),
         })
     return pd.DataFrame(rows).sort_values(["Dataset", "Architecture"])
 
