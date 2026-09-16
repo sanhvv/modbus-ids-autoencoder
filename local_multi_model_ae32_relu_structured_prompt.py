@@ -49,8 +49,10 @@ created right at import time so a shell redirect into that folder works
 from the very first run)
 
 MODELS BEING TESTED (already pulled, running on a GTX 3060 GPU):
-    phi4-mini, qwen3:4b, gemma4:e4b, qwen3:8b, openthinker:7b, deepseek-r1:8b,
-    gemma4:12b, qwen3:14b
+    phi4-mini, qwen3:4b, gemma4:e4b, qwen3:8b, openthinker:7b, gemma4:12b,
+    qwen3:14b
+(deepseek-r1:8b removed 2026-09-17 and deleted from Ollama per user request -
+no longer tested)
 
 REQUIREMENTS BEFORE RUNNING:
 1. Ollama installed and running (`ollama serve`).
@@ -94,7 +96,6 @@ MODELS_TO_TEST = [
     "gemma4:e4b",
     "qwen3:8b",
     "openthinker:7b",
-    "deepseek-r1:8b",
     "gemma4:12b",
     "qwen3:14b",
 ]
