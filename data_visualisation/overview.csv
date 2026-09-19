@@ -1,0 +1,4 @@
+dataset,session_duration_sec,n_normal,n_attack,attack_pct,flood_count,flood_start_sec,flood_end_sec,flood_peak_per_sec
+Intelligent Electronic Device,13755.0,222608,116308,34.3,84808,46.9,54.0,12539
+Smart Grid,5963.0,47198,88086,65.1,84930,46.9,53.9,12148
+Water Bottle Factory,7000.2,166896,96322,36.6,85262,46.8,53.8,12539

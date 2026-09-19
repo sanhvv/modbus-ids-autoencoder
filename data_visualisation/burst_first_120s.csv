@@ -1,0 +1,364 @@
+dataset,second,normal,attack
+Intelligent Electronic Device,0,16,0
+Intelligent Electronic Device,1,16,0
+Intelligent Electronic Device,2,16,0
+Intelligent Electronic Device,3,16,0
+Intelligent Electronic Device,4,18,0
+Intelligent Electronic Device,5,16,0
+Intelligent Electronic Device,6,16,0
+Intelligent Electronic Device,7,16,0
+Intelligent Electronic Device,8,16,0
+Intelligent Electronic Device,9,18,0
+Intelligent Electronic Device,10,16,0
+Intelligent Electronic Device,11,16,0
+Intelligent Electronic Device,12,16,0
+Intelligent Electronic Device,13,16,0
+Intelligent Electronic Device,14,18,0
+Intelligent Electronic Device,15,16,0
+Intelligent Electronic Device,16,16,0
+Intelligent Electronic Device,17,16,0
+Intelligent Electronic Device,18,16,0
+Intelligent Electronic Device,19,18,0
+Intelligent Electronic Device,20,16,0
+Intelligent Electronic Device,21,16,0
+Intelligent Electronic Device,22,16,0
+Intelligent Electronic Device,23,16,0
+Intelligent Electronic Device,24,18,0
+Intelligent Electronic Device,25,16,0
+Intelligent Electronic Device,26,16,0
+Intelligent Electronic Device,27,16,0
+Intelligent Electronic Device,28,16,0
+Intelligent Electronic Device,29,18,0
+Intelligent Electronic Device,30,16,0
+Intelligent Electronic Device,31,16,0
+Intelligent Electronic Device,32,16,0
+Intelligent Electronic Device,33,16,0
+Intelligent Electronic Device,34,18,0
+Intelligent Electronic Device,35,16,0
+Intelligent Electronic Device,36,16,0
+Intelligent Electronic Device,37,16,0
+Intelligent Electronic Device,38,16,0
+Intelligent Electronic Device,39,18,0
+Intelligent Electronic Device,40,16,0
+Intelligent Electronic Device,41,16,0
+Intelligent Electronic Device,42,16,0
+Intelligent Electronic Device,43,16,0
+Intelligent Electronic Device,44,18,0
+Intelligent Electronic Device,45,16,0
+Intelligent Electronic Device,46,16,584
+Intelligent Electronic Device,47,16,12089
+Intelligent Electronic Device,48,16,12539
+Intelligent Electronic Device,49,18,12240
+Intelligent Electronic Device,50,16,12186
+Intelligent Electronic Device,51,16,11899
+Intelligent Electronic Device,52,16,11773
+Intelligent Electronic Device,53,16,11498
+Intelligent Electronic Device,54,17,0
+Intelligent Electronic Device,55,15,0
+Intelligent Electronic Device,56,16,0
+Intelligent Electronic Device,57,16,0
+Intelligent Electronic Device,58,16,0
+Intelligent Electronic Device,59,18,0
+Intelligent Electronic Device,60,16,0
+Intelligent Electronic Device,61,18,0
+Intelligent Electronic Device,62,14,0
+Intelligent Electronic Device,63,16,0
+Intelligent Electronic Device,64,18,0
+Intelligent Electronic Device,65,16,0
+Intelligent Electronic Device,66,16,0
+Intelligent Electronic Device,67,16,0
+Intelligent Electronic Device,68,16,0
+Intelligent Electronic Device,69,18,0
+Intelligent Electronic Device,70,16,0
+Intelligent Electronic Device,71,16,0
+Intelligent Electronic Device,72,16,0
+Intelligent Electronic Device,73,16,0
+Intelligent Electronic Device,74,18,0
+Intelligent Electronic Device,75,16,0
+Intelligent Electronic Device,76,16,0
+Intelligent Electronic Device,77,16,0
+Intelligent Electronic Device,78,16,0
+Intelligent Electronic Device,79,18,0
+Intelligent Electronic Device,80,16,0
+Intelligent Electronic Device,81,16,0
+Intelligent Electronic Device,82,16,0
+Intelligent Electronic Device,83,16,0
+Intelligent Electronic Device,84,18,0
+Intelligent Electronic Device,85,16,0
+Intelligent Electronic Device,86,16,0
+Intelligent Electronic Device,87,16,0
+Intelligent Electronic Device,88,16,0
+Intelligent Electronic Device,89,18,0
+Intelligent Electronic Device,90,16,0
+Intelligent Electronic Device,91,16,0
+Intelligent Electronic Device,92,16,0
+Intelligent Electronic Device,93,16,0
+Intelligent Electronic Device,94,18,0
+Intelligent Electronic Device,95,16,0
+Intelligent Electronic Device,96,16,0
+Intelligent Electronic Device,97,16,0
+Intelligent Electronic Device,98,16,0
+Intelligent Electronic Device,99,18,0
+Intelligent Electronic Device,100,16,0
+Intelligent Electronic Device,101,16,0
+Intelligent Electronic Device,102,16,0
+Intelligent Electronic Device,103,16,0
+Intelligent Electronic Device,104,18,0
+Intelligent Electronic Device,105,16,0
+Intelligent Electronic Device,106,16,0
+Intelligent Electronic Device,107,16,0
+Intelligent Electronic Device,108,16,0
+Intelligent Electronic Device,109,18,0
+Intelligent Electronic Device,110,16,0
+Intelligent Electronic Device,111,16,0
+Intelligent Electronic Device,112,16,0
+Intelligent Electronic Device,113,16,0
+Intelligent Electronic Device,114,18,0
+Intelligent Electronic Device,115,16,0
+Intelligent Electronic Device,116,18,0
+Intelligent Electronic Device,117,14,0
+Intelligent Electronic Device,118,18,0
+Intelligent Electronic Device,119,16,0
+Intelligent Electronic Device,120,0,0
+Smart Grid,0,8,0
+Smart Grid,1,8,0
+Smart Grid,2,8,0
+Smart Grid,3,8,0
+Smart Grid,4,8,0
+Smart Grid,5,8,0
+Smart Grid,6,8,0
+Smart Grid,7,8,0
+Smart Grid,8,8,0
+Smart Grid,9,8,0
+Smart Grid,10,8,0
+Smart Grid,11,8,0
+Smart Grid,12,8,0
+Smart Grid,13,8,0
+Smart Grid,14,8,0
+Smart Grid,15,8,0
+Smart Grid,16,8,0
+Smart Grid,17,8,0
+Smart Grid,18,8,0
+Smart Grid,19,8,0
+Smart Grid,20,8,0
+Smart Grid,21,8,0
+Smart Grid,22,8,0
+Smart Grid,23,8,0
+Smart Grid,24,8,0
+Smart Grid,25,8,0
+Smart Grid,26,8,0
+Smart Grid,27,8,0
+Smart Grid,28,8,0
+Smart Grid,29,8,0
+Smart Grid,30,8,0
+Smart Grid,31,8,0
+Smart Grid,32,8,0
+Smart Grid,33,8,0
+Smart Grid,34,8,0
+Smart Grid,35,8,0
+Smart Grid,36,8,0
+Smart Grid,37,8,0
+Smart Grid,38,8,0
+Smart Grid,39,8,0
+Smart Grid,40,8,0
+Smart Grid,41,8,0
+Smart Grid,42,8,0
+Smart Grid,43,8,0
+Smart Grid,44,8,0
+Smart Grid,45,8,0
+Smart Grid,46,8,1202
+Smart Grid,47,8,12052
+Smart Grid,48,8,12066
+Smart Grid,49,8,12122
+Smart Grid,50,8,12148
+Smart Grid,51,8,11853
+Smart Grid,52,8,12013
+Smart Grid,53,8,11474
+Smart Grid,54,8,0
+Smart Grid,55,8,0
+Smart Grid,56,8,0
+Smart Grid,57,8,0
+Smart Grid,58,8,0
+Smart Grid,59,8,0
+Smart Grid,60,8,0
+Smart Grid,61,8,0
+Smart Grid,62,8,0
+Smart Grid,63,8,0
+Smart Grid,64,8,0
+Smart Grid,65,8,0
+Smart Grid,66,8,0
+Smart Grid,67,8,0
+Smart Grid,68,8,0
+Smart Grid,69,8,0
+Smart Grid,70,8,0
+Smart Grid,71,8,0
+Smart Grid,72,8,0
+Smart Grid,73,8,0
+Smart Grid,74,8,0
+Smart Grid,75,8,0
+Smart Grid,76,8,0
+Smart Grid,77,8,0
+Smart Grid,78,8,0
+Smart Grid,79,8,0
+Smart Grid,80,8,0
+Smart Grid,81,8,0
+Smart Grid,82,8,0
+Smart Grid,83,8,0
+Smart Grid,84,8,0
+Smart Grid,85,8,0
+Smart Grid,86,8,0
+Smart Grid,87,8,0
+Smart Grid,88,8,0
+Smart Grid,89,8,0
+Smart Grid,90,8,0
+Smart Grid,91,8,0
+Smart Grid,92,8,0
+Smart Grid,93,8,0
+Smart Grid,94,8,0
+Smart Grid,95,8,0
+Smart Grid,96,8,0
+Smart Grid,97,8,0
+Smart Grid,98,8,0
+Smart Grid,99,8,0
+Smart Grid,100,8,0
+Smart Grid,101,8,0
+Smart Grid,102,8,0
+Smart Grid,103,8,0
+Smart Grid,104,8,0
+Smart Grid,105,8,0
+Smart Grid,106,8,0
+Smart Grid,107,8,0
+Smart Grid,108,8,0
+Smart Grid,109,8,0
+Smart Grid,110,8,0
+Smart Grid,111,8,0
+Smart Grid,112,8,0
+Smart Grid,113,8,0
+Smart Grid,114,8,0
+Smart Grid,115,8,0
+Smart Grid,116,8,0
+Smart Grid,117,8,0
+Smart Grid,118,8,0
+Smart Grid,119,8,0
+Smart Grid,120,0,0
+Water Bottle Factory,0,24,0
+Water Bottle Factory,1,24,0
+Water Bottle Factory,2,24,0
+Water Bottle Factory,3,24,0
+Water Bottle Factory,4,24,0
+Water Bottle Factory,5,26,0
+Water Bottle Factory,6,24,0
+Water Bottle Factory,7,24,0
+Water Bottle Factory,8,24,0
+Water Bottle Factory,9,24,0
+Water Bottle Factory,10,24,0
+Water Bottle Factory,11,24,0
+Water Bottle Factory,12,24,0
+Water Bottle Factory,13,24,0
+Water Bottle Factory,14,24,0
+Water Bottle Factory,15,24,0
+Water Bottle Factory,16,24,0
+Water Bottle Factory,17,24,0
+Water Bottle Factory,18,24,0
+Water Bottle Factory,19,24,0
+Water Bottle Factory,20,24,0
+Water Bottle Factory,21,24,0
+Water Bottle Factory,22,26,0
+Water Bottle Factory,23,24,0
+Water Bottle Factory,24,24,0
+Water Bottle Factory,25,24,0
+Water Bottle Factory,26,24,0
+Water Bottle Factory,27,24,0
+Water Bottle Factory,28,24,0
+Water Bottle Factory,29,24,0
+Water Bottle Factory,30,24,0
+Water Bottle Factory,31,24,0
+Water Bottle Factory,32,24,0
+Water Bottle Factory,33,24,0
+Water Bottle Factory,34,24,0
+Water Bottle Factory,35,24,0
+Water Bottle Factory,36,24,0
+Water Bottle Factory,37,24,0
+Water Bottle Factory,38,24,0
+Water Bottle Factory,39,24,0
+Water Bottle Factory,40,26,0
+Water Bottle Factory,41,24,0
+Water Bottle Factory,42,24,0
+Water Bottle Factory,43,24,0
+Water Bottle Factory,44,24,0
+Water Bottle Factory,45,24,0
+Water Bottle Factory,46,24,2366
+Water Bottle Factory,47,24,12539
+Water Bottle Factory,48,24,11973
+Water Bottle Factory,49,24,12201
+Water Bottle Factory,50,24,12161
+Water Bottle Factory,51,24,12054
+Water Bottle Factory,52,24,12204
+Water Bottle Factory,53,24,9764
+Water Bottle Factory,54,24,0
+Water Bottle Factory,55,24,0
+Water Bottle Factory,56,24,0
+Water Bottle Factory,57,24,0
+Water Bottle Factory,58,24,0
+Water Bottle Factory,59,24,0
+Water Bottle Factory,60,24,0
+Water Bottle Factory,61,26,0
+Water Bottle Factory,62,24,0
+Water Bottle Factory,63,24,0
+Water Bottle Factory,64,24,0
+Water Bottle Factory,65,24,0
+Water Bottle Factory,66,24,0
+Water Bottle Factory,67,24,0
+Water Bottle Factory,68,24,0
+Water Bottle Factory,69,24,0
+Water Bottle Factory,70,24,0
+Water Bottle Factory,71,24,0
+Water Bottle Factory,72,24,0
+Water Bottle Factory,73,24,0
+Water Bottle Factory,74,24,0
+Water Bottle Factory,75,24,0
+Water Bottle Factory,76,24,0
+Water Bottle Factory,77,24,0
+Water Bottle Factory,78,24,0
+Water Bottle Factory,79,24,0
+Water Bottle Factory,80,26,0
+Water Bottle Factory,81,24,0
+Water Bottle Factory,82,24,0
+Water Bottle Factory,83,24,0
+Water Bottle Factory,84,24,0
+Water Bottle Factory,85,24,0
+Water Bottle Factory,86,24,0
+Water Bottle Factory,87,24,0
+Water Bottle Factory,88,24,0
+Water Bottle Factory,89,24,0
+Water Bottle Factory,90,24,0
+Water Bottle Factory,91,24,0
+Water Bottle Factory,92,24,0
+Water Bottle Factory,93,24,0
+Water Bottle Factory,94,24,0
+Water Bottle Factory,95,24,0
+Water Bottle Factory,96,24,0
+Water Bottle Factory,97,24,0
+Water Bottle Factory,98,24,0
+Water Bottle Factory,99,24,0
+Water Bottle Factory,100,26,0
+Water Bottle Factory,101,24,0
+Water Bottle Factory,102,24,0
+Water Bottle Factory,103,24,0
+Water Bottle Factory,104,24,0
+Water Bottle Factory,105,24,0
+Water Bottle Factory,106,24,0
+Water Bottle Factory,107,24,0
+Water Bottle Factory,108,24,0
+Water Bottle Factory,109,24,0
+Water Bottle Factory,110,24,0
+Water Bottle Factory,111,24,0
+Water Bottle Factory,112,24,0
+Water Bottle Factory,113,24,0
+Water Bottle Factory,114,24,0
+Water Bottle Factory,115,24,0
+Water Bottle Factory,116,24,0
+Water Bottle Factory,117,24,0
+Water Bottle Factory,118,24,0
+Water Bottle Factory,119,26,0
+Water Bottle Factory,120,0,0

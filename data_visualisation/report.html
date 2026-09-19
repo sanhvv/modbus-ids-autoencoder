@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>html, body { margin: 0; }</style>
+<title>ICS Attack Timing</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  .viz-root {
+    color-scheme: light;
+    --surface-0: #f9f9f7;
+    --surface-1: #fcfcfb;
+    --border: #e4e3de;
+    --text-primary: #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted: #8a8980;
+    --series-normal: #2a78d6;
+    --series-attack: #eb6834;
+    --seq-100: #cde2fb; --seq-150: #b7d3f6; --seq-200: #9ec5f4; --seq-250: #86b6ef;
+    --seq-300: #6da7ec; --seq-350: #5598e7; --seq-400: #3987e5; --seq-450: #2a78d6;
+    --seq-500: #256abf; --seq-550: #1c5cab; --seq-600: #184f95; --seq-650: #104281;
+    --seq-700: #0d366b;
+    --shadow: 0 1px 2px rgba(20,20,15,0.06), 0 6px 20px rgba(20,20,15,0.05);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .viz-root {
+      color-scheme: dark;
+      --surface-0: #0d0d0d;
+      --surface-1: #1a1a19;
+      --border: #302f2b;
+      --text-primary: #ffffff;
+      --text-secondary: #c3c2b7;
+      --text-muted: #7d7c74;
+      --series-normal: #3987e5;
+      --series-attack: #d95926;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 6px 20px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"] .viz-root {
+    color-scheme: dark;
+    --surface-0: #0d0d0d;
+    --surface-1: #1a1a19;
+    --border: #302f2b;
+    --text-primary: #ffffff;
+    --text-secondary: #c3c2b7;
+    --text-muted: #7d7c74;
+    --series-normal: #3987e5;
+    --series-attack: #d95926;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 6px 20px rgba(0,0,0,0.35);
+  }
+
+  .viz-root {
+    min-height: 100vh;
+    background: var(--surface-0);
+    color: var(--text-primary);
+    font-family: "IBM Plex Sans", system-ui, sans-serif;
+    padding: 32px 20px 64px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+  .viz-root * { box-sizing: border-box; }
+  .wrap { max-width: 1280px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 40px; }
+
+  h1, h2, h3 { font-family: "Archivo", system-ui, sans-serif; text-wrap: balance; margin: 0; }
+  h1 { font-size: clamp(28px, 4vw, 40px); font-weight: 800; letter-spacing: -0.01em; }
+  h2 { font-size: 22px; font-weight: 700; }
+  h3 { font-size: 15px; font-weight: 700; }
+  .mono { font-family: "IBM Plex Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+  .eyebrow {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  p { color: var(--text-secondary); line-height: 1.55; margin: 0; max-width: 68ch; }
+
+  header.page-head { display: flex; flex-direction: column; gap: 10px; padding-top: 4px; }
+
+  /* ---- stat tiles ---- */
+  .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  @media (max-width: 800px) { .stat-grid { grid-template-columns: 1fr; } }
+  .stat-card {
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px;
+    padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; box-shadow: var(--shadow);
+  }
+  .stat-card h3 { color: var(--text-primary); }
+  .stat-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .stat-label { font-size: 12.5px; color: var(--text-muted); }
+  .stat-value { font-family: "IBM Plex Mono", monospace; font-size: 14px; font-variant-numeric: tabular-nums; }
+  .bar-split { height: 8px; border-radius: 4px; overflow: hidden; display: flex; background: var(--border); }
+  .bar-split .normal { background: var(--series-normal); }
+  .bar-split .attack { background: var(--series-attack); }
+  .legend-row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--text-secondary); }
+  .swatch { width: 10px; height: 10px; border-radius: 2px; flex: none; }
+
+  /* ---- section shells ---- */
+  section { display: flex; flex-direction: column; gap: 16px; }
+  .section-head { display: flex; flex-direction: column; gap: 6px; }
+
+  .panel-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 980px) { .panel-grid { grid-template-columns: 1fr; } }
+  .dataset-block {
+    background: var(--surface-1); border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px 16px 14px; display: flex; flex-direction: column; gap: 12px; box-shadow: var(--shadow);
+  }
+  .chart-title { display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 2px 8px; }
+  .chart-title .name { font-weight: 700; font-size: 13.5px; }
+  .chart-title .meta { font-size: 11.5px; color: var(--text-muted); font-family: "IBM Plex Mono", monospace; }
+
+  .chart-box { position: relative; width: 100%; }
+  .chart-box svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .axis-label { font-size: 9.5px; fill: var(--text-muted); font-family: "IBM Plex Mono", monospace; }
+  .gridline { stroke: var(--border); stroke-width: 1; }
+  .crosshair { stroke: var(--text-muted); stroke-width: 1; stroke-dasharray: 2 2; opacity: 0; pointer-events: none; }
+
+  .tooltip {
+    position: absolute; pointer-events: none; z-index: 5;
+    background: var(--text-primary); color: var(--surface-1);
+    font-family: "IBM Plex Mono", monospace; font-size: 11px; line-height: 1.5;
+    padding: 6px 9px; border-radius: 6px; white-space: nowrap; opacity: 0;
+    transform: translate(-50%, -100%); transition: opacity 0.08s ease;
+    box-shadow: var(--shadow);
+  }
+  .tooltip b { font-weight: 700; }
+
+  .callout {
+    background: var(--surface-1); border: 1px solid var(--border); border-left: 3px solid var(--series-normal);
+    border-radius: 8px; padding: 14px 18px; display: flex; flex-direction: column; gap: 6px;
+  }
+  .callout p { max-width: none; }
+  .callout .k4 { color: var(--series-attack); font-weight: 700; }
+
+  /* ---- heatmap ---- */
+  .heatmap-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .heatmap-grid > .dataset-block { min-width: 0; overflow-x: auto; }
+  @media (max-width: 980px) { .heatmap-grid { grid-template-columns: 1fr; } }
+  table.heatmap { border-collapse: collapse; width: 100%; font-size: 11px; }
+  table.heatmap th, table.heatmap td { text-align: center; padding: 0; }
+  table.heatmap th { font-family: "IBM Plex Mono", monospace; font-weight: 600; color: var(--text-muted); font-size: 10.5px; padding-bottom: 4px; }
+  table.heatmap th.row-label-head { text-align: left; }
+  table.heatmap td.row-label {
+    text-align: left; font-size: 11px; color: var(--text-secondary); padding: 3px 8px 3px 0;
+    white-space: nowrap; max-width: 100px; overflow: hidden; text-overflow: ellipsis;
+  }
+  .heat-cell {
+    height: 24px; border-radius: 3px; border: 2px solid var(--surface-1);
+    font-family: "IBM Plex Mono", monospace; color: white; font-size: 10px;
+    display: flex; align-items: center; justify-content: center; cursor: default;
+  }
+  .n-head, .n-cell { font-family: "IBM Plex Mono", monospace; font-size: 10px; color: var(--text-muted); padding-left: 8px; text-align: right; }
+  .k4-col { outline: 2px solid var(--series-attack); outline-offset: -2px; border-radius: 3px; }
+
+  .table-toggle {
+    font-family: "IBM Plex Mono", monospace; font-size: 11px; color: var(--text-secondary);
+    background: none; border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; cursor: pointer;
+  }
+  .table-toggle:hover { border-color: var(--text-muted); }
+
+  footer { border-top: 1px solid var(--border); padding-top: 20px; }
+  footer p { font-size: 12.5px; }
+</style>
+</head>
+<body>
+
+<div class="viz-root">
+<div class="wrap">
+
+  <header class="page-head">
+    <span class="eyebrow">ICS-SimLab &middot; Modbus/TCP capture analysis</span>
+    <h1>When do attacks actually happen?</h1>
+    <p>Three ICS-SimLab captures &mdash; Intelligent Electronic Device, Smart Grid, Water Bottle Factory &mdash; each a single continuous session with no date field in the raw data, only a wall-clock <span class="mono">time</span> and a session-relative <span class="mono">frame_time_relative</span>. This maps where normal and attack traffic actually fall inside each session, then tests whether the packet-rate detection window (hardcoded at k&nbsp;=&nbsp;4s across the pipeline) is well-chosen.</p>
+  </header>
+
+  <section id="overview">
+    <div class="stat-grid" id="stat-grid"></div>
+  </section>
+
+  <section id="timing">
+    <div class="section-head">
+      <span class="eyebrow">Part 1 &middot; Temporal distribution</span>
+      <h2>Two very different attack rhythms</h2>
+      <p>Every session opens with an extreme, ~7-second packet flood (<b>data flood attack</b>) that outweighs everything else by two orders of magnitude &mdash; shown zoomed below. The other seven attack types are spread thin across the <em>entire</em> remaining session, interleaved with normal traffic rather than clustered.</p>
+    </div>
+    <div class="panel-grid" id="burst-grid"></div>
+    <div class="panel-grid" id="sustained-grid"></div>
+  </section>
+
+  <section id="window">
+    <div class="section-head">
+      <span class="eyebrow">Part 2 &middot; Detection window experiment</span>
+      <h2>Is a 4-second rate window the right choice?</h2>
+      <p><span class="mono">extract_packet_info()</span> computes <span class="mono">packet_rate</span> from a hardcoded <span class="mono">k&nbsp;=&nbsp;4</span> second window, with no comment or evaluation anywhere in the notebook or scripts justifying that value. To check it empirically: for each candidate <span class="mono">k</span>, every packet in the full (unsampled) dataset gets a rolling rate &mdash; count of packets in [t&minus;k,&nbsp;t] &divide; k, computed via a sorted-array two-pointer search, not a heuristic &mdash; then <b>AUC-ROC</b> scores how well that single number separates each attack type from normal. 1.0 = perfect separation, 0.5 = no better than chance.</p>
+    </div>
+    <div class="heatmap-grid" id="heatmap-grid"></div>
+    <div class="callout" id="window-callout"></div>
+  </section>
+
+  <footer>
+    <p>Methodology: MODBUS-protocol rows only, full dataset (no downsampling) for both the timing and AUC analyses. Rolling packet-rate uses an inclusive window <span class="mono">[t&minus;k, t]</span> matching <span class="mono">extract_packet_info()</span>'s own definition. The <span class="k4" style="color:var(--series-attack)">outlined column</span> in each heatmap marks the pipeline's current <span class="mono">k=4</span>.</p>
+  </footer>
+
+</div>
+</div>
+
+<script>
+(function () {
+  const DATA = {"candidate_k": [0.5, 1, 2, 4, 8, 16, 32, 60], "current_k": 4, "attack_labels": ["address scan", "function code scan", "device ID attack", "naive sensor read", "sporadic sensor injection", "force listen mode", "restart communication", "data flood attack"], "datasets": {"Intelligent Electronic Device": {"session_duration_sec": 13754.959914523, "n_normal": 222608, "n_attack": 116308, "attack_pct": 34.3, "bucket_sec": 60, "normal_timeline": [982, 984, 982, 982, 978, 982, 980, 982, 980, 930, 978, 982, 980, 934, 980, 934, 976, 982, 980, 936, 979, 981, 930, 980, 982, 978, 982, 982, 980, 934, 982, 980, 982, 978, 934, 980, 982, 980, 928, 982, 980, 980, 980, 934, 980, 980, 980, 980, 932, 978, 982, 980, 982, 982, 980, 930, 982, 982, 978, 936, 982, 980, 976, 982, 982, 978, 982, 982, 930, 980, 982, 982, 930, 982, 930, 982, 980, 980, 980, 934, 980, 982, 978, 982, 982, 932, 980, 980, 982, 934, 982, 980, 982, 932, 980, 934, 982, 980, 982, 978, 982, 982, 978, 934, 982, 980, 980, 980, 982, 982, 978, 982, 930, 980, 982, 980, 980, 982, 928, 982, 930, 982, 980, 980, 980, 930, 982, 930, 980, 982, 980, 980, 936, 982, 980, 982, 978, 982, 982, 978, 980, 930, 982, 980, 982, 938, 978, 980, 982, 934, 980, 982, 978, 982, 934, 980, 982, 982, 978, 932, 982, 978, 982, 982, 934, 980, 980, 930, 980, 982, 936, 980, 982, 982, 980, 980, 982, 980, 982, 928, 980, 982, 932, 980, 982, 978, 982, 934, 978, 982, 982, 980, 936, 978, 980, 982, 980, 984, 976, 980, 938, 980, 980, 980, 982, 930, 982, 982, 934, 982, 978, 982, 934, 980, 982, 982, 978, 982, 982, 930, 982, 982, 934, 980, 982, 980, 980, 981, 981, 200], "attack_timeline_excl_flood": [0, 0, 40, 0, 914, 16, 16, 40, 40, 4, 0, 56, 584, 400, 0, 10, 0, 216, 586, 238, 0, 10, 0, 0, 778, 152, 24, 40, 36, 0, 0, 40, 64, 576, 200, 0, 40, 10, 0, 0, 32, 40, 28, 0, 0, 810, 120, 10, 0, 490, 440, 0, 40, 392, 848, 0, 22, 40, 38, 0, 40, 0, 634, 296, 0, 28, 40, 32, 0, 0, 424, 416, 0, 10, 0, 0, 34, 40, 26, 0, 40, 490, 440, 0, 10, 0, 0, 136, 504, 200, 0, 136, 504, 400, 8, 2, 0, 586, 344, 0, 20, 40, 40, 0, 0, 40, 0, 40, 610, 320, 0, 572, 268, 0, 0, 40, 40, 20, 0, 0, 10, 0, 24, 40, 36, 0, 0, 10, 0, 40, 128, 512, 600, 0, 922, 8, 602, 328, 40, 0, 10, 0, 0, 440, 400, 0, 22, 40, 38, 0, 0, 32, 40, 28, 0, 0, 834, 96, 10, 0, 0, 40, 16, 624, 600, 0, 8, 2, 48, 592, 200, 0, 40, 0, 834, 96, 12, 40, 40, 8, 0, 10, 0, 0, 34, 40, 26, 0, 0, 40, 48, 592, 600, 0, 490, 440, 0, 36, 40, 24, 0, 554, 376, 0, 10, 0, 200, 440, 200, 0, 40, 10, 0, 0, 826, 104, 24, 40, 36, 0, 0, 482, 758, 0, 40, 6, 40, 40, 14, 0], "flood_timeline": [84808, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "normal_1s": [16, 16, 16, 16, 18, 16, 16, 16, 16, 18, 16, 16, 16, 16, 18, 16, 16, 16, 16, 18, 16, 16, 16, 16, 18, 16, 16, 16, 16, 18, 16, 16, 16, 16, 18, 16, 16, 16, 16, 18, 16, 16, 16, 16, 18, 16, 16, 16, 16, 18, 16, 16, 16, 16, 17, 15, 16, 16, 16, 18, 16, 18, 14, 16, 18, 16, 16, 16, 16, 18, 16, 16, 16, 16, 18, 16, 16, 16, 16, 18, 16, 16, 16, 16, 18, 16, 16, 16, 16, 18, 16, 16, 16, 16, 18, 16, 16, 16, 16, 18, 16, 16, 16, 16, 18, 16, 16, 16, 16, 18, 16, 16, 16, 16, 18, 16, 18, 14, 18, 16, 0], "attack_1s": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 584, 12089, 12539, 12240, 12186, 11899, 11773, 11498, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "flood_window": [46.948434104, 53.959238751], "flood_count": 84808, "flood_peak_per_sec": 12539, "attack_counts": [1474, 5480, 1016, 13184, 8600, 148, 1598, 84808], "auc_matrix": [[0.9922, 0.996, 0.9575, 0.8508, 0.9823, 0.6953, 0.6477, 0.9997], [0.9905, 0.994, 0.9511, 0.8554, 0.9851, 0.7425, 0.7367, 0.9997], [0.9826, 0.989, 0.9166, 0.8878, 0.9798, 0.7944, 0.6821, 0.9997], [0.9677, 0.9775, 0.8536, 0.8849, 0.9624, 0.7926, 0.7773, 0.9996], [0.9445, 0.9596, 0.8974, 0.8824, 0.9417, 0.7171, 0.7298, 0.9992], [0.903, 0.9205, 0.8669, 0.8764, 0.9132, 0.5665, 0.7123, 0.9984], [0.8258, 0.8489, 0.7968, 0.8755, 0.8918, 0.4517, 0.6202, 0.9968], [0.7211, 0.7496, 0.6744, 0.8489, 0.9102, 0.358, 0.5347, 0.9916]], "auc_overall": [0.9757, 0.9775, 0.9794, 0.9778, 0.9742, 0.9677, 0.9585, 0.9447]}, "Smart Grid": {"session_duration_sec": 5962.966932027, "n_normal": 47198, "n_attack": 88086, "attack_pct": 65.1, "bucket_sec": 60, "normal_timeline": [480, 480, 465, 480, 480, 480, 480, 465, 480, 480, 480, 480, 442, 480, 465, 480, 480, 457, 442, 480, 480, 480, 480, 480, 480, 465, 480, 465, 480, 480, 465, 480, 480, 472, 465, 480, 480, 465, 480, 480, 480, 465, 480, 480, 480, 465, 480, 480, 474, 478, 480, 465, 480, 465, 480, 480, 480, 480, 480, 480, 465, 480, 465, 480, 465, 472, 465, 480, 480, 480, 465, 480, 480, 480, 465, 480, 480, 465, 480, 480, 465, 465, 472, 480, 480, 480, 480, 480, 480, 465, 480, 465, 480, 480, 465, 480, 480, 480, 465, 184], "attack_timeline_excl_flood": [0, 0, 88, 0, 8, 4, 16, 0, 0, 186, 0, 2, 0, 8, 12, 0, 88, 0, 2, 0, 8, 186, 0, 186, 88, 0, 2, 0, 6, 14, 0, 8, 0, 2, 0, 0, 88, 0, 90, 96, 20, 0, 0, 8, 88, 0, 8, 0, 186, 4, 16, 0, 0, 2, 0, 186, 0, 8, 0, 2, 0, 20, 0, 32, 56, 2, 0, 0, 186, 14, 6, 0, 8, 8, 280, 0, 18, 2, 0, 2, 0, 88, 0, 186, 0, 8, 98, 88, 0, 288, 0, 2, 0, 20, 0, 8, 0, 12, 8, 0], "flood_timeline": [84930, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "normal_1s": [8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 0], "attack_1s": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1202, 12052, 12066, 12122, 12148, 11853, 12013, 11474, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "flood_window": [46.900230685, 53.917346048], "flood_count": 84930, "flood_peak_per_sec": 12148, "attack_counts": [28, 810, 128, 1606, 370, 16, 198, 84930], "auc_matrix": [[0.6386, 0.961, 0.6862, 0.7344, 0.9964, 0.4271, 0.7058, 0.9995], [0.9663, 0.9942, 0.9533, 0.9698, 0.9968, 0.9556, 0.9556, 0.9995], [0.9451, 0.989, 0.9342, 0.9735, 0.995, 0.945, 0.945, 0.9994], [0.9215, 0.9786, 0.9167, 0.9692, 0.9955, 0.9216, 0.9358, 0.9992], [0.8883, 0.9579, 0.9544, 0.9581, 0.9945, 0.7889, 0.9133, 0.9986], [0.8293, 0.9203, 0.9194, 0.9455, 0.9911, 0.7127, 0.8802, 0.9972], [0.7387, 0.8621, 0.8368, 0.9139, 0.9741, 0.6362, 0.8065, 0.9944], [0.5414, 0.7713, 0.7515, 0.8409, 0.9425, 0.451, 0.6787, 0.9884]], "auc_overall": [0.993, 0.9987, 0.9985, 0.9981, 0.9971, 0.995, 0.9908, 0.9822]}, "Water Bottle Factory": {"session_duration_sec": 7000.18517661, "n_normal": 166896, "n_attack": 96322, "attack_pct": 36.6, "bucket_sec": 60, "normal_timeline": [1446, 1448, 1446, 1446, 1446, 1434, 1446, 1354, 1446, 1446, 1384, 1446, 1446, 1446, 1343, 1446, 1392, 1446, 1446, 1388, 1446, 1446, 1446, 1434, 1446, 1394, 1446, 1438, 1442, 1446, 1448, 1446, 1434, 1400, 1446, 1394, 1446, 1434, 1400, 1446, 1446, 1438, 1442, 1446, 1404, 1432, 1436, 1392, 1446, 1448, 1390, 1446, 1446, 1398, 1442, 1442, 1400, 1446, 1446, 1354, 1446, 1444, 1446, 1446, 1436, 1394, 1446, 1446, 1364, 1440, 1446, 1446, 1446, 1394, 1442, 1446, 1446, 1384, 1434, 1446, 1400, 1446, 1442, 1442, 1446, 1446, 1446, 1388, 1444, 1448, 1446, 1354, 1446, 1444, 1402, 1446, 1436, 1446, 1444, 1365, 1436, 1444, 1446, 1402, 1446, 1436, 1398, 1446, 1446, 1442, 1440, 1444, 1394, 1446, 1442, 1440, 974], "attack_timeline_excl_flood": [0, 0, 16, 0, 196, 176, 0, 4, 0, 136, 640, 0, 20, 20, 0, 4, 0, 0, 36, 4, 0, 16, 372, 0, 420, 556, 0, 372, 0, 16, 0, 26, 14, 0, 168, 608, 0, 4, 0, 0, 16, 292, 80, 0, 4, 0, 776, 0, 10, 30, 0, 0, 4, 0, 0, 40, 0, 0, 776, 0, 212, 160, 0, 16, 776, 0, 0, 38, 2, 0, 16, 0, 4, 0, 180, 192, 296, 280, 0, 4, 0, 16, 0, 180, 192, 0, 30, 10, 0, 22, 18, 0, 16, 4, 0, 212, 160, 0, 576, 0, 16, 0, 4, 0, 0, 30, 10, 0, 0, 372, 0, 376, 400, 16, 180, 192, 0], "flood_timeline": [85262, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "normal_1s": [24, 24, 24, 24, 24, 26, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 26, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 26, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 26, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 26, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 26, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 24, 26, 0], "attack_1s": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2366, 12539, 11973, 12201, 12161, 12054, 12204, 9764, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], "flood_window": [46.805745509, 53.820040795], "flood_count": 85262, "flood_peak_per_sec": 12539, "attack_counts": [190, 1636, 312, 3328, 5200, 36, 358, 85262], "auc_matrix": [[0.9923, 0.995, 0.9719, 0.9615, 0.9936, 0.9443, 0.9436, 0.9995], [0.982, 0.9911, 0.9586, 0.9402, 0.9923, 0.9103, 0.9063, 0.9995], [0.9706, 0.982, 0.9236, 0.9423, 0.9882, 0.8971, 0.8748, 0.9994], [0.9541, 0.9656, 0.8949, 0.9388, 0.9817, 0.8639, 0.8743, 0.9993], [0.9239, 0.9372, 0.9155, 0.9257, 0.9776, 0.7951, 0.8487, 0.9987], [0.8871, 0.8967, 0.8693, 0.9114, 0.9771, 0.6923, 0.822, 0.9974], [0.8322, 0.8435, 0.7988, 0.8919, 0.9592, 0.6266, 0.7563, 0.9948], [0.7426, 0.7531, 0.6732, 0.8079, 0.9133, 0.4827, 0.6468, 0.9869]], "auc_overall": [0.9975, 0.9964, 0.9957, 0.9947, 0.993, 0.9902, 0.9848, 0.9698]}}, "callout_html": "<h3>Takeaway (computed from the results above)<\/h3><p>Mean AUC across attack types, by window size:<br><b>Intelligent Electronic Device<\/b>: best k = 1s (mean AUC 0.907); k = 4s gives 0.902; k = 60s gives 0.724<br><b>Smart Grid<\/b>: best k = 1s (mean AUC 0.974); k = 4s gives 0.955; k = 60s gives 0.746<br><b>Water Bottle Factory<\/b>: best k = 0.5s (mean AUC 0.975); k = 4s gives 0.934; k = 60s gives 0.751<\/p><p>Attack types whose best AUC over every tested window stays below 0.85: force listen mode in Intelligent Electronic Device (best AUC 0.794 at k = 2s, n = 148); restart communication in Intelligent Electronic Device (best AUC 0.777 at k = 4s, n = 1598). For these, packet rate alone is a weak signal at any window size.<\/p><p>Small samples, read their AUC with caution: address scan in Smart Grid (n = 28); force listen mode in Smart Grid (n = 16); force listen mode in Water Bottle Factory (n = 36).<\/p>"};
+
+  const isDark = () => {
+    const root = document.documentElement;
+    if (root.getAttribute('data-theme') === 'dark') return true;
+    if (root.getAttribute('data-theme') === 'light') return false;
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  };
+
+  function css(varName, el) {
+    return getComputedStyle(el || document.querySelector('.viz-root')).getPropertyValue(varName).trim();
+  }
+
+  function fmt(n) {
+    if (n >= 1000) return (n/1000).toFixed(1).replace(/\.0$/,'') + 'k';
+    return String(n);
+  }
+
+  function secToClock(s) {
+    const m = Math.floor(s / 60), sec = Math.round(s % 60);
+    return `${m}m${String(sec).padStart(2,'0')}s`;
+  }
+
+  // ---------------- stat tiles ----------------
+  const statGrid = document.getElementById('stat-grid');
+  Object.entries(DATA.datasets).forEach(([name, d]) => {
+    const card = document.createElement('div');
+    card.className = 'stat-card';
+    const durMin = (d.session_duration_sec/60).toFixed(1);
+    card.innerHTML = `
+      <h3>${name}</h3>
+      <div class="stat-row"><span class="stat-label">Session length</span><span class="stat-value">${durMin} min</span></div>
+      <div class="stat-row"><span class="stat-label">Normal / Attack rows</span><span class="stat-value">${fmt(d.n_normal)} / ${fmt(d.n_attack)}</span></div>
+      <div class="bar-split"><div class="normal" style="width:${100-d.attack_pct}%"></div><div class="attack" style="width:${d.attack_pct}%"></div></div>
+      <div class="stat-row"><span class="stat-label">Attack share</span><span class="stat-value">${d.attack_pct}%</span></div>
+      <div class="stat-row"><span class="stat-label">Flood burst peak</span><span class="stat-value">${fmt(d.flood_peak_per_sec)} pkt/s</span></div>
+    `;
+    statGrid.appendChild(card);
+  });
+
+  // ---------------- burst-zoom panels (0-120s, 1s buckets) ----------------
+  // Uses drawScaledChart (defined below) with a power-scale y-axis so the
+  // ~12,500 pkt/s flood spike and the near-zero normal baseline both stay
+  // legible on one chart, while tooltips still show the real, unscaled counts.
+  const burstGrid = document.getElementById('burst-grid');
+  Object.entries(DATA.datasets).forEach(([name, d]) => {
+    const block = document.createElement('div');
+    block.className = 'dataset-block';
+    block.innerHTML = `<div class="chart-title"><span class="name">${name}</span><span class="meta">0&ndash;120s &middot; 1s buckets &middot; power-scaled y</span></div>
+      <div class="chart-box"></div>
+      <div class="legend-row">
+        <div class="legend-item"><span class="swatch" style="background:var(--series-normal)"></span>Normal</div>
+        <div class="legend-item"><span class="swatch" style="background:var(--series-attack)"></span>Attack (flood)</div>
+      </div>`;
+    burstGrid.appendChild(block);
+    drawScaledChart(block.querySelector('.chart-box'), {
+      seriesRaw: [
+        {label:'Normal', values: d.normal_1s, color: css('--series-normal')},
+        {label:'Attack', values: d.attack_1s, color: css('--series-attack')},
+      ],
+      scale: v => Math.pow(v, 0.4),
+      xTickFormat: (i, full) => full ? `t = ${i}s` : `${i}s`,
+      yTickFormat: v => fmt(Math.round(v)),
+    });
+  });
+
+  function drawScaledChart(container, {seriesRaw, scale, width=360, height=150, xTickFormat, yTickFormat}) {
+    const pad = {top: 10, right: 8, bottom: 20, left: 36};
+    const innerW = width - pad.left - pad.right;
+    const innerH = height - pad.top - pad.bottom;
+    const n = seriesRaw[0].values.length;
+    const rawMax = Math.max(1, ...seriesRaw.flatMap(s => s.values));
+    const scaledMax = scale(rawMax) * 1.12;
+
+    const x = i => pad.left + (i/(n-1)) * innerW;
+    const y = raw => pad.top + innerH - (scale(raw)/scaledMax) * innerH;
+
+    const svg = document.createElementNS('http://www.w3.org/2000/svg','svg');
+    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+
+    [0, 0.25, 0.55, 1].forEach(frac => {
+      const rawTickVal = Math.pow(frac*scaledMax, 1/0.4);
+      const gy = pad.top + innerH - frac*innerH;
+      const line = document.createElementNS(svg.namespaceURI,'line');
+      line.setAttribute('x1', pad.left); line.setAttribute('x2', width-pad.right);
+      line.setAttribute('y1', gy); line.setAttribute('y2', gy);
+      line.setAttribute('class','gridline');
+      svg.appendChild(line);
+      const lbl = document.createElementNS(svg.namespaceURI,'text');
+      lbl.setAttribute('x', pad.left-5); lbl.setAttribute('y', gy+3);
+      lbl.setAttribute('text-anchor','end'); lbl.setAttribute('class','axis-label');
+      lbl.textContent = yTickFormat(rawTickVal);
+      svg.appendChild(lbl);
+    });
+
+    [0, Math.floor((n-1)/2), n-1].forEach(i => {
+      const lbl = document.createElementNS(svg.namespaceURI,'text');
+      lbl.setAttribute('x', x(i)); lbl.setAttribute('y', height-4);
+      lbl.setAttribute('text-anchor', i===0 ? 'start' : (i===n-1 ? 'end' : 'middle'));
+      lbl.setAttribute('class','axis-label');
+      lbl.textContent = xTickFormat(i);
+      svg.appendChild(lbl);
+    });
+
+    seriesRaw.forEach(s => {
+      let path = `M ${x(0)} ${y(s.values[0])}`;
+      for (let i=1;i<n;i++) path += ` L ${x(i)} ${y(s.values[i])}`;
+      const areaPath = path + ` L ${x(n-1)} ${pad.top+innerH} L ${x(0)} ${pad.top+innerH} Z`;
+      const area = document.createElementNS(svg.namespaceURI,'path');
+      area.setAttribute('d', areaPath); area.setAttribute('fill', s.color); area.setAttribute('opacity','0.15');
+      svg.appendChild(area);
+      const line = document.createElementNS(svg.namespaceURI,'path');
+      line.setAttribute('d', path); line.setAttribute('fill','none');
+      line.setAttribute('stroke', s.color); line.setAttribute('stroke-width','1.6');
+      svg.appendChild(line);
+    });
+
+    const crosshair = document.createElementNS(svg.namespaceURI,'line');
+    crosshair.setAttribute('y1', pad.top); crosshair.setAttribute('y2', pad.top+innerH);
+    crosshair.setAttribute('class','crosshair');
+    svg.appendChild(crosshair);
+    const hit = document.createElementNS(svg.namespaceURI,'rect');
+    hit.setAttribute('x', pad.left); hit.setAttribute('y', pad.top);
+    hit.setAttribute('width', innerW); hit.setAttribute('height', innerH);
+    hit.setAttribute('fill','transparent');
+    svg.appendChild(hit);
+
+    container.style.position = 'relative';
+    container.appendChild(svg);
+    const tooltip = document.createElement('div');
+    tooltip.className = 'tooltip';
+    container.appendChild(tooltip);
+
+    hit.addEventListener('mousemove', (e) => {
+      const rect = svg.getBoundingClientRect();
+      const relX = (e.clientX - rect.left) / rect.width * width;
+      let i = Math.round(((relX - pad.left) / innerW) * (n-1));
+      i = Math.max(0, Math.min(n-1, i));
+      crosshair.setAttribute('x1', x(i)); crosshair.setAttribute('x2', x(i));
+      crosshair.style.opacity = 1;
+      const lines = seriesRaw.map(s => `<b style="color:${s.color}">${s.label}</b> ${fmt(s.values[i])}/s`).join('<br>');
+      tooltip.innerHTML = `${xTickFormat(i, true)}<br>${lines}`;
+      tooltip.style.opacity = 1;
+      const containerRect = container.getBoundingClientRect();
+      tooltip.style.left = (rect.left - containerRect.left + x(i)) + 'px';
+      tooltip.style.top = (rect.top - containerRect.top + Math.min(...seriesRaw.map(s=>y(s.values[i])))) - 8 + 'px';
+    });
+    hit.addEventListener('mouseleave', () => { crosshair.style.opacity = 0; tooltip.style.opacity = 0; });
+  }
+
+  // ---------------- sustained-activity panels (full session, flood excluded, 60s buckets) ----------------
+  const sustainedGrid = document.getElementById('sustained-grid');
+  Object.entries(DATA.datasets).forEach(([name, d]) => {
+    const block = document.createElement('div');
+    block.className = 'dataset-block';
+    const durMin = Math.round(d.session_duration_sec/60);
+    block.innerHTML = `<div class="chart-title"><span class="name">${name}</span><span class="meta">0&ndash;${durMin}m &middot; 60s buckets &middot; flood excluded &middot; power-scaled y</span></div>
+      <div class="chart-box"></div>
+      <div class="legend-row">
+        <div class="legend-item"><span class="swatch" style="background:var(--series-normal)"></span>Normal</div>
+        <div class="legend-item"><span class="swatch" style="background:var(--series-attack)"></span>Attack (7 other types)</div>
+      </div>`;
+    sustainedGrid.appendChild(block);
+    drawScaledChart(block.querySelector('.chart-box'), {
+      seriesRaw: [
+        {label:'Normal', values: d.normal_timeline, color: css('--series-normal')},
+        {label:'Attack', values: d.attack_timeline_excl_flood, color: css('--series-attack')},
+      ],
+      scale: v => Math.pow(v, 0.7),
+      xTickFormat: (i, full) => full ? secToClock(i*60) : `${Math.round(i*60/60)}m`,
+      yTickFormat: v => fmt(Math.round(v)),
+    });
+  });
+
+  // ---------------- window-size heatmaps ----------------
+  const heatGrid = document.getElementById('heatmap-grid');
+  const seqRamp = ['--seq-100','--seq-200','--seq-300','--seq-400','--seq-500','--seq-600','--seq-700'];
+  function seqText(auc) {
+    const t = Math.max(0, Math.min(1, (auc - 0.5) / 0.5));
+    return Math.floor(t * seqRamp.length) <= 2 ? '#0b0b0b' : '#ffffff';
+  }
+  function seqColor(auc) {
+    // map AUC 0.5 (chance) -> 1.0 (perfect) onto the 7-step ramp
+    const t = Math.max(0, Math.min(1, (auc - 0.5) / 0.5));
+    const idx = Math.min(seqRamp.length-1, Math.floor(t * seqRamp.length));
+    return css(seqRamp[idx]);
+  }
+
+  const k4Index = DATA.candidate_k.indexOf(DATA.current_k);
+
+  Object.entries(DATA.datasets).forEach(([name, d]) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'dataset-block';
+    const table = document.createElement('table');
+    table.className = 'heatmap';
+    let thead = '<tr><th class="row-label-head">Attack type</th>' +
+      DATA.candidate_k.map((k,ci) => `<th class="${ci===k4Index?'k4-col':''}">${k}s</th>`).join('') + '<th class="n-head">n</th></tr>';
+    let rows = '';
+    DATA.attack_labels.forEach((label, ri) => {
+      rows += `<tr><td class="row-label">${label}</td>`;
+      DATA.candidate_k.forEach((k, ci) => {
+        const auc = d.auc_matrix[ci][ri];
+        const cellClass = ci===k4Index ? 'k4-col' : '';
+        if (auc === null) {
+          rows += `<td class="${cellClass}"><div class="heat-cell" style="background:var(--border)">&mdash;</div></td>`;
+        } else {
+          rows += `<td class="${cellClass}"><div class="heat-cell" style="background:${seqColor(auc)};color:${seqText(auc)}" title="${label} @ k=${k}s: AUC ${auc.toFixed(3)}">${auc.toFixed(2)}</div></td>`;
+        }
+      });
+      rows += `<td class="n-cell">${d.attack_counts[ri]}</td></tr>`;
+    });
+    table.innerHTML = thead + rows;
+    wrap.innerHTML = `<h3>${name}</h3>`;
+    wrap.appendChild(table);
+    heatGrid.appendChild(wrap);
+  });
+
+  // callout takeaway
+  document.getElementById('window-callout').innerHTML = DATA.callout_html;
+
+})();
+</script>
+
+</body>
+</html>

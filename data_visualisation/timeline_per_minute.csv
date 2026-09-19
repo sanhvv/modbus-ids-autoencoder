@@ -1,0 +1,448 @@
+dataset,minute,normal,attack_excluding_flood,flood
+Intelligent Electronic Device,0,982,0,84808
+Intelligent Electronic Device,1,984,0,0
+Intelligent Electronic Device,2,982,40,0
+Intelligent Electronic Device,3,982,0,0
+Intelligent Electronic Device,4,978,914,0
+Intelligent Electronic Device,5,982,16,0
+Intelligent Electronic Device,6,980,16,0
+Intelligent Electronic Device,7,982,40,0
+Intelligent Electronic Device,8,980,40,0
+Intelligent Electronic Device,9,930,4,0
+Intelligent Electronic Device,10,978,0,0
+Intelligent Electronic Device,11,982,56,0
+Intelligent Electronic Device,12,980,584,0
+Intelligent Electronic Device,13,934,400,0
+Intelligent Electronic Device,14,980,0,0
+Intelligent Electronic Device,15,934,10,0
+Intelligent Electronic Device,16,976,0,0
+Intelligent Electronic Device,17,982,216,0
+Intelligent Electronic Device,18,980,586,0
+Intelligent Electronic Device,19,936,238,0
+Intelligent Electronic Device,20,979,0,0
+Intelligent Electronic Device,21,981,10,0
+Intelligent Electronic Device,22,930,0,0
+Intelligent Electronic Device,23,980,0,0
+Intelligent Electronic Device,24,982,778,0
+Intelligent Electronic Device,25,978,152,0
+Intelligent Electronic Device,26,982,24,0
+Intelligent Electronic Device,27,982,40,0
+Intelligent Electronic Device,28,980,36,0
+Intelligent Electronic Device,29,934,0,0
+Intelligent Electronic Device,30,982,0,0
+Intelligent Electronic Device,31,980,40,0
+Intelligent Electronic Device,32,982,64,0
+Intelligent Electronic Device,33,978,576,0
+Intelligent Electronic Device,34,934,200,0
+Intelligent Electronic Device,35,980,0,0
+Intelligent Electronic Device,36,982,40,0
+Intelligent Electronic Device,37,980,10,0
+Intelligent Electronic Device,38,928,0,0
+Intelligent Electronic Device,39,982,0,0
+Intelligent Electronic Device,40,980,32,0
+Intelligent Electronic Device,41,980,40,0
+Intelligent Electronic Device,42,980,28,0
+Intelligent Electronic Device,43,934,0,0
+Intelligent Electronic Device,44,980,0,0
+Intelligent Electronic Device,45,980,810,0
+Intelligent Electronic Device,46,980,120,0
+Intelligent Electronic Device,47,980,10,0
+Intelligent Electronic Device,48,932,0,0
+Intelligent Electronic Device,49,978,490,0
+Intelligent Electronic Device,50,982,440,0
+Intelligent Electronic Device,51,980,0,0
+Intelligent Electronic Device,52,982,40,0
+Intelligent Electronic Device,53,982,392,0
+Intelligent Electronic Device,54,980,848,0
+Intelligent Electronic Device,55,930,0,0
+Intelligent Electronic Device,56,982,22,0
+Intelligent Electronic Device,57,982,40,0
+Intelligent Electronic Device,58,978,38,0
+Intelligent Electronic Device,59,936,0,0
+Intelligent Electronic Device,60,982,40,0
+Intelligent Electronic Device,61,980,0,0
+Intelligent Electronic Device,62,976,634,0
+Intelligent Electronic Device,63,982,296,0
+Intelligent Electronic Device,64,982,0,0
+Intelligent Electronic Device,65,978,28,0
+Intelligent Electronic Device,66,982,40,0
+Intelligent Electronic Device,67,982,32,0
+Intelligent Electronic Device,68,930,0,0
+Intelligent Electronic Device,69,980,0,0
+Intelligent Electronic Device,70,982,424,0
+Intelligent Electronic Device,71,982,416,0
+Intelligent Electronic Device,72,930,0,0
+Intelligent Electronic Device,73,982,10,0
+Intelligent Electronic Device,74,930,0,0
+Intelligent Electronic Device,75,982,0,0
+Intelligent Electronic Device,76,980,34,0
+Intelligent Electronic Device,77,980,40,0
+Intelligent Electronic Device,78,980,26,0
+Intelligent Electronic Device,79,934,0,0
+Intelligent Electronic Device,80,980,40,0
+Intelligent Electronic Device,81,982,490,0
+Intelligent Electronic Device,82,978,440,0
+Intelligent Electronic Device,83,982,0,0
+Intelligent Electronic Device,84,982,10,0
+Intelligent Electronic Device,85,932,0,0
+Intelligent Electronic Device,86,980,0,0
+Intelligent Electronic Device,87,980,136,0
+Intelligent Electronic Device,88,982,504,0
+Intelligent Electronic Device,89,934,200,0
+Intelligent Electronic Device,90,982,0,0
+Intelligent Electronic Device,91,980,136,0
+Intelligent Electronic Device,92,982,504,0
+Intelligent Electronic Device,93,932,400,0
+Intelligent Electronic Device,94,980,8,0
+Intelligent Electronic Device,95,934,2,0
+Intelligent Electronic Device,96,982,0,0
+Intelligent Electronic Device,97,980,586,0
+Intelligent Electronic Device,98,982,344,0
+Intelligent Electronic Device,99,978,0,0
+Intelligent Electronic Device,100,982,20,0
+Intelligent Electronic Device,101,982,40,0
+Intelligent Electronic Device,102,978,40,0
+Intelligent Electronic Device,103,934,0,0
+Intelligent Electronic Device,104,982,0,0
+Intelligent Electronic Device,105,980,40,0
+Intelligent Electronic Device,106,980,0,0
+Intelligent Electronic Device,107,980,40,0
+Intelligent Electronic Device,108,982,610,0
+Intelligent Electronic Device,109,982,320,0
+Intelligent Electronic Device,110,978,0,0
+Intelligent Electronic Device,111,982,572,0
+Intelligent Electronic Device,112,930,268,0
+Intelligent Electronic Device,113,980,0,0
+Intelligent Electronic Device,114,982,0,0
+Intelligent Electronic Device,115,980,40,0
+Intelligent Electronic Device,116,980,40,0
+Intelligent Electronic Device,117,982,20,0
+Intelligent Electronic Device,118,928,0,0
+Intelligent Electronic Device,119,982,0,0
+Intelligent Electronic Device,120,930,10,0
+Intelligent Electronic Device,121,982,0,0
+Intelligent Electronic Device,122,980,24,0
+Intelligent Electronic Device,123,980,40,0
+Intelligent Electronic Device,124,980,36,0
+Intelligent Electronic Device,125,930,0,0
+Intelligent Electronic Device,126,982,0,0
+Intelligent Electronic Device,127,930,10,0
+Intelligent Electronic Device,128,980,0,0
+Intelligent Electronic Device,129,982,40,0
+Intelligent Electronic Device,130,980,128,0
+Intelligent Electronic Device,131,980,512,0
+Intelligent Electronic Device,132,936,600,0
+Intelligent Electronic Device,133,982,0,0
+Intelligent Electronic Device,134,980,922,0
+Intelligent Electronic Device,135,982,8,0
+Intelligent Electronic Device,136,978,602,0
+Intelligent Electronic Device,137,982,328,0
+Intelligent Electronic Device,138,982,40,0
+Intelligent Electronic Device,139,978,0,0
+Intelligent Electronic Device,140,980,10,0
+Intelligent Electronic Device,141,930,0,0
+Intelligent Electronic Device,142,982,0,0
+Intelligent Electronic Device,143,980,440,0
+Intelligent Electronic Device,144,982,400,0
+Intelligent Electronic Device,145,938,0,0
+Intelligent Electronic Device,146,978,22,0
+Intelligent Electronic Device,147,980,40,0
+Intelligent Electronic Device,148,982,38,0
+Intelligent Electronic Device,149,934,0,0
+Intelligent Electronic Device,150,980,0,0
+Intelligent Electronic Device,151,982,32,0
+Intelligent Electronic Device,152,978,40,0
+Intelligent Electronic Device,153,982,28,0
+Intelligent Electronic Device,154,934,0,0
+Intelligent Electronic Device,155,980,0,0
+Intelligent Electronic Device,156,982,834,0
+Intelligent Electronic Device,157,982,96,0
+Intelligent Electronic Device,158,978,10,0
+Intelligent Electronic Device,159,932,0,0
+Intelligent Electronic Device,160,982,0,0
+Intelligent Electronic Device,161,978,40,0
+Intelligent Electronic Device,162,982,16,0
+Intelligent Electronic Device,163,982,624,0
+Intelligent Electronic Device,164,934,600,0
+Intelligent Electronic Device,165,980,0,0
+Intelligent Electronic Device,166,980,8,0
+Intelligent Electronic Device,167,930,2,0
+Intelligent Electronic Device,168,980,48,0
+Intelligent Electronic Device,169,982,592,0
+Intelligent Electronic Device,170,936,200,0
+Intelligent Electronic Device,171,980,0,0
+Intelligent Electronic Device,172,982,40,0
+Intelligent Electronic Device,173,982,0,0
+Intelligent Electronic Device,174,980,834,0
+Intelligent Electronic Device,175,980,96,0
+Intelligent Electronic Device,176,982,12,0
+Intelligent Electronic Device,177,980,40,0
+Intelligent Electronic Device,178,982,40,0
+Intelligent Electronic Device,179,928,8,0
+Intelligent Electronic Device,180,980,0,0
+Intelligent Electronic Device,181,982,10,0
+Intelligent Electronic Device,182,932,0,0
+Intelligent Electronic Device,183,980,0,0
+Intelligent Electronic Device,184,982,34,0
+Intelligent Electronic Device,185,978,40,0
+Intelligent Electronic Device,186,982,26,0
+Intelligent Electronic Device,187,934,0,0
+Intelligent Electronic Device,188,978,0,0
+Intelligent Electronic Device,189,982,40,0
+Intelligent Electronic Device,190,982,48,0
+Intelligent Electronic Device,191,980,592,0
+Intelligent Electronic Device,192,936,600,0
+Intelligent Electronic Device,193,978,0,0
+Intelligent Electronic Device,194,980,490,0
+Intelligent Electronic Device,195,982,440,0
+Intelligent Electronic Device,196,980,0,0
+Intelligent Electronic Device,197,984,36,0
+Intelligent Electronic Device,198,976,40,0
+Intelligent Electronic Device,199,980,24,0
+Intelligent Electronic Device,200,938,0,0
+Intelligent Electronic Device,201,980,554,0
+Intelligent Electronic Device,202,980,376,0
+Intelligent Electronic Device,203,980,0,0
+Intelligent Electronic Device,204,982,10,0
+Intelligent Electronic Device,205,930,0,0
+Intelligent Electronic Device,206,982,200,0
+Intelligent Electronic Device,207,982,440,0
+Intelligent Electronic Device,208,934,200,0
+Intelligent Electronic Device,209,982,0,0
+Intelligent Electronic Device,210,978,40,0
+Intelligent Electronic Device,211,982,10,0
+Intelligent Electronic Device,212,934,0,0
+Intelligent Electronic Device,213,980,0,0
+Intelligent Electronic Device,214,982,826,0
+Intelligent Electronic Device,215,982,104,0
+Intelligent Electronic Device,216,978,24,0
+Intelligent Electronic Device,217,982,40,0
+Intelligent Electronic Device,218,982,36,0
+Intelligent Electronic Device,219,930,0,0
+Intelligent Electronic Device,220,982,0,0
+Intelligent Electronic Device,221,982,482,0
+Intelligent Electronic Device,222,934,758,0
+Intelligent Electronic Device,223,980,0,0
+Intelligent Electronic Device,224,982,40,0
+Intelligent Electronic Device,225,980,6,0
+Intelligent Electronic Device,226,980,40,0
+Intelligent Electronic Device,227,981,40,0
+Intelligent Electronic Device,228,981,14,0
+Intelligent Electronic Device,229,200,0,0
+Smart Grid,0,480,0,84930
+Smart Grid,1,480,0,0
+Smart Grid,2,465,88,0
+Smart Grid,3,480,0,0
+Smart Grid,4,480,8,0
+Smart Grid,5,480,4,0
+Smart Grid,6,480,16,0
+Smart Grid,7,465,0,0
+Smart Grid,8,480,0,0
+Smart Grid,9,480,186,0
+Smart Grid,10,480,0,0
+Smart Grid,11,480,2,0
+Smart Grid,12,442,0,0
+Smart Grid,13,480,8,0
+Smart Grid,14,465,12,0
+Smart Grid,15,480,0,0
+Smart Grid,16,480,88,0
+Smart Grid,17,457,0,0
+Smart Grid,18,442,2,0
+Smart Grid,19,480,0,0
+Smart Grid,20,480,8,0
+Smart Grid,21,480,186,0
+Smart Grid,22,480,0,0
+Smart Grid,23,480,186,0
+Smart Grid,24,480,88,0
+Smart Grid,25,465,0,0
+Smart Grid,26,480,2,0
+Smart Grid,27,465,0,0
+Smart Grid,28,480,6,0
+Smart Grid,29,480,14,0
+Smart Grid,30,465,0,0
+Smart Grid,31,480,8,0
+Smart Grid,32,480,0,0
+Smart Grid,33,472,2,0
+Smart Grid,34,465,0,0
+Smart Grid,35,480,0,0
+Smart Grid,36,480,88,0
+Smart Grid,37,465,0,0
+Smart Grid,38,480,90,0
+Smart Grid,39,480,96,0
+Smart Grid,40,480,20,0
+Smart Grid,41,465,0,0
+Smart Grid,42,480,0,0
+Smart Grid,43,480,8,0
+Smart Grid,44,480,88,0
+Smart Grid,45,465,0,0
+Smart Grid,46,480,8,0
+Smart Grid,47,480,0,0
+Smart Grid,48,474,186,0
+Smart Grid,49,478,4,0
+Smart Grid,50,480,16,0
+Smart Grid,51,465,0,0
+Smart Grid,52,480,0,0
+Smart Grid,53,465,2,0
+Smart Grid,54,480,0,0
+Smart Grid,55,480,186,0
+Smart Grid,56,480,0,0
+Smart Grid,57,480,8,0
+Smart Grid,58,480,0,0
+Smart Grid,59,480,2,0
+Smart Grid,60,465,0,0
+Smart Grid,61,480,20,0
+Smart Grid,62,465,0,0
+Smart Grid,63,480,32,0
+Smart Grid,64,465,56,0
+Smart Grid,65,472,2,0
+Smart Grid,66,465,0,0
+Smart Grid,67,480,0,0
+Smart Grid,68,480,186,0
+Smart Grid,69,480,14,0
+Smart Grid,70,465,6,0
+Smart Grid,71,480,0,0
+Smart Grid,72,480,8,0
+Smart Grid,73,480,8,0
+Smart Grid,74,465,280,0
+Smart Grid,75,480,0,0
+Smart Grid,76,480,18,0
+Smart Grid,77,465,2,0
+Smart Grid,78,480,0,0
+Smart Grid,79,480,2,0
+Smart Grid,80,465,0,0
+Smart Grid,81,465,88,0
+Smart Grid,82,472,0,0
+Smart Grid,83,480,186,0
+Smart Grid,84,480,0,0
+Smart Grid,85,480,8,0
+Smart Grid,86,480,98,0
+Smart Grid,87,480,88,0
+Smart Grid,88,480,0,0
+Smart Grid,89,465,288,0
+Smart Grid,90,480,0,0
+Smart Grid,91,465,2,0
+Smart Grid,92,480,0,0
+Smart Grid,93,480,20,0
+Smart Grid,94,465,0,0
+Smart Grid,95,480,8,0
+Smart Grid,96,480,0,0
+Smart Grid,97,480,12,0
+Smart Grid,98,465,8,0
+Smart Grid,99,184,0,0
+Water Bottle Factory,0,1446,0,85262
+Water Bottle Factory,1,1448,0,0
+Water Bottle Factory,2,1446,16,0
+Water Bottle Factory,3,1446,0,0
+Water Bottle Factory,4,1446,196,0
+Water Bottle Factory,5,1434,176,0
+Water Bottle Factory,6,1446,0,0
+Water Bottle Factory,7,1354,4,0
+Water Bottle Factory,8,1446,0,0
+Water Bottle Factory,9,1446,136,0
+Water Bottle Factory,10,1384,640,0
+Water Bottle Factory,11,1446,0,0
+Water Bottle Factory,12,1446,20,0
+Water Bottle Factory,13,1446,20,0
+Water Bottle Factory,14,1343,0,0
+Water Bottle Factory,15,1446,4,0
+Water Bottle Factory,16,1392,0,0
+Water Bottle Factory,17,1446,0,0
+Water Bottle Factory,18,1446,36,0
+Water Bottle Factory,19,1388,4,0
+Water Bottle Factory,20,1446,0,0
+Water Bottle Factory,21,1446,16,0
+Water Bottle Factory,22,1446,372,0
+Water Bottle Factory,23,1434,0,0
+Water Bottle Factory,24,1446,420,0
+Water Bottle Factory,25,1394,556,0
+Water Bottle Factory,26,1446,0,0
+Water Bottle Factory,27,1438,372,0
+Water Bottle Factory,28,1442,0,0
+Water Bottle Factory,29,1446,16,0
+Water Bottle Factory,30,1448,0,0
+Water Bottle Factory,31,1446,26,0
+Water Bottle Factory,32,1434,14,0
+Water Bottle Factory,33,1400,0,0
+Water Bottle Factory,34,1446,168,0
+Water Bottle Factory,35,1394,608,0
+Water Bottle Factory,36,1446,0,0
+Water Bottle Factory,37,1434,4,0
+Water Bottle Factory,38,1400,0,0
+Water Bottle Factory,39,1446,0,0
+Water Bottle Factory,40,1446,16,0
+Water Bottle Factory,41,1438,292,0
+Water Bottle Factory,42,1442,80,0
+Water Bottle Factory,43,1446,0,0
+Water Bottle Factory,44,1404,4,0
+Water Bottle Factory,45,1432,0,0
+Water Bottle Factory,46,1436,776,0
+Water Bottle Factory,47,1392,0,0
+Water Bottle Factory,48,1446,10,0
+Water Bottle Factory,49,1448,30,0
+Water Bottle Factory,50,1390,0,0
+Water Bottle Factory,51,1446,0,0
+Water Bottle Factory,52,1446,4,0
+Water Bottle Factory,53,1398,0,0
+Water Bottle Factory,54,1442,0,0
+Water Bottle Factory,55,1442,40,0
+Water Bottle Factory,56,1400,0,0
+Water Bottle Factory,57,1446,0,0
+Water Bottle Factory,58,1446,776,0
+Water Bottle Factory,59,1354,0,0
+Water Bottle Factory,60,1446,212,0
+Water Bottle Factory,61,1444,160,0
+Water Bottle Factory,62,1446,0,0
+Water Bottle Factory,63,1446,16,0
+Water Bottle Factory,64,1436,776,0
+Water Bottle Factory,65,1394,0,0
+Water Bottle Factory,66,1446,0,0
+Water Bottle Factory,67,1446,38,0
+Water Bottle Factory,68,1364,2,0
+Water Bottle Factory,69,1440,0,0
+Water Bottle Factory,70,1446,16,0
+Water Bottle Factory,71,1446,0,0
+Water Bottle Factory,72,1446,4,0
+Water Bottle Factory,73,1394,0,0
+Water Bottle Factory,74,1442,180,0
+Water Bottle Factory,75,1446,192,0
+Water Bottle Factory,76,1446,296,0
+Water Bottle Factory,77,1384,280,0
+Water Bottle Factory,78,1434,0,0
+Water Bottle Factory,79,1446,4,0
+Water Bottle Factory,80,1400,0,0
+Water Bottle Factory,81,1446,16,0
+Water Bottle Factory,82,1442,0,0
+Water Bottle Factory,83,1442,180,0
+Water Bottle Factory,84,1446,192,0
+Water Bottle Factory,85,1446,0,0
+Water Bottle Factory,86,1446,30,0
+Water Bottle Factory,87,1388,10,0
+Water Bottle Factory,88,1444,0,0
+Water Bottle Factory,89,1448,22,0
+Water Bottle Factory,90,1446,18,0
+Water Bottle Factory,91,1354,0,0
+Water Bottle Factory,92,1446,16,0
+Water Bottle Factory,93,1444,4,0
+Water Bottle Factory,94,1402,0,0
+Water Bottle Factory,95,1446,212,0
+Water Bottle Factory,96,1436,160,0
+Water Bottle Factory,97,1446,0,0
+Water Bottle Factory,98,1444,576,0
+Water Bottle Factory,99,1365,0,0
+Water Bottle Factory,100,1436,16,0
+Water Bottle Factory,101,1444,0,0
+Water Bottle Factory,102,1446,4,0
+Water Bottle Factory,103,1402,0,0
+Water Bottle Factory,104,1446,0,0
+Water Bottle Factory,105,1436,30,0
+Water Bottle Factory,106,1398,10,0
+Water Bottle Factory,107,1446,0,0
+Water Bottle Factory,108,1446,0,0
+Water Bottle Factory,109,1442,372,0
+Water Bottle Factory,110,1440,0,0
+Water Bottle Factory,111,1444,376,0
+Water Bottle Factory,112,1394,400,0
+Water Bottle Factory,113,1446,16,0
+Water Bottle Factory,114,1442,180,0
+Water Bottle Factory,115,1440,192,0
+Water Bottle Factory,116,974,0,0
