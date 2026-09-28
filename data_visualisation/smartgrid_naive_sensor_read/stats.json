@@ -1,0 +1,20 @@
+{
+ "session_duration_sec": 5963.4,
+ "attack_total_rows": 6221,
+ "attack_noise_rows": 1914,
+ "attack_noise_pct": 30.8,
+ "noise_avg_len": 1604.5,
+ "normal_partner_avg_len": 1609.7,
+ "normal_max_qty": 1,
+ "attack_max_qty_fc1_fc2": 2000,
+ "attack_max_qty_fc3_fc4": 125,
+ "n_bursts": 18,
+ "reads_per_burst_median": 44,
+ "burst_duration_sec": 10.0,
+ "attack_window_start_sec": 133.3,
+ "attack_window_end_sec": 5854.3,
+ "n_read_requests": 788,
+ "n_write_requests": 15,
+ "normal_write_count": 0,
+ "n_rejected_probe_targets": 3
+}

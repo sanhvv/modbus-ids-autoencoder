@@ -58,10 +58,12 @@ SMARTGRID_ATTACKS = [
     {
         "attack_specific": 4,
         "title": "Naive Sensor Read",
-        "folder": None,
+        "folder": "smartgrid_naive_sensor_read",
         "script": "packet_compare_smartgrid_naivesensorread.py",
-        "summary": None,
-        "tag": None,
+        "summary": "18 bursts of max-quantity reads (2000/125 vs normal's 1) across the whole session, "
+                   "plus a 15-write burst tacked onto the end. 30.8% of labeled rows are unrelated "
+                   "background traffic, not attack behavior - much higher than the first 3 attacks.",
+        "tag": "brute-force + noisy label",
     },
     {
         "attack_specific": 5,
