@@ -40,7 +40,12 @@ RST-ACK'd (refused) - unlike address scan's SYN-ACK'd (accepted) probes to
 
 Output goes into data_visualisation/smartgrid_naive_sensor_read/ (all
 filenames get the optional --tag suffix so earlier results are not
-overwritten): packets.json, stats.json, report.html. Run with a log, e.g.:
+overwritten): packets.json, stats.json, timeline.json, report.html.
+timeline.json (added 2026-09-29, per user request) holds per-10s-bin Modbus
+request counts for normal vs. attack traffic across the whole session -
+the data behind the report's time-series chart, which makes the burst
+pattern visually obvious next to normal's flat, continuous baseline. Run
+with a log, e.g.:
     python packet_compare_smartgrid_naivesensorread.py 2>&1 | tee data_visualisation/smartgrid_naive_sensor_read/run_$(date +%Y%m%d_%H%M).log
 """
 
@@ -106,6 +111,37 @@ def extract_attack_examples(df):
                           "rst": pack(rst_candidates.iloc[0]) if len(rst_candidates) else None}
 
     return {"max_quantity_read": max_read, "write_burst": write_burst, "rejected_probe": rejected_probe}
+
+
+def compute_timeline(df, bin_width=10.0):
+    """Per-bin Modbus request counts across the whole session, for normal
+    traffic (master 192.168.0.40 -> RTU) vs. this attack's own requests
+    (192.168.0.1 -> RTU) - the raw material for the report's time-series
+    chart. Bin width matches the attack's own burst duration (10s) so each
+    burst lands in ~1 bin instead of being smeared across several.
+    """
+    dur = float(df.frame_time_relative.max())
+    edges = np.arange(0, dur + bin_width, bin_width)
+    n = df[df.attack_specific.isna() | (df.attack_specific == 0)]
+    a4 = df[df.attack_specific == 4]
+
+    normal_times = n[(n.protocol == "MODBUS") & (n.ip_src == "192.168.0.40")].frame_time_relative.to_numpy()
+    attack_times = a4[(a4.protocol == "MODBUS") & (a4.ip_src == ATTACKER_IP)].frame_time_relative.to_numpy()
+
+    normal_counts, _ = np.histogram(normal_times, bins=edges)
+    attack_counts, _ = np.histogram(attack_times, bins=edges)
+    bin_centers = (edges[:-1] + edges[1:]) / 2
+
+    return {
+        "bin_width_sec": bin_width,
+        "session_duration_sec": round(dur, 1),
+        "bin_centers": [round(float(x), 1) for x in bin_centers],
+        "normal_counts": [int(x) for x in normal_counts],
+        "attack_counts": [int(x) for x in attack_counts],
+        "normal_avg_per_bin": round(float(normal_counts.mean()), 1),
+        "attack_max_per_bin": int(attack_counts.max()),
+        "attack_active_bin_pct": round(float((attack_counts > 0).mean() * 100), 1),
+    }
 
 
 def compute_stats(df):
@@ -193,6 +229,8 @@ def main():
     attack_examples = extract_attack_examples(df)
     print("Computing comparison statistics...")
     stats = compute_stats(df)
+    print("Computing request-rate time series (normal vs. attack, whole session)...")
+    timeline = compute_timeline(df)
 
     packets = {"normal_pair": normal_pair, "attack_examples": attack_examples}
     with open(path("packets.json"), "w") as f:
@@ -203,7 +241,11 @@ def main():
         json.dump(stats, f, indent=1)
     print(f"Saved: {path('stats.json')}")
 
-    payload = {**packets, "stats": stats}
+    with open(path("timeline.json"), "w") as f:
+        json.dump(timeline, f, indent=1)
+    print(f"Saved: {path('timeline.json')}")
+
+    payload = {**packets, "stats": stats, "timeline": timeline}
     report_path = path("report.html")
     report_path.write_text(render_html(payload), encoding="utf-8")
     print(f"Saved: {report_path}")
@@ -308,11 +350,17 @@ HTML_TEMPLATE = r"""<title>Naive Sensor Read Diff</title>
   .chart-svg-box { position: relative; }
   .chart-svg-box svg { display: block; width: 100%; height: auto; overflow: visible; }
   .bar-cat-label { font-size: 11px; fill: var(--text-secondary); font-family: "IBM Plex Sans", sans-serif; }
+  .bar-axis-label { font-size: 10px; fill: var(--text-muted); font-family: "IBM Plex Mono", monospace; }
   .bar-value-label { font-size: 11px; font-weight: 600; font-family: "IBM Plex Mono", monospace; }
   .bar-gridline { stroke: var(--border); stroke-width: 1; }
   .bar-legend { display: flex; gap: 14px; align-items: center; }
   .bar-legend .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text-secondary); }
   .bar-legend .swatch { width: 9px; height: 9px; border-radius: 2px; }
+
+  /* ---- time series ---- */
+  .timeline-card { border: 1px solid var(--border); border-radius: 10px; background: var(--surface-1);
+                    box-shadow: var(--shadow); padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .timeline-card .chart-svg-box svg { overflow: visible; }
 
   .frame { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
   .frame-label { font-size: 11px; font-weight: 600; color: var(--text-muted); padding: 7px 10px;
@@ -396,6 +444,24 @@ HTML_TEMPLATE = r"""<title>Naive Sensor Read Diff</title>
 
   <section>
     <div class="section-head">
+      <h2>Time series: request rate across the whole session</h2>
+      <p style="margin-top:6px">Same metric (Modbus requests per 10-second bin), plotted across all
+        <span id="duration-inline"></span> of the session for both traffic types &mdash; normal traffic
+        holds a steady, continuous rate; the attack is silent almost everywhere, then spikes hard for
+        exactly the length of each burst.</p>
+    </div>
+    <div class="bar-legend">
+      <span class="legend-item"><span class="swatch" style="background:var(--normal)"></span>Normal (master &rarr; RTU)</span>
+      <span class="legend-item"><span class="swatch" style="background:var(--attack)"></span>Naive sensor read</span>
+    </div>
+    <div class="timeline-card">
+      <div class="chart-svg-box" id="timeline-chart"></div>
+      <p style="font-size:12px" id="timeline-caption"></p>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
       <h2>Statistics: this attack type vs. the session's normal baseline</h2>
       <p style="margin-top:6px">Read quantities are the protocol's own documented maximums, not
         arbitrary numbers &mdash; this is a brute-force "dump everything in one request" pattern, not a
@@ -466,6 +532,7 @@ HTML_TEMPLATE = r"""<title>Naive Sensor Read Diff</title>
   document.getElementById('noise-rows-inline').textContent = s.attack_noise_rows.toLocaleString();
   document.getElementById('noise-len-inline').textContent = s.noise_avg_len != null ? s.noise_avg_len : 'n/a';
   document.getElementById('normal-len-inline').textContent = s.normal_partner_avg_len != null ? s.normal_partner_avg_len : 'n/a';
+  document.getElementById('duration-inline').textContent = (s.session_duration_sec / 60).toFixed(1) + ' minutes';
 
   // ---- normal column ----
   const nCol = document.getElementById('normal-col');
@@ -518,6 +585,80 @@ HTML_TEMPLATE = r"""<title>Naive Sensor Read Diff</title>
       `</div>`;
   }
   aCol.innerHTML = attackHtml;
+
+  // ---- time series (request rate across the whole session) ----
+  function drawTimeSeries(tl) {
+    const width = 1000, height = 260;
+    const pad = {top: 16, right: 16, bottom: 30, left: 40};
+    const innerW = width - pad.left - pad.right, innerH = height - pad.top - pad.bottom;
+    const dur = tl.session_duration_sec;
+    const maxV = Math.max(...tl.normal_counts, ...tl.attack_counts, 1) * 1.15;
+    const x = t => pad.left + (t / dur) * innerW;
+    const y = v => pad.top + innerH - (v / maxV) * innerH;
+    const nColor = getComputedStyle(document.querySelector('.viz-root')).getPropertyValue('--normal').trim();
+    const aColor = getComputedStyle(document.querySelector('.viz-root')).getPropertyValue('--attack').trim();
+
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+
+    // gridlines + y labels
+    [0, 0.5, 1].forEach(frac => {
+      const gy = pad.top + innerH - frac * innerH;
+      const gl = document.createElementNS(svg.namespaceURI, 'line');
+      gl.setAttribute('x1', pad.left); gl.setAttribute('x2', width - pad.right);
+      gl.setAttribute('y1', gy); gl.setAttribute('y2', gy);
+      gl.setAttribute('class', 'bar-gridline');
+      svg.appendChild(gl);
+      const lbl = document.createElementNS(svg.namespaceURI, 'text');
+      lbl.setAttribute('x', pad.left - 6); lbl.setAttribute('y', gy + 3);
+      lbl.setAttribute('text-anchor', 'end'); lbl.setAttribute('class', 'bar-axis-label');
+      lbl.textContent = Math.round(frac * maxV);
+      svg.appendChild(lbl);
+    });
+
+    // x-axis ticks every 10 minutes
+    for (let m = 0; m <= dur / 60; m += 10) {
+      const gx = x(m * 60);
+      const tick = document.createElementNS(svg.namespaceURI, 'text');
+      tick.setAttribute('x', gx); tick.setAttribute('y', height - 8);
+      tick.setAttribute('text-anchor', 'middle'); tick.setAttribute('class', 'bar-axis-label');
+      tick.textContent = m + 'm';
+      svg.appendChild(tick);
+    }
+
+    function areaPath(counts) {
+      const pts = tl.bin_centers.map((t, i) => `${x(t)},${y(counts[i])}`);
+      return `M${pad.left},${y(0)} L${pts.join(' L')} L${x(dur)},${y(0)} Z`;
+    }
+    function linePath(counts) {
+      const pts = tl.bin_centers.map((t, i) => `${x(t)},${y(counts[i])}`);
+      return `M${pts.join(' L')}`;
+    }
+
+    const attackArea = document.createElementNS(svg.namespaceURI, 'path');
+    attackArea.setAttribute('d', areaPath(tl.attack_counts));
+    attackArea.setAttribute('fill', aColor); attackArea.setAttribute('fill-opacity', '0.55');
+    attackArea.setAttribute('stroke', aColor); attackArea.setAttribute('stroke-width', '1');
+    svg.appendChild(attackArea);
+
+    const normalLine = document.createElementNS(svg.namespaceURI, 'path');
+    normalLine.setAttribute('d', linePath(tl.normal_counts));
+    normalLine.setAttribute('fill', 'none');
+    normalLine.setAttribute('stroke', nColor); normalLine.setAttribute('stroke-width', '1.75');
+    svg.appendChild(normalLine);
+
+    return svg;
+  }
+
+  const tl = DATA.timeline;
+  document.getElementById('timeline-chart').appendChild(drawTimeSeries(tl));
+  document.getElementById('timeline-caption').innerHTML =
+    `Normal traffic averages <b class="mono" style="color:var(--normal)">${tl.normal_avg_per_bin}</b>
+     requests per 10s bin, essentially unbroken across the whole session. The attack sits at
+     <b class="mono" style="color:var(--attack)">0</b> for the rest, then spikes to as many as
+     <b class="mono" style="color:var(--attack)">${tl.attack_max_per_bin}</b> requests in a single bin
+     during a burst &mdash; active in only <b class="mono" style="color:var(--attack)">${tl.attack_active_bin_pct}%</b>
+     of the session's bins.`;
 
   // ---- bar charts ----
   function fmtNum(v) { return v >= 1000 ? Math.round(v).toLocaleString() : (Number.isInteger(v) ? v : v.toFixed(1)); }
