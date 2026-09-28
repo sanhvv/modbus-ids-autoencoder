@@ -98,6 +98,9 @@ def extract_attack_examples(df):
 
 def compute_stats(df):
     n = df[(df.protocol == "MODBUS") & (df.attack_specific.isna() | (df.attack_specific == 0))]
+    a_all = df[(df.protocol == "MODBUS") & df.attack_specific.notna() & (df.attack_specific != 0)]
+    normal_ips = sorted(set(n.ip_src.unique()) | set(n.ip_dst.unique()))
+    attack_ips = sorted(set(a_all.ip_src.unique()) | set(a_all.ip_dst.unique()))
     normal_fc = sorted(int(x) for x in n.modbus_func_code.dropna().unique())
     n_req = n[n.tcp_len == 12]
     normal_qtys = [decode_qty(d)[1] for d in n_req.modbus_data]
@@ -133,13 +136,27 @@ def compute_stats(df):
                                         & (m.modbus_func_code_r == m.modbus_func_code_q)
                                         & (m.tcp_len >= 12)].modbus_func_code_q.unique())
 
+    dur_s = dur_ms / 1000
+    attack_pkt_rate = round(len(r1) / dur_s, 1)
+    attack_req_rate = round(len(req) / dur_s, 1)
+    normal_conn_rate = round(normal_conn_per_min / 60, 3)
+    attack_conn_rate = round(len(SCAN_STREAMS) / dur_s, 1)
+
     return {
         "normal_n_rows": int(len(n)),
+        "normal_ips": normal_ips,
+        "attack_ips": attack_ips,
+        "attacker_never_in_normal": ATTACKER_IP not in normal_ips,
+        "master_never_in_attack": "192.168.0.40" not in attack_ips,
+        "shared_target_ip": "192.168.0.31",
         "normal_fc": normal_fc,
         "normal_maxq": normal_maxq,
         "normal_max_resp": normal_max_resp,
         "normal_conn_per_min": normal_conn_per_min,
         "normal_rate": normal_rate,
+        "normal_pkt_rate": normal_rate,
+        "normal_req_rate": round(normal_rate / 2, 2),
+        "normal_conn_rate": normal_conn_rate,
         "round1_n_pkts_total": int(len(r1)),
         "round1_dur_ms": dur_ms,
         "round1_n_req": int(len(req)),
@@ -151,6 +168,9 @@ def compute_stats(df):
         "round1_max_resp": round1_max_resp,
         "round1_writes_sent": writes_sent,
         "round1_writes_accepted": accepted,
+        "attack_pkt_rate": attack_pkt_rate,
+        "attack_req_rate": attack_req_rate,
+        "attack_conn_rate": attack_conn_rate,
     }
 
 
@@ -260,6 +280,8 @@ HTML_TEMPLATE = r"""<title>Modbus Packet Diff</title>
   }
   p { color: var(--text-secondary); line-height: 1.55; margin: 0; max-width: 72ch; }
 
+  section { display: flex; flex-direction: column; gap: 14px; }
+  .section-head { display: flex; flex-direction: column; gap: 4px; }
   .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
   @media (max-width: 860px) { .cols { grid-template-columns: 1fr; } }
   .col-head {
@@ -270,6 +292,49 @@ HTML_TEMPLATE = r"""<title>Modbus Packet Diff</title>
   .col-head.attack { background: var(--attack-bg); color: var(--attack); }
   .col-body { display: flex; flex-direction: column; gap: 14px; border: 1px solid var(--border); border-top: none;
               border-radius: 0 0 10px 10px; padding: 14px; background: var(--surface-1); box-shadow: var(--shadow); }
+
+  /* ---- IP highlight ---- */
+  .ip-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 860px) { .ip-grid { grid-template-columns: 1fr; } }
+  .ip-card { border: 1px solid var(--border); border-radius: 10px; background: var(--surface-1);
+             box-shadow: var(--shadow); overflow: hidden; }
+  .ip-card .col-head { border-radius: 0; }
+  .ip-card-body { padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .ip-chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .ip-chip { font-family: "IBM Plex Mono", monospace; font-size: 12px; padding: 4px 9px; border-radius: 6px;
+             border: 1px solid var(--border); background: var(--surface-0); }
+  .ip-chip.role-target { font-weight: 700; }
+  .ip-card.normal .ip-chip.role-active { border-color: var(--normal); color: var(--normal); background: var(--normal-bg); }
+  .ip-card.attack .ip-chip.role-active { border-color: var(--attack); color: var(--attack); background: var(--attack-bg); }
+  .ip-note { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+  .ip-note b { color: var(--text-primary); }
+  .shared-target-banner {
+    display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 8px;
+    background: var(--surface-1); border: 1px dashed var(--border); font-size: 12.5px; color: var(--text-secondary);
+  }
+  .shared-target-banner b { font-family: "IBM Plex Mono", monospace; color: var(--text-primary); }
+
+  /* ---- bar charts ---- */
+  .chart-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  @media (max-width: 860px) { .chart-grid { grid-template-columns: 1fr; } }
+  .chart-card { border: 1px solid var(--border); border-radius: 10px; background: var(--surface-1);
+                box-shadow: var(--shadow); padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+  .chart-card h3 { font-size: 12.5px; color: var(--text-secondary); font-weight: 600; }
+  .chart-svg-box { position: relative; }
+  .chart-svg-box svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .bar-axis-label { font-size: 10px; fill: var(--text-muted); font-family: "IBM Plex Mono", monospace; }
+  .bar-cat-label { font-size: 11px; fill: var(--text-secondary); font-family: "IBM Plex Sans", sans-serif; }
+  .bar-value-label { font-size: 11px; font-weight: 600; font-family: "IBM Plex Mono", monospace; }
+  .bar-gridline { stroke: var(--border); stroke-width: 1; }
+  .bar-legend { display: flex; gap: 14px; align-items: center; }
+  .bar-legend .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text-secondary); }
+  .bar-legend .swatch { width: 9px; height: 9px; border-radius: 2px; }
+  .bar-tooltip {
+    position: absolute; pointer-events: none; z-index: 5; background: var(--text-primary); color: var(--surface-1);
+    font-family: "IBM Plex Mono", monospace; font-size: 11px; padding: 5px 8px; border-radius: 6px;
+    white-space: nowrap; opacity: 0; transform: translate(-50%, -100%); transition: opacity .08s ease;
+    box-shadow: var(--shadow);
+  }
 
   .frame { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
   .frame-label { font-size: 11px; font-weight: 600; color: var(--text-muted); padding: 7px 10px;
@@ -331,16 +396,38 @@ HTML_TEMPLATE = r"""<title>Modbus Packet Diff</title>
   </section>
 
   <section>
-    <h2>Statistics: this round vs. the session's normal baseline</h2>
-    <p style="margin-top:6px">Same look-back window used by the analyst prompt (the 22&nbsp;ms burst / 5
-      connections that make up this scan round), compared against normal traffic measured across the
-      entire 99.4-minute session.</p>
-    <div class="stats-wrap">
-      <table class="stats">
-        <thead><tr><th>Metric</th><th>Normal baseline</th><th>This attack round</th></tr></thead>
-        <tbody id="stats-body"></tbody>
-      </table>
+    <div class="section-head">
+      <h2>Source IP: who is talking to the RTU</h2>
+      <p style="margin-top:6px">The clearest deviation isn't a number at all &mdash; it's <em>who sent the
+        packet</em>. Every IP that ever appears in normal traffic vs. every IP that ever appears in
+        attack traffic, for this entire session (not just this round).</p>
     </div>
+    <div class="ip-grid" id="ip-grid"></div>
+    <div class="shared-target-banner" id="shared-target-banner"></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Statistics: this round vs. the session's normal baseline</h2>
+      <p style="margin-top:6px">Same look-back window used by the analyst prompt (the 22&nbsp;ms burst / 5
+        connections that make up this scan round), compared against normal traffic measured across the
+        entire 99.4-minute session.</p>
+    </div>
+    <div class="bar-legend">
+      <span class="legend-item"><span class="swatch" style="background:var(--normal)"></span>Normal baseline</span>
+      <span class="legend-item"><span class="swatch" style="background:var(--attack)"></span>This attack round</span>
+    </div>
+    <div class="chart-grid" id="count-charts"></div>
+    <div class="chart-grid" id="rate-chart-row" style="grid-template-columns: 1fr;"></div>
+    <details>
+      <summary style="cursor:pointer; font-size:12.5px; color:var(--text-secondary); font-family:'IBM Plex Mono',monospace;">Exact numbers (table)</summary>
+      <div class="stats-wrap" style="margin-top:10px">
+        <table class="stats">
+          <thead><tr><th>Metric</th><th>Normal baseline</th><th>This attack round</th></tr></thead>
+          <tbody id="stats-body"></tbody>
+        </table>
+      </div>
+    </details>
   </section>
 
   <footer>
@@ -423,8 +510,175 @@ HTML_TEMPLATE = r"""<title>Modbus Packet Diff</title>
        narrowing down exploitable CVEs for the attacker.`) +
     `</div>`;
 
-  // ---- stats table ----
+  // ---- IP highlight cards ----
   const s = DATA.stats;
+  const ipGrid = document.getElementById('ip-grid');
+  function ipChip(ip, activeSet) {
+    const isTarget = ip === s.shared_target_ip;
+    const cls = activeSet.includes(ip) ? ' role-active' : '';
+    return `<span class="ip-chip${cls}${isTarget ? ' role-target' : ''}">${ip}${isTarget ? ' (target)' : ''}</span>`;
+  }
+  ipGrid.innerHTML = `
+    <div class="ip-card normal">
+      <div class="col-head normal">Normal traffic</div>
+      <div class="ip-card-body">
+        <div class="ip-chip-row">${s.normal_ips.map(ip => ipChip(ip, s.normal_ips)).join('')}</div>
+        <div class="ip-note">Only <b>${s.normal_ips.length} IPs</b> ever speak Modbus here across
+          ${s.normal_n_rows.toLocaleString()} normal packets: the master
+          (<b>192.168.0.40</b>) and the RTU (<b>192.168.0.31</b>). No other address appears.</div>
+      </div>
+    </div>
+    <div class="ip-card attack">
+      <div class="col-head attack">Attack traffic (all 8 attack types)</div>
+      <div class="ip-card-body">
+        <div class="ip-chip-row">${s.attack_ips.map(ip => ipChip(ip, s.attack_ips)).join('')}</div>
+        <div class="ip-note"><b>192.168.0.1</b> ${s.attacker_never_in_normal ? 'never appears in normal traffic at all' : 'rarely appears in normal traffic'}
+          &mdash; every attack packet originates from it. The legitimate master
+          (192.168.0.40) ${s.master_never_in_attack ? 'never sends a single attack packet' : 'is also seen in some attack rows'}.</div>
+      </div>
+    </div>`;
+  document.getElementById('shared-target-banner').innerHTML =
+    `Only <b>${s.shared_target_ip}</b> (the RTU) appears on both sides &mdash; it is the one constant:
+     everyone talks to it, but who talks TO it is the tell.`;
+
+  // ---- bar charts ----
+  function fmtNum(v) { return v >= 1000 ? Math.round(v).toLocaleString() : (Number.isInteger(v) ? v : v.toFixed(1)); }
+
+  function drawBarPair(container, {label, normal, attack, unit, logScale}) {
+    const width = 300, height = 150;
+    const pad = {top: 14, right: 10, bottom: 30, left: 38};
+    const innerW = width - pad.left - pad.right, innerH = height - pad.top - pad.bottom;
+    const maxV = Math.max(normal, attack, logScale ? 1 : 0.0001);
+    const floor = logScale ? Math.max(Math.min(normal, attack) * 0.5, 0.01) : 0;
+    function y(v) {
+      if (!logScale) return pad.top + innerH - (v / (maxV * 1.15)) * innerH;
+      const lv = Math.log10(Math.max(v, floor)), lo = Math.log10(floor), hi = Math.log10(maxV * 1.3);
+      return pad.top + innerH - ((lv - lo) / (hi - lo)) * innerH;
+    }
+    const barW = 46, gap = 26;
+    const x0 = pad.left + innerW / 2 - barW - gap / 2;
+    const x1 = pad.left + innerW / 2 + gap / 2;
+    const nColor = getComputedStyle(document.querySelector('.viz-root')).getPropertyValue('--normal').trim();
+    const aColor = getComputedStyle(document.querySelector('.viz-root')).getPropertyValue('--attack').trim();
+
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+
+    [0, 0.5, 1].forEach(frac => {
+      const gy = pad.top + innerH - frac * innerH;
+      const gl = document.createElementNS(svg.namespaceURI, 'line');
+      gl.setAttribute('x1', pad.left); gl.setAttribute('x2', width - pad.right);
+      gl.setAttribute('y1', gy); gl.setAttribute('y2', gy);
+      gl.setAttribute('class', 'bar-gridline');
+      svg.appendChild(gl);
+    });
+
+    function bar(x, v, color, label2) {
+      const barTop = y(v);
+      const rect = document.createElementNS(svg.namespaceURI, 'rect');
+      rect.setAttribute('x', x); rect.setAttribute('y', barTop);
+      rect.setAttribute('width', barW); rect.setAttribute('height', Math.max(pad.top + innerH - barTop, 1.5));
+      rect.setAttribute('rx', 3); rect.setAttribute('fill', color);
+      svg.appendChild(rect);
+      const val = document.createElementNS(svg.namespaceURI, 'text');
+      val.setAttribute('x', x + barW / 2); val.setAttribute('y', barTop - 6);
+      val.setAttribute('text-anchor', 'middle'); val.setAttribute('class', 'bar-value-label');
+      val.setAttribute('fill', color);
+      val.textContent = fmtNum(v) + (unit ? ` ${unit}` : '');
+      svg.appendChild(val);
+      const cat = document.createElementNS(svg.namespaceURI, 'text');
+      cat.setAttribute('x', x + barW / 2); cat.setAttribute('y', height - 10);
+      cat.setAttribute('text-anchor', 'middle'); cat.setAttribute('class', 'bar-cat-label');
+      cat.textContent = label2;
+      svg.appendChild(cat);
+    }
+    bar(x0, normal, nColor, 'Normal');
+    bar(x1, attack, aColor, 'Attack');
+    return svg;
+  }
+
+  const countCharts = [
+    {label: 'Distinct function codes', normal: s.normal_fc.length, attack: s.round1_distinct_fc},
+    {label: 'Non-standard function codes', normal: 0, attack: s.round1_nonstd_fc.length},
+    {label: 'Largest reply (bytes)', normal: s.normal_max_resp, attack: s.round1_max_resp},
+  ];
+  const countChartsEl = document.getElementById('count-charts');
+  countCharts.forEach(cfg => {
+    const card = document.createElement('div');
+    card.className = 'chart-card';
+    card.innerHTML = `<h3>${cfg.label}</h3><div class="chart-svg-box"></div>`;
+    card.querySelector('.chart-svg-box').appendChild(drawBarPair(card, cfg));
+    countChartsEl.appendChild(card);
+  });
+
+  const rateChart = {
+    label: 'Rate (log scale, events/sec)',
+    groups: [
+      {name: 'Packets/sec', normal: s.normal_pkt_rate, attack: s.attack_pkt_rate},
+      {name: 'Modbus requests/sec', normal: s.normal_req_rate, attack: s.attack_req_rate},
+      {name: 'New connections/sec', normal: s.normal_conn_rate, attack: s.attack_conn_rate},
+    ],
+  };
+  const rateCard = document.createElement('div');
+  rateCard.className = 'chart-card';
+  rateCard.innerHTML = `<h3>${rateChart.label} &mdash; same round, log scale so both ends of a 3-order-of-magnitude gap stay visible</h3><div class="chart-svg-box" id="rate-svg-box"></div>`;
+  document.getElementById('rate-chart-row').appendChild(rateCard);
+
+  (function drawRateChart() {
+    const width = 640, height = 170;
+    const pad = {top: 16, right: 16, bottom: 32, left: 46};
+    const innerW = width - pad.left - pad.right, innerH = height - pad.top - pad.bottom;
+    const groups = rateChart.groups;
+    const allV = groups.flatMap(g => [g.normal, g.attack]).filter(v => v > 0);
+    const lo = Math.log10(Math.min(...allV) * 0.6), hi = Math.log10(Math.max(...allV) * 1.4);
+    function y(v) { return pad.top + innerH - ((Math.log10(Math.max(v, 0.001)) - lo) / (hi - lo)) * innerH; }
+    const nColor = getComputedStyle(document.querySelector('.viz-root')).getPropertyValue('--normal').trim();
+    const aColor = getComputedStyle(document.querySelector('.viz-root')).getPropertyValue('--attack').trim();
+
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+    [0, 0.25, 0.5, 0.75, 1].forEach(frac => {
+      const gy = pad.top + innerH - frac * innerH;
+      const gl = document.createElementNS(svg.namespaceURI, 'line');
+      gl.setAttribute('x1', pad.left); gl.setAttribute('x2', width - pad.right);
+      gl.setAttribute('y1', gy); gl.setAttribute('y2', gy);
+      gl.setAttribute('class', 'bar-gridline');
+      svg.appendChild(gl);
+      const lbl = document.createElementNS(svg.namespaceURI, 'text');
+      lbl.setAttribute('x', pad.left - 6); lbl.setAttribute('y', gy + 3);
+      lbl.setAttribute('text-anchor', 'end'); lbl.setAttribute('class', 'bar-axis-label');
+      lbl.textContent = fmtNum(Math.pow(10, lo + frac * (hi - lo)));
+      svg.appendChild(lbl);
+    });
+
+    const groupW = innerW / groups.length, barW = 34, gap = 18;
+    groups.forEach((g, i) => {
+      const cx = pad.left + i * groupW + groupW / 2;
+      const x0 = cx - barW - gap / 2, x1 = cx + gap / 2;
+      [[x0, g.normal, nColor], [x1, g.attack, aColor]].forEach(([x, v, color]) => {
+        const barTop = y(v);
+        const rect = document.createElementNS(svg.namespaceURI, 'rect');
+        rect.setAttribute('x', x); rect.setAttribute('y', barTop);
+        rect.setAttribute('width', barW); rect.setAttribute('height', Math.max(pad.top + innerH - barTop, 1.5));
+        rect.setAttribute('rx', 3); rect.setAttribute('fill', color);
+        svg.appendChild(rect);
+        const val = document.createElementNS(svg.namespaceURI, 'text');
+        val.setAttribute('x', x + barW / 2); val.setAttribute('y', barTop - 6);
+        val.setAttribute('text-anchor', 'middle'); val.setAttribute('class', 'bar-value-label');
+        val.setAttribute('fill', color);
+        val.textContent = fmtNum(v);
+        svg.appendChild(val);
+      });
+      const cat = document.createElementNS(svg.namespaceURI, 'text');
+      cat.setAttribute('x', cx); cat.setAttribute('y', height - 10);
+      cat.setAttribute('text-anchor', 'middle'); cat.setAttribute('class', 'bar-cat-label');
+      cat.textContent = g.name;
+      svg.appendChild(cat);
+    });
+    document.getElementById('rate-svg-box').appendChild(svg);
+  })();
+
+  // ---- stats table ----
   const rows = [
     ['Known-good peer?', 'yes (192.168.0.40)', 'no (192.168.0.1, never seen in normal traffic)', true],
     ['Distinct function codes used', `${s.normal_fc.length} (fc ${s.normal_fc.join(', ')})`, `${s.round1_distinct_fc} (${s.round1_fc_list[0]}–${s.round1_fc_list[s.round1_fc_list.length-1]})`, true],
