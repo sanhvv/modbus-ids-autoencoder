@@ -200,7 +200,7 @@
   <section>
     <div class="cols">
       <div>
-        <div class="col-head normal">Normal &mdash; routine poll</div>
+        <div class="col-head normal">Normal &mdash; no equivalent exists</div>
         <div class="col-body" id="normal-col"></div>
       </div>
       <div>
@@ -217,6 +217,28 @@
         but within attack traffic it isn't unique to "device identification attack" either.</p>
     </div>
     <div class="shared-target-banner" id="fc43-banner"></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>fc43 itself is not inherently malicious</h2>
+      <p style="margin-top:6px">Worth being precise about what "0 in normal traffic" does and doesn't
+        prove, beyond this one simulated session.</p>
+    </div>
+    <div class="shared-target-banner">
+      Read Device Identification (fc43/MEI&nbsp;14) is a standard, documented Modbus feature
+      (Application Protocol spec v1.1b3), legitimately used by real asset-management tools and
+      engineering workstations for maintenance inventory - and, per published ICS security research,
+      the exact same request is also a known reconnaissance technique when swept across a network
+      (<a href="https://www.radiflow.com/blog/hack-the-modbus/" target="_blank" rel="noopener" style="color:inherit">Radiflow, "Hack the Modbus"</a>).
+      "0 occurrences in normal traffic" is true <em>for this dataset's definition of normal</em>
+      (continuous SCADA measurement polling only, no asset-audit traffic modeled) - it is not a
+      universal claim that fc43 is always an attack. What actually distinguishes this case is the
+      requester's identity (never a known engineering host) and the repeat cadence (16 systematic,
+      evenly-paced rounds probing all 3 access codes) - a pattern that reads as automated tooling, not
+      a one-off manual maintenance check. Detection logic built from this page should key on identity
+      + cadence, not on fc43's mere presence.
+    </div>
   </section>
 
   <section>
@@ -257,7 +279,7 @@
 
 <script>
 (function () {
-  const DATA = {"normal_pair": {"request": {"row": 172569, "time": "16:58:49.701189", "frame_time_relative": 2984.997825008, "ip_src": "192.168.0.40", "ip_dst": "192.168.0.31", "ip_len": 64.0, "ip_ttl": 64.0, "ip_proto": 6.0, "tcp_len": 12.0, "tcp_flags": "0x0018", "tcp_window_size": 502.0, "tcp_analysis_ack_rtt": null, "frame_time_delta": 0.909001651, "modbus_func_code": 1.0, "modbus_data": "0x000901", "tcp_stream": 6412.0}, "response": {"row": 172570, "time": "16:58:49.701756", "frame_time_relative": 2984.99839159, "ip_src": "192.168.0.31", "ip_dst": "192.168.0.40", "ip_len": 62.0, "ip_ttl": 64.0, "ip_proto": 6.0, "tcp_len": 10.0, "tcp_flags": "0x0018", "tcp_window_size": 509.0, "tcp_analysis_ack_rtt": 0.000566582, "frame_time_delta": 0.000566582, "modbus_func_code": 1.0, "modbus_data": "0x0100", "tcp_stream": 6412.0}}, "attack_examples": {"syn": {"row": 131029, "time": "16:18:19.189939", "frame_time_relative": 554.486574991, "ip_src": "192.168.0.1", "ip_dst": "192.168.0.31", "ip_len": 60.0, "ip_ttl": 64.0, "ip_proto": 6.0, "tcp_len": 0.0, "tcp_flags": "0x0002", "tcp_window_size": 64240.0, "tcp_analysis_ack_rtt": null, "frame_time_delta": 0.957826321, "modbus_func_code": null, "modbus_data": null, "tcp_stream": 6069.0}, "basic_probe": {"request": {"row": 131032, "time": "16:18:19.190254", "frame_time_relative": 554.486889745, "ip_src": "192.168.0.1", "ip_dst": "192.168.0.31", "ip_len": 63.0, "ip_ttl": 64.0, "ip_proto": 6.0, "tcp_len": 11.0, "tcp_flags": "0x0018", "tcp_window_size": 502.0, "tcp_analysis_ack_rtt": null, "frame_time_delta": 0.000197503, "modbus_func_code": 43.0, "modbus_data": "0x0e0100", "tcp_stream": 6069.0}, "response": {"row": 131037, "time": "16:18:19.191158", "frame_time_relative": 554.487793613, "ip_src": "192.168.0.31", "ip_dst": "192.168.0.1", "ip_len": 66.0, "ip_ttl": 64.0, "ip_proto": 6.0, "tcp_len": 14.0, "tcp_flags": "0x0018", "tcp_window_size": 509.0, "tcp_analysis_ack_rtt": null, "frame_time_delta": 0.000134685, "modbus_func_code": 43.0, "modbus_data": "0x0e0183000000", "tcp_stream": 6069.0}}, "extended_probe": {"request": {"row": 131044, "time": "16:18:19.191904", "frame_time_relative": 554.488539161, "ip_src": "192.168.0.1", "ip_dst": "192.168.0.31", "ip_len": 63.0, "ip_ttl": 64.0, "ip_proto": 6.0, "tcp_len": 11.0, "tcp_flags": "0x0018", "tcp_window_size": 502.0, "tcp_analysis_ack_rtt": 0.000105028, "frame_time_delta": 0.000105028, "modbus_func_code": 43.0, "modbus_data": "0x0e0300", "tcp_stream": 6069.0}, "response": {"row": 131047, "time": "16:18:19.192286", "frame_time_relative": 554.488921964, "ip_src": "192.168.0.31", "ip_dst": "192.168.0.1", "ip_len": 66.0, "ip_ttl": 64.0, "ip_proto": 6.0, "tcp_len": 14.0, "tcp_flags": "0x0018", "tcp_window_size": 509.0, "tcp_analysis_ack_rtt": 0.000382803, "frame_time_delta": 0.000113234, "modbus_func_code": 43.0, "modbus_data": "0x0e0383000000", "tcp_stream": 6069.0}}}, "stats": {"session_duration_sec": 5963.4, "normal_fc43_rows": 0, "attack_fc43_requests": 64, "attack_fc43_responses": 64, "distinct_mei_codes_probed": ["0x0e0100", "0x0e0200", "0x0e0300"], "fc43_rows_other_attack_types": {"2.0": 18, "1.0": 16}, "n_rounds": 16, "round_row_count": 8, "attack_window_start_sec": 554.5, "attack_window_end_sec": 5753.4, "attack_window_span_sec": 5198.9, "avg_seconds_between_rounds": 346.6, "objects_returned_per_response": 0, "normal_syn_rate": 0.412, "attack_new_connections": 16}};
+  const DATA = {"attack_examples": {"syn": {"row": 131029, "time": "16:18:19.189939", "frame_time_relative": 554.486574991, "ip_src": "192.168.0.1", "ip_dst": "192.168.0.31", "ip_len": 60.0, "ip_ttl": 64.0, "ip_proto": 6.0, "tcp_len": 0.0, "tcp_flags": "0x0002", "tcp_window_size": 64240.0, "tcp_analysis_ack_rtt": null, "frame_time_delta": 0.957826321, "modbus_func_code": null, "modbus_data": null, "tcp_stream": 6069.0}, "basic_probe": {"request": {"row": 131032, "time": "16:18:19.190254", "frame_time_relative": 554.486889745, "ip_src": "192.168.0.1", "ip_dst": "192.168.0.31", "ip_len": 63.0, "ip_ttl": 64.0, "ip_proto": 6.0, "tcp_len": 11.0, "tcp_flags": "0x0018", "tcp_window_size": 502.0, "tcp_analysis_ack_rtt": null, "frame_time_delta": 0.000197503, "modbus_func_code": 43.0, "modbus_data": "0x0e0100", "tcp_stream": 6069.0}, "response": {"row": 131037, "time": "16:18:19.191158", "frame_time_relative": 554.487793613, "ip_src": "192.168.0.31", "ip_dst": "192.168.0.1", "ip_len": 66.0, "ip_ttl": 64.0, "ip_proto": 6.0, "tcp_len": 14.0, "tcp_flags": "0x0018", "tcp_window_size": 509.0, "tcp_analysis_ack_rtt": null, "frame_time_delta": 0.000134685, "modbus_func_code": 43.0, "modbus_data": "0x0e0183000000", "tcp_stream": 6069.0}}, "extended_probe": {"request": {"row": 131044, "time": "16:18:19.191904", "frame_time_relative": 554.488539161, "ip_src": "192.168.0.1", "ip_dst": "192.168.0.31", "ip_len": 63.0, "ip_ttl": 64.0, "ip_proto": 6.0, "tcp_len": 11.0, "tcp_flags": "0x0018", "tcp_window_size": 502.0, "tcp_analysis_ack_rtt": 0.000105028, "frame_time_delta": 0.000105028, "modbus_func_code": 43.0, "modbus_data": "0x0e0300", "tcp_stream": 6069.0}, "response": {"row": 131047, "time": "16:18:19.192286", "frame_time_relative": 554.488921964, "ip_src": "192.168.0.31", "ip_dst": "192.168.0.1", "ip_len": 66.0, "ip_ttl": 64.0, "ip_proto": 6.0, "tcp_len": 14.0, "tcp_flags": "0x0018", "tcp_window_size": 509.0, "tcp_analysis_ack_rtt": 0.000382803, "frame_time_delta": 0.000113234, "modbus_func_code": 43.0, "modbus_data": "0x0e0383000000", "tcp_stream": 6069.0}}}, "stats": {"session_duration_sec": 5963.4, "normal_fc43_rows": 0, "attack_fc43_requests": 64, "attack_fc43_responses": 64, "distinct_mei_codes_probed": ["0x0e0100", "0x0e0200", "0x0e0300"], "fc43_rows_other_attack_types": {"2.0": 18, "1.0": 16}, "n_rounds": 16, "round_row_count": 8, "attack_window_start_sec": 554.5, "attack_window_end_sec": 5753.4, "attack_window_span_sec": 5198.9, "avg_seconds_between_rounds": 346.6, "objects_returned_per_response": 0, "normal_syn_rate": 0.412, "attack_new_connections": 16}};
 
   function esc(s) {
     return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
@@ -291,17 +313,29 @@
   document.getElementById('avg-gap-inline').textContent = (s.avg_seconds_between_rounds / 60).toFixed(1) + ' min';
 
   // ---- normal column ----
+  // Deliberately no packet frame here: this attack's request TYPE (asking a
+  // device to identify itself) has no counterpart in normal traffic at all -
+  // there is nothing to show side by side with the fc43 probe. An earlier
+  // version of this report showed an unrelated fc1 read here, which implied
+  // a direct comparison that doesn't exist; this explains the absence instead.
   const nCol = document.getElementById('normal-col');
   nCol.innerHTML =
-    frame('REQUEST', DATA.normal_pair.request, false,
-      `<b>Read Coils</b> (fc1), start address 9, quantity 1 &mdash; one coil, one poll cycle.`) +
-    frame('RESPONSE', DATA.normal_pair.response, false,
-      `Byte count 1, value <code>0x00</code> (coil off). 62 bytes total, answered in 0.57&nbsp;ms.`) +
-    `<div class="frame"><div class="frame-label">CONTEXT &mdash; fc43 in normal traffic</div>
+    `<div class="frame">
+      <div class="frame-label">This traffic type does not occur in normal operation</div>
       <div class="decoded" style="border-top:none">
-        Function code 43 (Report Device Identification) appears
-        <b>${s.normal_fc43_rows}</b> times in 47,198 normal rows. The device is polled with
-        Read Coils/Holding/Input Registers only &mdash; its identity is never asked for.
+        Function code 43 (Report Device Identification) appears <b>${s.normal_fc43_rows}</b> times
+        in 47,198 normal rows &mdash; not rarely, <b>never</b>. There is no normal packet to pair
+        this probe against, because asking a device "who are you" is not part of this system's
+        vocabulary in normal operation at all.
+      </div>
+    </div>
+    <div class="frame">
+      <div class="frame-label">What normal traffic asks instead</div>
+      <div class="decoded" style="border-top:none">
+        Every normal Modbus request is a value poll: Read Coils (fc1), Read Holding Registers
+        (fc3), or Read Input Registers (fc4) &mdash; "what is this measurement right now", never
+        "what are you". The distinction that matters here isn't which function code was used, it's
+        that this <em>category</em> of question was asked at all.
       </div>
     </div>`;
 

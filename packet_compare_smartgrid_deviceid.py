@@ -36,7 +36,7 @@ import numpy as np
 import pandas as pd
 
 from retrain_ae_9dim import DATASET_FILENAMES, find_dataset_csv
-from packet_compare_smartgrid_fcscan import extract_normal_pair, pack
+from packet_compare_smartgrid_fcscan import pack
 
 OUTPUT_DIR = Path("data_visualisation") / "smartgrid_device_id"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
@@ -135,14 +135,17 @@ def main():
     print("Loading Smart Grid dataset...")
     df = load_dataset()
 
-    print("Extracting normal packet pair (reused from packet_compare_smartgrid_fcscan)...")
-    normal_pair = extract_normal_pair(df)
     print("Extracting device-ID-attack examples (SYN, basic probe, extended probe)...")
     attack_examples = extract_attack_examples(df)
     print("Computing comparison statistics...")
     stats = compute_stats(df)
 
-    packets = {"normal_pair": normal_pair, "attack_examples": attack_examples}
+    # No "normal_pair" here on purpose: this attack's request TYPE (asking a
+    # device for its identity) has no normal-traffic equivalent at all - see
+    # the "CONTEXT" card in the report - so there is nothing to pair it
+    # against; showing an unrelated fc1 read (as an earlier version of this
+    # report did) implied a direct comparison that doesn't actually exist.
+    packets = {"attack_examples": attack_examples}
     with open(path("packets.json"), "w") as f:
         json.dump(packets, f, indent=1)
     print(f"Saved: {path('packets.json')}")
@@ -357,7 +360,7 @@ HTML_TEMPLATE = r"""<title>Device ID Probe Diff</title>
   <section>
     <div class="cols">
       <div>
-        <div class="col-head normal">Normal &mdash; routine poll</div>
+        <div class="col-head normal">Normal &mdash; no equivalent exists</div>
         <div class="col-body" id="normal-col"></div>
       </div>
       <div>
@@ -374,6 +377,28 @@ HTML_TEMPLATE = r"""<title>Device ID Probe Diff</title>
         but within attack traffic it isn't unique to "device identification attack" either.</p>
     </div>
     <div class="shared-target-banner" id="fc43-banner"></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>fc43 itself is not inherently malicious</h2>
+      <p style="margin-top:6px">Worth being precise about what "0 in normal traffic" does and doesn't
+        prove, beyond this one simulated session.</p>
+    </div>
+    <div class="shared-target-banner">
+      Read Device Identification (fc43/MEI&nbsp;14) is a standard, documented Modbus feature
+      (Application Protocol spec v1.1b3), legitimately used by real asset-management tools and
+      engineering workstations for maintenance inventory - and, per published ICS security research,
+      the exact same request is also a known reconnaissance technique when swept across a network
+      (<a href="https://www.radiflow.com/blog/hack-the-modbus/" target="_blank" rel="noopener" style="color:inherit">Radiflow, "Hack the Modbus"</a>).
+      "0 occurrences in normal traffic" is true <em>for this dataset's definition of normal</em>
+      (continuous SCADA measurement polling only, no asset-audit traffic modeled) - it is not a
+      universal claim that fc43 is always an attack. What actually distinguishes this case is the
+      requester's identity (never a known engineering host) and the repeat cadence (16 systematic,
+      evenly-paced rounds probing all 3 access codes) - a pattern that reads as automated tooling, not
+      a one-off manual maintenance check. Detection logic built from this page should key on identity
+      + cadence, not on fc43's mere presence.
+    </div>
   </section>
 
   <section>
@@ -448,17 +473,29 @@ HTML_TEMPLATE = r"""<title>Device ID Probe Diff</title>
   document.getElementById('avg-gap-inline').textContent = (s.avg_seconds_between_rounds / 60).toFixed(1) + ' min';
 
   // ---- normal column ----
+  // Deliberately no packet frame here: this attack's request TYPE (asking a
+  // device to identify itself) has no counterpart in normal traffic at all -
+  // there is nothing to show side by side with the fc43 probe. An earlier
+  // version of this report showed an unrelated fc1 read here, which implied
+  // a direct comparison that doesn't exist; this explains the absence instead.
   const nCol = document.getElementById('normal-col');
   nCol.innerHTML =
-    frame('REQUEST', DATA.normal_pair.request, false,
-      `<b>Read Coils</b> (fc1), start address 9, quantity 1 &mdash; one coil, one poll cycle.`) +
-    frame('RESPONSE', DATA.normal_pair.response, false,
-      `Byte count 1, value <code>0x00</code> (coil off). 62 bytes total, answered in 0.57&nbsp;ms.`) +
-    `<div class="frame"><div class="frame-label">CONTEXT &mdash; fc43 in normal traffic</div>
+    `<div class="frame">
+      <div class="frame-label">This traffic type does not occur in normal operation</div>
       <div class="decoded" style="border-top:none">
-        Function code 43 (Report Device Identification) appears
-        <b>${s.normal_fc43_rows}</b> times in 47,198 normal rows. The device is polled with
-        Read Coils/Holding/Input Registers only &mdash; its identity is never asked for.
+        Function code 43 (Report Device Identification) appears <b>${s.normal_fc43_rows}</b> times
+        in 47,198 normal rows &mdash; not rarely, <b>never</b>. There is no normal packet to pair
+        this probe against, because asking a device "who are you" is not part of this system's
+        vocabulary in normal operation at all.
+      </div>
+    </div>
+    <div class="frame">
+      <div class="frame-label">What normal traffic asks instead</div>
+      <div class="decoded" style="border-top:none">
+        Every normal Modbus request is a value poll: Read Coils (fc1), Read Holding Registers
+        (fc3), or Read Input Registers (fc4) &mdash; "what is this measurement right now", never
+        "what are you". The distinction that matters here isn't which function code was used, it's
+        that this <em>category</em> of question was asked at all.
       </div>
     </div>`;
 

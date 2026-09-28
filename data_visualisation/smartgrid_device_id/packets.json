@@ -1,42 +1,4 @@
 {
- "normal_pair": {
-  "request": {
-   "row": 172569,
-   "time": "16:58:49.701189",
-   "frame_time_relative": 2984.997825008,
-   "ip_src": "192.168.0.40",
-   "ip_dst": "192.168.0.31",
-   "ip_len": 64.0,
-   "ip_ttl": 64.0,
-   "ip_proto": 6.0,
-   "tcp_len": 12.0,
-   "tcp_flags": "0x0018",
-   "tcp_window_size": 502.0,
-   "tcp_analysis_ack_rtt": null,
-   "frame_time_delta": 0.909001651,
-   "modbus_func_code": 1.0,
-   "modbus_data": "0x000901",
-   "tcp_stream": 6412.0
-  },
-  "response": {
-   "row": 172570,
-   "time": "16:58:49.701756",
-   "frame_time_relative": 2984.99839159,
-   "ip_src": "192.168.0.31",
-   "ip_dst": "192.168.0.40",
-   "ip_len": 62.0,
-   "ip_ttl": 64.0,
-   "ip_proto": 6.0,
-   "tcp_len": 10.0,
-   "tcp_flags": "0x0018",
-   "tcp_window_size": 509.0,
-   "tcp_analysis_ack_rtt": 0.000566582,
-   "frame_time_delta": 0.000566582,
-   "modbus_func_code": 1.0,
-   "modbus_data": "0x0100",
-   "tcp_stream": 6412.0
-  }
- },
  "attack_examples": {
   "syn": {
    "row": 131029,

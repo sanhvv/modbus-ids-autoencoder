@@ -1,0 +1,9 @@
+        
+Loading Smart Grid dataset...
+Extracting device-ID-attack examples (SYN, basic probe, extended probe)...
+Computing comparison statistics...
+Saved: data_visualisation/smartgrid_device_id/packets.json
+Saved: data_visualisation/smartgrid_device_id/stats.json
+Saved: data_visualisation/smartgrid_device_id/report.html
+Device-ID attack summary: 16 rounds of 8 rows each, spread across 5198.9s (avg 346.6s between rounds), 64 fc43 requests, 0 identification objects ever returned
+Total time consumed: 0.44s
