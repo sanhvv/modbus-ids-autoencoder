@@ -170,11 +170,28 @@ def compute_stats(df):
     burst_sizes = (ends - starts + 1)
 
     normal_read_qtys = []
+    normal_addrs = set()
     n_req = n[(n.protocol == "MODBUS") & (n.tcp_len == 12)]
     for d in n_req.modbus_data:
-        _, q = decode_qty(d)
+        addr, q = decode_qty(d)
         if q is not None:
             normal_read_qtys.append(q)
+        if addr is not None:
+            normal_addrs.add(addr)
+
+    attack_addrs = set()
+    for d in read_req.modbus_data:
+        addr, _ = decode_qty(d)
+        if addr is not None:
+            attack_addrs.add(addr)
+
+    # detection signals: each one independently verified against the raw
+    # data, not assumed - see the "Detection signals" report section.
+    n_resp = n[(n.protocol == "MODBUS") & (n.ip_src == TARGET_IP)]
+    a_resp = mb[mb.ip_src == TARGET_IP]
+    normal_modbus_ips = sorted(set(n[n.protocol == "MODBUS"].ip_src.unique().tolist()))
+    attack_response_bytes = int(a_resp[a_resp.tcp_len > 20].ip_len.mode().iloc[0]) if len(a_resp) else None
+    normal_response_max_bytes = int(n_resp.ip_len.max()) if len(n_resp) else None
 
     return {
         "session_duration_sec": round(df.frame_time_relative.max(), 1),
@@ -186,6 +203,15 @@ def compute_stats(df):
         "normal_max_qty": max(normal_read_qtys) if normal_read_qtys else None,
         "attack_max_qty_fc1_fc2": 2000,
         "attack_max_qty_fc3_fc4": 125,
+        "normal_request_addresses": sorted(normal_addrs),
+        "attack_request_addresses": sorted(attack_addrs),
+        "n_fc2_requests": int((req.modbus_func_code == 2).sum()),
+        "normal_modbus_ips": normal_modbus_ips,
+        "attacker_ip": ATTACKER_IP,
+        "normal_response_max_bytes": normal_response_max_bytes,
+        "attack_response_bytes": attack_response_bytes,
+        "response_size_ratio": round(attack_response_bytes / normal_response_max_bytes, 1)
+                                if attack_response_bytes and normal_response_max_bytes else None,
         "n_bursts": int(len(starts)),
         "reads_per_burst_median": int(np.median(burst_sizes)),
         "burst_duration_sec": 10.0,
@@ -357,6 +383,23 @@ HTML_TEMPLATE = r"""<title>Naive Sensor Read Diff</title>
   .bar-legend .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text-secondary); }
   .bar-legend .swatch { width: 9px; height: 9px; border-radius: 2px; }
 
+  /* ---- detection signals ---- */
+  .signal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  @media (max-width: 860px) { .signal-grid { grid-template-columns: 1fr; } }
+  .signal-card { border: 1px solid var(--border); border-radius: 10px; background: var(--surface-1);
+                 box-shadow: var(--shadow); padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+  .signal-card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .signal-title { font-family: "Archivo", sans-serif; font-weight: 700; font-size: 14px; }
+  .signal-tag { display: inline-block; font-size: 9.5px; font-weight: 600; padding: 2px 7px; border-radius: 4px;
+                font-family: "IBM Plex Mono", monospace; text-transform: uppercase; letter-spacing: .03em; white-space: nowrap; }
+  .signal-tag.categorical { background: var(--attack-bg); color: var(--attack); }
+  .signal-tag.statistical { background: var(--normal-bg); color: var(--normal); }
+  .signal-values { display: flex; gap: 18px; font-family: "IBM Plex Mono", monospace; font-size: 12.5px; }
+  .signal-values .val-label { color: var(--text-muted); font-size: 10px; display: block; text-transform: uppercase; letter-spacing: .03em; }
+  .signal-values .val-normal { color: var(--normal); font-weight: 600; }
+  .signal-values .val-attack { color: var(--attack); font-weight: 600; }
+  .signal-note { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+
   /* ---- time series ---- */
   .timeline-card { border: 1px solid var(--border); border-radius: 10px; background: var(--surface-1);
                     box-shadow: var(--shadow); padding: 16px; display: flex; flex-direction: column; gap: 10px; }
@@ -440,6 +483,17 @@ HTML_TEMPLATE = r"""<title>Naive Sensor Read Diff</title>
         <div class="col-body" id="attack-col"></div>
       </div>
     </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Detection signals: what actually marks this traffic as an attack</h2>
+      <p style="margin-top:6px">Each signal below is checked directly against the whole session's
+        normal baseline (47,198 rows), not assumed. <span class="signal-tag categorical" style="margin:0 4px">categorical</span>
+        means the value never occurs at all in normal traffic (zero-ambiguity); <span class="signal-tag statistical" style="margin:0 4px">statistical</span>
+        means normal traffic does have this value, but at a very different magnitude.</p>
+    </div>
+    <div class="signal-grid" id="signal-grid"></div>
   </section>
 
   <section>
@@ -573,18 +627,81 @@ HTML_TEMPLATE = r"""<title>Naive Sensor Read Diff</title>
       `</div>`;
   }
   if (ex.rejected_probe && ex.rejected_probe.syn) {
+    const probeDst = ex.rejected_probe.syn.ip_dst;
+    const isMaster = probeDst === '192.168.0.40';
     attackHtml += `<div><h3 style="margin-bottom:8px">3. A side-probe that got refused<span class="flag">SYN &rarr; RST-ACK</span></h3>` +
       frame('SYN', ex.rejected_probe.syn, true,
-        `A brief attempt to open a connection to a host (${ex.rejected_probe.syn.ip_dst}) this attacker
-         never otherwise talks to &mdash; ${s.n_rejected_probe_targets} such hosts touched around the
-         same moment.`) +
+        isMaster
+          ? `One of the 3 side-probe targets is <b>192.168.0.40 &mdash; the network's own legitimate
+             SCADA master</b>, the same host this session's normal traffic uses to poll the RTU. This
+             attacker tries to open a connection directly to the real controller and gets refused;
+             the other 2 targets (192.168.0.21, 192.168.0.22) are hosts never otherwise seen at all.`
+          : `A brief attempt to open a connection to a host (${probeDst}) this attacker never
+             otherwise talks to &mdash; ${s.n_rejected_probe_targets} such hosts touched around the
+             same moment, including the network's own legitimate SCADA master (192.168.0.40).`) +
       (ex.rejected_probe.rst ? frame('RST-ACK', ex.rejected_probe.rst, true,
-        `Connection actively refused. Unlike the address scan's targets, which answered with SYN-ACK,
-         this host rejects the attempt outright &mdash; a minor, failed side-activity, not the main
-         signature of this attack.`) : '') +
+        `Connection actively refused${isMaster ? ' by the master itself' : ''}. Unlike the address
+         scan's targets, which answered with SYN-ACK, this host rejects the attempt outright &mdash;
+         a minor, failed side-activity, not the main signature of this attack.`) : '') +
       `</div>`;
   }
   aCol.innerHTML = attackHtml;
+
+  // ---- detection signals ----
+  const signals = [
+    {
+      title: 'Function code 2 (Read Discrete Inputs)', tag: 'categorical',
+      normal: '0 requests', attack: `${s.n_fc2_requests} requests`,
+      note: `fc2 never appears in 47,198 normal rows (only fc1/fc3/fc4 are ever used) - same kind of
+             signal as the function-code-scan attack: this network's normal vocabulary simply doesn't
+             include this function code at all.`,
+    },
+    {
+      title: 'Response size', tag: 'statistical',
+      normal: `max ${s.normal_response_max_bytes} bytes`, attack: `${s.attack_response_bytes} bytes`,
+      note: `${(s.response_size_ratio)}&times; the normal maximum - a direct consequence of requesting
+             the protocol-max quantities (2000 coils / 125 registers) instead of normal's single value.`,
+    },
+    {
+      title: 'Request source identity', tag: 'categorical',
+      normal: s.normal_modbus_ips.join(', '), attack: s.attacker_ip,
+      note: `Only ${s.normal_modbus_ips.join(' and ')} ever send/receive Modbus traffic in the normal
+             baseline. ${s.attacker_ip} is a real host on this network (it has normal WEBSOCKET traffic
+             with 192.168.0.111) but has never once been a Modbus participant before this attack.`,
+    },
+    {
+      title: 'Request address', tag: 'categorical',
+      normal: s.normal_request_addresses.join(', '), attack: s.attack_request_addresses.join(', '),
+      note: `Normal polling only ever targets 4 specific points (addresses ${s.normal_request_addresses.join(', ')})
+             - address 0 is requested 0 times in 47,198 normal rows. This attack reads only address 0,
+             a point no legitimate poll ever touches.`,
+    },
+    {
+      title: 'Read quantity per request', tag: 'statistical',
+      normal: `${s.normal_max_qty}`, attack: `${s.attack_max_qty_fc1_fc2} / ${s.attack_max_qty_fc3_fc4}`,
+      note: `Already the headline finding above - repeated here for completeness of the signal
+             checklist. Normal never asks for more than 1 value per request.`,
+    },
+    {
+      title: 'Write command acceptance (fc5)', tag: 'categorical',
+      normal: '0 writes', attack: `${s.n_write_requests} writes, ACCEPTED`,
+      note: `0% of normal traffic is a write. A write request that the target executes anyway (echoed
+             back, not rejected) is MITRE ATT&CK T0855 Unauthorized Command Message - qualitatively
+             worse than an attempted-but-refused write.`,
+    },
+  ];
+  document.getElementById('signal-grid').innerHTML = signals.map(sig => `
+    <div class="signal-card">
+      <div class="signal-card-head">
+        <span class="signal-title">${esc(sig.title)}</span>
+        <span class="signal-tag ${sig.tag}">${sig.tag}</span>
+      </div>
+      <div class="signal-values">
+        <span><span class="val-label">Normal</span><span class="val-normal">${esc(sig.normal)}</span></span>
+        <span><span class="val-label">Attack</span><span class="val-attack">${esc(sig.attack)}</span></span>
+      </div>
+      <div class="signal-note">${sig.note}</div>
+    </div>`).join('');
 
   // ---- time series (request rate across the whole session) ----
   function drawTimeSeries(tl) {

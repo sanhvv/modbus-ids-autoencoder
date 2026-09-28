@@ -8,6 +8,24 @@
  "normal_max_qty": 1,
  "attack_max_qty_fc1_fc2": 2000,
  "attack_max_qty_fc3_fc4": 125,
+ "normal_request_addresses": [
+  9,
+  19,
+  20,
+  39
+ ],
+ "attack_request_addresses": [
+  0
+ ],
+ "n_fc2_requests": 197,
+ "normal_modbus_ips": [
+  "192.168.0.31",
+  "192.168.0.40"
+ ],
+ "attacker_ip": "192.168.0.1",
+ "normal_response_max_bytes": 63,
+ "attack_response_bytes": 311,
+ "response_size_ratio": 4.9,
  "n_bursts": 18,
  "reads_per_burst_median": 44,
  "burst_duration_sec": 10.0,
