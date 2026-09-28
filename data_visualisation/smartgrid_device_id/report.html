@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>html, body { margin: 0; }</style>
-<title>Address Scan Diff</title>
+<title>Device ID Probe Diff</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
 <style>
   .viz-root {
@@ -156,39 +156,41 @@
 
   <header>
     <span class="eyebrow">Smart Grid &middot; ICS-SimLab capture &middot; real packets, not synthetic</span>
-    <h1 style="margin-top:8px">A known host that suddenly scans the rest of the subnet</h1>
-    <p style="margin-top:10px">192.168.0.1 is not an outsider &mdash; it is a <b>legitimate host</b> on this
-      network, with 1,252 normal-labeled rows of its own (all TCP/websocket traffic with
-      <code class="mono">192.168.0.111</code>). During "address scan" the SAME host ARP-resolves and
-      TCP-SYN-probes 5 hosts it has never contacted before, spread across almost the entire 99.4-minute
-      session &mdash; not one short burst. Only in the last 0.075% of its footprint does it ever touch
-      Modbus.</p>
+    <h1 style="margin-top:8px">Low-and-slow probing that never gets an answer</h1>
+    <p style="margin-top:10px">"Device identification attack" is pure Modbus (fc43, Report Device
+      Identification) &mdash; fully visible to the pipeline, unlike address scan. But it isn't one
+      burst either: it repeats as <b>16 tiny rounds</b> (8 rows, ~1.9&nbsp;ms each, one new TCP
+      connection per round) spread across almost the whole session, roughly once every 5.8&nbsp;minutes.
+      And every single probe gets the same answer: an identification reply with <b>zero</b> objects in
+      it &mdash; unlike the function-code scan's fc17 probe, which leaked a real string.</p>
   </header>
 
   <section>
     <div class="section-head">
-      <h2>Pipeline blind spot</h2>
-      <p style="margin-top:6px">The AE model and the LLM prompt both only ever look at
-        <code class="mono">protocol == "MODBUS"</code> rows. Here is what fraction of this specific
-        attack that filter actually sees.</p>
+      <h2>A probe that reaches the device but learns nothing</h2>
+      <p style="margin-top:6px">Compare this to the function-code scan's fc17 (Report Slave ID) probe,
+        which decoded to the string "Pymodbus". This device's fc43 handler is well-formed but empty.</p>
     </div>
     <div class="ip-grid">
       <div class="ip-card attack">
-        <div class="col-head attack">What the attack actually sends</div>
+        <div class="col-head attack">Identification objects returned</div>
         <div class="ip-card-body">
           <div class="ip-note" style="font-size:13px">
-            <b id="modbus-pct-big" style="font-size:28px; font-family:'Archivo',sans-serif; color:var(--attack);"></b>
-            of this attack's 37,306 rows are Modbus &mdash; the rest is
-            <b id="arp-count-inline"></b> ARP frames and TCP SYN/handshake noise.
+            <b id="objects-big" style="font-size:28px; font-family:'Archivo',sans-serif; color:var(--attack);"></b>
+            objects, in <b id="req-count-inline"></b> requests across all 3 standard MEI access codes
+            (basic/regular/extended). The conformity byte confirms the request was understood &mdash;
+            the device just has nothing to report back.
           </div>
         </div>
       </div>
       <div class="ip-card attack">
-        <div class="col-head attack">Share of ALL ARP traffic in the session</div>
+        <div class="col-head attack">Repeats, not a burst</div>
         <div class="ip-card-body">
           <div class="ip-note" style="font-size:13px">
-            <b id="arp-share-big" style="font-size:28px; font-family:'Archivo',sans-serif; color:var(--attack);"></b>
-            of every ARP frame captured in the whole 99.4-minute session belongs to this one attack.
+            <b id="rounds-big" style="font-size:28px; font-family:'Archivo',sans-serif; color:var(--attack);"></b>
+            separate rounds, each opening a brand-new TCP connection, spread across
+            <b id="span-inline"></b> of the session &mdash; average <b id="avg-gap-inline"></b> between
+            rounds. Nothing like the function-code scan's single 22&nbsp;ms burst.
           </div>
         </div>
       </div>
@@ -198,11 +200,11 @@
   <section>
     <div class="cols">
       <div>
-        <div class="col-head normal">Normal &mdash; 192.168.0.1's own baseline</div>
+        <div class="col-head normal">Normal &mdash; routine poll</div>
         <div class="col-body" id="normal-col"></div>
       </div>
       <div>
-        <div class="col-head attack">Attack &mdash; address scan</div>
+        <div class="col-head attack">Attack &mdash; device identification (round 1 of 16)</div>
         <div class="col-body" id="attack-col"></div>
       </div>
     </div>
@@ -210,31 +212,29 @@
 
   <section>
     <div class="section-head">
-      <h2>Source IP: who does 192.168.0.1 talk to</h2>
-      <p style="margin-top:6px">Not a new attacker IP this time &mdash; the same host, suddenly reaching
-        far more of the subnet than it ever does normally.</p>
+      <h2>fc43 isn't exclusive to this attack label</h2>
+      <p style="margin-top:6px">Function code 43 never appears in normal traffic (0 of 47,198 rows) -
+        but within attack traffic it isn't unique to "device identification attack" either.</p>
     </div>
-    <div class="ip-grid" id="ip-grid"></div>
-    <div class="shared-target-banner" id="shared-target-banner"></div>
+    <div class="shared-target-banner" id="fc43-banner"></div>
   </section>
 
   <section>
     <div class="section-head">
-      <h2>Statistics: address-scan window vs. the session's normal baseline</h2>
-      <p style="margin-top:6px">192.168.0.1's behavior while attack_specific==1 is active (spans almost
-        the whole session, t&nbsp;=&nbsp;29.5s&ndash;5860.5s) compared against its own normal traffic and
-        the network's normal ARP/SYN baseline.</p>
+      <h2>Statistics: this attack type vs. the session's normal baseline</h2>
+      <p style="margin-top:6px">Totals across all 16 rounds, compared against normal traffic measured
+        across the entire 99.4-minute session.</p>
     </div>
     <div class="bar-legend">
       <span class="legend-item"><span class="swatch" style="background:var(--normal)"></span>Normal baseline</span>
-      <span class="legend-item"><span class="swatch" style="background:var(--attack)"></span>Address scan</span>
+      <span class="legend-item"><span class="swatch" style="background:var(--attack)"></span>Device ID attack</span>
     </div>
     <div class="chart-grid" id="count-charts"></div>
     <details>
       <summary style="cursor:pointer; font-size:12.5px; color:var(--text-secondary); font-family:'IBM Plex Mono',monospace;">Exact numbers (table)</summary>
       <div class="stats-wrap" style="margin-top:10px">
         <table class="stats">
-          <thead><tr><th>Metric</th><th>Normal baseline</th><th>Address scan</th></tr></thead>
+          <thead><tr><th>Metric</th><th>Normal baseline</th><th>Device ID attack</th></tr></thead>
           <tbody id="stats-body"></tbody>
         </table>
       </div>
@@ -242,11 +242,14 @@
   </section>
 
   <footer>
-    <p>Source: <code class="mono">dataset_sg_packetv4.csv</code>, all protocols (ARP/TCP/MODBUS), rows
-      labeled <code class="mono">attack_specific == 1</code>. "Normal baseline" for 192.168.0.1
-      specifically is its own attack_specific-NaN/0 rows (1,252 of them, all with 192.168.0.111);
-      network-wide normal ARP/SYN rates are computed across all normal rows. This companion page follows
-      the same treatment as the function-code-scan comparison (see <code class="mono">packet_compare_smartgrid_fcscan.py</code>).</p>
+    <p>Source: <code class="mono">dataset_sg_packetv4.csv</code>, rows labeled
+      <code class="mono">attack_specific == 3</code>. Round 1 (TCP stream 6069, t&nbsp;=&nbsp;554.5s) is
+      shown as the representative example; all 16 rounds follow the identical 8-row shape. PDU
+      <code class="mono">0x0e0183000000</code> decodes as MEI&nbsp;type&nbsp;0x0E, ReadDevIdCode&nbsp;0x01
+      (basic), conformity&nbsp;0x83, more-follows&nbsp;0x00, next-object&nbsp;0x00,
+      object-count&nbsp;<b>0x00</b> &mdash; zero identification objects. Companion page to
+      <code class="mono">packet_compare_smartgrid_fcscan.py</code> and
+      <code class="mono">packet_compare_smartgrid_addressscan.py</code>.</p>
   </footer>
 
 </div>
@@ -254,24 +257,18 @@
 
 <script>
 (function () {
-  const DATA = {"normal_example": {"push": {"row": 220251, "time": "17:40:51.095105", "frame_time_relative": 5506.391741042, "ip_src": "192.168.0.111", "ip_dst": "192.168.0.1", "ip_len": 1763.0, "ip_ttl": 64.0, "ip_proto": 6.0, "tcp_len": 1711.0, "tcp_flags": "0x0018", "tcp_window_size": 504.0, "tcp_analysis_ack_rtt": null, "frame_time_delta": 0.000130425, "modbus_func_code": null, "modbus_data": null, "tcp_stream": 6849.0}, "ack": {"row": 220252, "time": "17:40:51.095132", "frame_time_relative": 5506.391767732, "ip_src": "192.168.0.1", "ip_dst": "192.168.0.111", "ip_len": 52.0, "ip_ttl": 64.0, "ip_proto": 6.0, "tcp_len": 0.0, "tcp_flags": "0x0010", "tcp_window_size": 639.0, "tcp_analysis_ack_rtt": 2.669e-05, "frame_time_delta": 2.669e-05, "modbus_func_code": null, "modbus_data": null, "tcp_stream": 6849.0}}, "attack_examples": {"syn_probe": {"row": 331, "time": "16:09:34.333717", "frame_time_relative": 29.630352492, "ip_src": "192.168.0.1", "ip_dst": "192.168.0.31", "ip_len": 60.0, "ip_ttl": 64.0, "ip_proto": 6.0, "tcp_len": 0.0, "tcp_flags": "0x0002", "tcp_window_size": 64240.0, "tcp_analysis_ack_rtt": null, "frame_time_delta": 5.841e-06, "modbus_func_code": null, "modbus_data": null, "tcp_stream": 2.0}, "device_id_probe": {"request": {"row": 126480, "time": "16:13:41.087918", "frame_time_relative": 276.384553201, "ip_src": "192.168.0.1", "ip_dst": "192.168.0.31", "ip_len": 63.0, "ip_ttl": 64.0, "ip_proto": 6.0, "tcp_len": 11.0, "tcp_flags": "0x0018", "tcp_window_size": 502.0, "tcp_analysis_ack_rtt": null, "frame_time_delta": 0.000110801, "modbus_func_code": 43.0, "modbus_data": "0x0e0100", "tcp_stream": 6028.0}, "response": {"row": 126482, "time": "16:13:41.088551", "frame_time_relative": 276.385186486, "ip_src": "192.168.0.31", "ip_dst": "192.168.0.1", "ip_len": 66.0, "ip_ttl": 64.0, "ip_proto": 6.0, "tcp_len": 14.0, "tcp_flags": "0x0018", "tcp_window_size": 509.0, "tcp_analysis_ack_rtt": null, "frame_time_delta": 0.000617776, "modbus_func_code": 43.0, "modbus_data": "0x0e0183000000", "tcp_stream": 6028.0}}, "late_read": {"request": {"row": 214635, "time": "17:38:11.037030", "frame_time_relative": 5346.33366519, "ip_src": "192.168.0.1", "ip_dst": "192.168.0.31", "ip_len": 64.0, "ip_ttl": 64.0, "ip_proto": 6.0, "tcp_len": 12.0, "tcp_flags": "0x0018", "tcp_window_size": 502.0, "tcp_analysis_ack_rtt": null, "frame_time_delta": 8.9718e-05, "modbus_func_code": 1.0, "modbus_data": "0x00007d0", "tcp_stream": 6822.0}, "response": {"row": 214637, "time": "17:38:11.037908", "frame_time_relative": 5346.334543398, "ip_src": "192.168.0.31", "ip_dst": "192.168.0.1", "ip_len": 311.0, "ip_ttl": 64.0, "ip_proto": 6.0, "tcp_len": 259.0, "tcp_flags": "0x0018", "tcp_window_size": 509.0, "tcp_analysis_ack_rtt": null, "frame_time_delta": 0.000866115, "modbus_func_code": 1.0, "modbus_data": "0xfa00400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", "tcp_stream": 6822.0}}}, "stats": {"session_duration_sec": 5963.4, "attack_duration_sec": 5832.3, "normal_n_rows": 89898, "attack_n_rows": 37306, "attack_n_modbus_rows": 28, "attack_modbus_pct": 0.075, "normal_arp_rows": 477, "attack_arp_rows": 35183, "total_arp_rows": 35911, "attack_arp_share_of_all_arp_pct": 98.0, "normal_arp_rate": 0.08, "attack_arp_rate": 6.03, "normal_partners": ["192.168.0.111"], "attack_partners": ["192.168.0.111", "192.168.0.21", "192.168.0.22", "192.168.0.23", "192.168.0.31", "192.168.0.40"], "new_partners": ["192.168.0.21", "192.168.0.22", "192.168.0.23", "192.168.0.31", "192.168.0.40"], "normal_syn_from_attacker": 0, "attack_syn_from_attacker": 614, "attack_mb_function_codes": [1, 2, 3, 4, 8, 43], "normal_fc": [1, 3, 4], "attack_mb_nonstd_fc": []}};
+  const DATA = {"normal_pair": {"request": {"row": 172569, "time": "16:58:49.701189", "frame_time_relative": 2984.997825008, "ip_src": "192.168.0.40", "ip_dst": "192.168.0.31", "ip_len": 64.0, "ip_ttl": 64.0, "ip_proto": 6.0, "tcp_len": 12.0, "tcp_flags": "0x0018", "tcp_window_size": 502.0, "tcp_analysis_ack_rtt": null, "frame_time_delta": 0.909001651, "modbus_func_code": 1.0, "modbus_data": "0x000901", "tcp_stream": 6412.0}, "response": {"row": 172570, "time": "16:58:49.701756", "frame_time_relative": 2984.99839159, "ip_src": "192.168.0.31", "ip_dst": "192.168.0.40", "ip_len": 62.0, "ip_ttl": 64.0, "ip_proto": 6.0, "tcp_len": 10.0, "tcp_flags": "0x0018", "tcp_window_size": 509.0, "tcp_analysis_ack_rtt": 0.000566582, "frame_time_delta": 0.000566582, "modbus_func_code": 1.0, "modbus_data": "0x0100", "tcp_stream": 6412.0}}, "attack_examples": {"syn": {"row": 131029, "time": "16:18:19.189939", "frame_time_relative": 554.486574991, "ip_src": "192.168.0.1", "ip_dst": "192.168.0.31", "ip_len": 60.0, "ip_ttl": 64.0, "ip_proto": 6.0, "tcp_len": 0.0, "tcp_flags": "0x0002", "tcp_window_size": 64240.0, "tcp_analysis_ack_rtt": null, "frame_time_delta": 0.957826321, "modbus_func_code": null, "modbus_data": null, "tcp_stream": 6069.0}, "basic_probe": {"request": {"row": 131032, "time": "16:18:19.190254", "frame_time_relative": 554.486889745, "ip_src": "192.168.0.1", "ip_dst": "192.168.0.31", "ip_len": 63.0, "ip_ttl": 64.0, "ip_proto": 6.0, "tcp_len": 11.0, "tcp_flags": "0x0018", "tcp_window_size": 502.0, "tcp_analysis_ack_rtt": null, "frame_time_delta": 0.000197503, "modbus_func_code": 43.0, "modbus_data": "0x0e0100", "tcp_stream": 6069.0}, "response": {"row": 131037, "time": "16:18:19.191158", "frame_time_relative": 554.487793613, "ip_src": "192.168.0.31", "ip_dst": "192.168.0.1", "ip_len": 66.0, "ip_ttl": 64.0, "ip_proto": 6.0, "tcp_len": 14.0, "tcp_flags": "0x0018", "tcp_window_size": 509.0, "tcp_analysis_ack_rtt": null, "frame_time_delta": 0.000134685, "modbus_func_code": 43.0, "modbus_data": "0x0e0183000000", "tcp_stream": 6069.0}}, "extended_probe": {"request": {"row": 131044, "time": "16:18:19.191904", "frame_time_relative": 554.488539161, "ip_src": "192.168.0.1", "ip_dst": "192.168.0.31", "ip_len": 63.0, "ip_ttl": 64.0, "ip_proto": 6.0, "tcp_len": 11.0, "tcp_flags": "0x0018", "tcp_window_size": 502.0, "tcp_analysis_ack_rtt": 0.000105028, "frame_time_delta": 0.000105028, "modbus_func_code": 43.0, "modbus_data": "0x0e0300", "tcp_stream": 6069.0}, "response": {"row": 131047, "time": "16:18:19.192286", "frame_time_relative": 554.488921964, "ip_src": "192.168.0.31", "ip_dst": "192.168.0.1", "ip_len": 66.0, "ip_ttl": 64.0, "ip_proto": 6.0, "tcp_len": 14.0, "tcp_flags": "0x0018", "tcp_window_size": 509.0, "tcp_analysis_ack_rtt": 0.000382803, "frame_time_delta": 0.000113234, "modbus_func_code": 43.0, "modbus_data": "0x0e0383000000", "tcp_stream": 6069.0}}}, "stats": {"session_duration_sec": 5963.4, "normal_fc43_rows": 0, "attack_fc43_requests": 64, "attack_fc43_responses": 64, "distinct_mei_codes_probed": ["0x0e0100", "0x0e0200", "0x0e0300"], "fc43_rows_other_attack_types": {"2.0": 18, "1.0": 16}, "n_rounds": 16, "round_row_count": 8, "attack_window_start_sec": 554.5, "attack_window_end_sec": 5753.4, "attack_window_span_sec": 5198.9, "avg_seconds_between_rounds": 346.6, "objects_returned_per_response": 0, "normal_syn_rate": 0.412, "attack_new_connections": 16}};
 
   function esc(s) {
     return String(s).replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
-  }
-
-  function truncHex(hex) {
-    if (!hex) return 'n/a';
-    if (hex.length <= 74) return hex;
-    return `${hex.slice(0, 34)} ... ${hex.slice(-16)} (${(hex.length - 2) / 2} bytes)`;
   }
 
   function frame(label, pkt, isAttack, note) {
     const rows = [
       ['time', pkt.time],
       ['src -> dst', `${pkt.ip_src} -> ${pkt.ip_dst}`],
-      ['protocol/flags', pkt.modbus_func_code != null ? `Modbus fc${Math.trunc(pkt.modbus_func_code)}` : `TCP flags ${pkt.tcp_flags}`],
-      ['pdu (hex)', truncHex(pkt.modbus_data), true],
+      ['function code', `${pkt.modbus_func_code != null ? Math.trunc(pkt.modbus_func_code) : 'n/a'}`],
+      ['pdu (hex)', pkt.modbus_data || 'n/a', true],
       ['ip_len / tcp_len', `${pkt.ip_len} / ${pkt.tcp_len} bytes`],
     ];
     const lines = rows.map(([k, v, hex]) =>
@@ -286,86 +283,65 @@
 
   const s = DATA.stats;
 
-  // ---- pipeline blind-spot numbers ----
-  document.getElementById('modbus-pct-big').textContent = s.attack_modbus_pct + '%';
-  document.getElementById('arp-count-inline').textContent = s.attack_arp_rows.toLocaleString();
-  document.getElementById('arp-share-big').textContent = s.attack_arp_share_of_all_arp_pct + '%';
+  // ---- headline callouts ----
+  document.getElementById('objects-big').textContent = s.objects_returned_per_response;
+  document.getElementById('req-count-inline').textContent = s.attack_fc43_requests;
+  document.getElementById('rounds-big').textContent = s.n_rounds;
+  document.getElementById('span-inline').textContent = (s.attack_window_span_sec / 60).toFixed(1) + ' min';
+  document.getElementById('avg-gap-inline').textContent = (s.avg_seconds_between_rounds / 60).toFixed(1) + ' min';
 
-  // ---- normal column: 192.168.0.1's own baseline (ACK-only, no SYN, ever) ----
+  // ---- normal column ----
   const nCol = document.getElementById('normal-col');
-  const ne = DATA.normal_example;
   nCol.innerHTML =
-    frame('DATA (from 192.168.0.111)', ne.push, false,
-      `192.168.0.111 pushes application data over an already-established connection.`) +
-    frame('ACK (from 192.168.0.1)', ne.ack, false,
-      `192.168.0.1 only ever ACKs &mdash; it never initiates. Across 1,252 normal rows and
-       5,963 seconds, this host sends <b>zero</b> SYN packets and never contacts any IP besides
-       192.168.0.111 (and one mDNS multicast).`) +
-    `<div class="frame"><div class="frame-label">CONTEXT &mdash; what "normal" means for this specific host</div>
+    frame('REQUEST', DATA.normal_pair.request, false,
+      `<b>Read Coils</b> (fc1), start address 9, quantity 1 &mdash; one coil, one poll cycle.`) +
+    frame('RESPONSE', DATA.normal_pair.response, false,
+      `Byte count 1, value <code>0x00</code> (coil off). 62 bytes total, answered in 0.57&nbsp;ms.`) +
+    `<div class="frame"><div class="frame-label">CONTEXT &mdash; fc43 in normal traffic</div>
       <div class="decoded" style="border-top:none">
-        This host's entire normal footprint is a passive role: it receives pushed data from
-        192.168.0.111 and ACKs it, ${s.normal_syn_from_attacker} times a SYN, ${s.normal_arp_rows}
-        ARP frames network-wide (0.08/s). It never touches Modbus, never contacts the RTU, and never
-        appears in the "Known-good communication pairs" list from the function-code-scan baseline
-        &mdash; it simply isn't part of that system at all, normally.
+        Function code 43 (Report Device Identification) appears
+        <b>${s.normal_fc43_rows}</b> times in 47,198 normal rows. The device is polled with
+        Read Coils/Holding/Input Registers only &mdash; its identity is never asked for.
       </div>
     </div>`;
 
   // ---- attack column ----
   const aCol = document.getElementById('attack-col');
   const ex = DATA.attack_examples;
-  let attackHtml =
-    `<div><h3 style="margin-bottom:8px">1. SYN scan of a host it has never contacted<span class="flag">port scan, new host</span></h3>` +
-    frame('SYN', ex.syn_probe, true,
-      `192.168.0.1 opens a connection to 192.168.0.31 (the RTU) &mdash; a host that appears
-       <b>nowhere</b> in this IP's normal traffic. Repeated against 5 different hosts, 614 times, across
-       the whole session.`) +
-    `</div>`;
-  if (ex.device_id_probe) {
-    attackHtml += `<div><h3 style="margin-bottom:8px">2. Once inside Modbus: device identification<span class="flag">fc43</span></h3>` +
-      frame('REQUEST', ex.device_id_probe.request, true,
-        `Report Device Identification (fc43) &mdash; one of only 28 Modbus rows in this entire 37,306-row attack.`) +
-      frame('RESPONSE', ex.device_id_probe.response, true,
-        `Target answers with its device ID object &mdash; the scan has moved from network-layer
-         discovery to protocol-layer fingerprinting.`) +
+  let attackHtml = '';
+  if (ex.syn) {
+    attackHtml += `<div><h3 style="margin-bottom:8px">1. A fresh connection just for this probe<span class="flag">SYN</span></h3>` +
+      frame('SYN', ex.syn, true,
+        `Every one of the 16 rounds opens a brand-new TCP connection &mdash; nothing is reused.`) +
       `</div>`;
   }
-  if (ex.late_read) {
-    attackHtml += `<div><h3 style="margin-bottom:8px">3. A late, maximal read<span class="flag">fc1, near session end</span></h3>` +
-      frame('REQUEST', ex.late_read.request, true,
-        `Read Coils, requested near the end of the scan window &mdash; this is the same
-         "ask for far more than normal" pattern seen in the function-code scan.`) +
-      frame('RESPONSE', ex.late_read.response, true,
-        `259-byte reply vs. a 63-byte normal maximum &mdash; a bulk dump, not a routine poll.`) +
+  if (ex.basic_probe) {
+    attackHtml += `<div><h3 style="margin-bottom:8px">2. Basic device ID probe<span class="flag">MEI code 0x01</span></h3>` +
+      frame('REQUEST', ex.basic_probe.request, true,
+        `Read Device Identification, access code 0x01 (basic stream), object id 0.`) +
+      frame('RESPONSE', ex.basic_probe.response, true,
+        `Conformity 0x83 (device claims MEI support), but <b>0 objects</b> follow &mdash; no vendor
+         name, no product code, nothing.`) +
+      `</div>`;
+  }
+  if (ex.extended_probe) {
+    attackHtml += `<div><h3 style="margin-bottom:8px">3. Extended device ID probe<span class="flag">MEI code 0x03</span></h3>` +
+      frame('REQUEST', ex.extended_probe.request, true,
+        `Same request, access code 0x03 (extended stream) &mdash; the attacker tries all 3 standard codes each round.`) +
+      frame('RESPONSE', ex.extended_probe.response, true,
+        `Identical shape, still <b>0 objects</b>. Compare to the function-code scan's fc17 probe,
+         which DID leak a real string ("Pymodbus") from the same device.`) +
       `</div>`;
   }
   aCol.innerHTML = attackHtml;
 
-  // ---- IP highlight cards ----
-  const ipGrid = document.getElementById('ip-grid');
-  function chip(ip, cls) { return `<span class="ip-chip${cls}">${ip}</span>`; }
-  ipGrid.innerHTML = `
-    <div class="ip-card normal">
-      <div class="col-head normal">192.168.0.1's normal partners</div>
-      <div class="ip-card-body">
-        <div class="ip-chip-row">${s.normal_partners.map(ip => chip(ip, ' role-active')).join('')}</div>
-        <div class="ip-note">Exactly <b>${s.normal_partners.length} host</b> in 5,963 seconds of normal
-          traffic. No SYN packets, no ARP sweeps &mdash; just steady ACKs on one existing session.</div>
-      </div>
-    </div>
-    <div class="ip-card attack">
-      <div class="col-head attack">Contacted during address scan</div>
-      <div class="ip-card-body">
-        <div class="ip-chip-row">${s.attack_partners.map(ip => chip(ip, s.new_partners.includes(ip) ? ' role-active' : '')).join('')}</div>
-        <div class="ip-note"><b>${s.new_partners.length} of ${s.attack_partners.length}</b> hosts
-          (highlighted) have <b>never</b> been contacted by 192.168.0.1 before &mdash; including the RTU
-          itself (192.168.0.31). Only 192.168.0.111 (not highlighted) is a repeat, legitimate partner.</div>
-      </div>
-    </div>`;
-  document.getElementById('shared-target-banner').innerHTML =
-    `The degree of this host jumps from <b>1</b> normal partner to <b>${s.attack_partners.length}</b>
-     during the scan &mdash; a fan-out, not a rate change. This is exactly what MITRE ATT&amp;CK for ICS
-     <a href="https://attack.mitre.org/techniques/T0846/" target="_blank" rel="noopener" style="color:inherit">T0846 Remote System Discovery</a> describes.`;
+  // ---- fc43 cross-attack banner ----
+  const otherEntries = Object.entries(s.fc43_rows_other_attack_types)
+    .map(([k, v]) => `${v} under attack type ${Math.trunc(parseFloat(k))}`).join(', ');
+  document.getElementById('fc43-banner').innerHTML =
+    `fc43 also appears ${otherEntries} (function-code scan and address scan both probe it in passing)
+     &mdash; so "fc43 was used" alone identifies <em>an</em> attack, not <em>which</em> one. The
+     <b>16-round, low-and-slow repeat pattern</b> shown above is what's specific to this label.`;
 
   // ---- bar charts ----
   function fmtNum(v) { return v >= 1000 ? Math.round(v).toLocaleString() : (Number.isInteger(v) ? v : v.toFixed(1)); }
@@ -424,9 +400,9 @@
   }
 
   const countCharts = [
-    {label: 'Distinct hosts contacted', normal: s.normal_partners.length, attack: s.attack_partners.length},
-    {label: 'SYN packets sent (ever, whole session)', normal: s.normal_syn_from_attacker, attack: s.attack_syn_from_attacker},
-    {label: 'ARP frames sent', normal: s.normal_arp_rows, attack: s.attack_arp_rows, logScale: true},
+    {label: 'fc43 requests sent', normal: s.normal_fc43_rows, attack: s.attack_fc43_requests},
+    {label: 'Identification objects returned', normal: 0, attack: s.objects_returned_per_response},
+    {label: 'Connections opened just to ask for device ID', normal: 0, attack: s.attack_new_connections},
   ];
   const countChartsEl = document.getElementById('count-charts');
   countCharts.forEach(cfg => {
@@ -439,14 +415,15 @@
 
   // ---- stats table ----
   const rows = [
-    ['Distinct hosts contacted by 192.168.0.1', `${s.normal_partners.length} (${s.normal_partners.join(', ')})`, `${s.attack_partners.length} (${s.attack_partners.join(', ')})`, true],
-    ['New hosts (never contacted before)', '0', `${s.new_partners.length} (${s.new_partners.join(', ')})`, true],
-    ['SYN packets from 192.168.0.1 (whole session)', `${s.normal_syn_from_attacker}`, `${s.attack_syn_from_attacker}`, true],
-    ['ARP frames sent', `${s.normal_arp_rows} (${s.normal_arp_rate}/s network-wide)`, `${s.attack_arp_rows} (${s.attack_arp_rate}/s)`, true],
-    ['Share of ALL session ARP traffic', '—', `${s.attack_arp_share_of_all_arp_pct}% (${s.attack_arp_rows} of ${s.total_arp_rows})`, true],
-    ['Rows that are Modbus (visible to the pipeline)', '100% (47,198 of 47,198)', `${s.attack_modbus_pct}% (${s.attack_n_modbus_rows} of ${s.attack_n_rows.toLocaleString()})`, true],
-    ['Modbus function codes touched', `${s.normal_fc.length} (fc ${s.normal_fc.join(', ')})`, `${s.attack_mb_function_codes.length} (fc ${s.attack_mb_function_codes.join(', ')})`, true],
-    ['Attack window span', '—', `${s.attack_duration_sec.toLocaleString()}s (${(s.attack_duration_sec/60).toFixed(1)} min, ${(s.attack_duration_sec/s.session_duration_sec*100).toFixed(0)}% of the session)`, true],
+    ['fc43 (Report Device ID) requests', `${s.normal_fc43_rows}`, `${s.attack_fc43_requests}`, true],
+    ['fc43 responses', `${s.normal_fc43_rows}`, `${s.attack_fc43_responses}`, true],
+    ['Distinct MEI access codes probed', '0', `${s.distinct_mei_codes_probed.length} (${s.distinct_mei_codes_probed.join(', ')})`, true],
+    ['Identification objects ever returned', '—', `${s.objects_returned_per_response} (every single response)`, true],
+    ['Separate probing rounds (new TCP connections)', '0', `${s.n_rounds}`, true],
+    ['Rows per round', '—', `${s.round_row_count}`, false],
+    ['Attack window span', '—', `${s.attack_window_span_sec.toLocaleString()}s (${(s.attack_window_span_sec/60).toFixed(1)} min, ${(s.attack_window_span_sec/s.session_duration_sec*100).toFixed(0)}% of the session)`, true],
+    ['Average gap between rounds', '—', `${s.avg_seconds_between_rounds.toLocaleString()}s (${(s.avg_seconds_between_rounds/60).toFixed(1)} min)`, true],
+    ['fc43 rows under OTHER attack labels', '—', Object.entries(s.fc43_rows_other_attack_types).map(([k,v]) => `type ${Math.trunc(parseFloat(k))}: ${v}`).join(', '), false],
   ];
   document.getElementById('stats-body').innerHTML = rows.map(([m, n, a, dev]) =>
     `<tr class="${dev ? 'deviates' : ''}"><td class="metric">${m}</td><td class="normal-val">${n}</td><td class="attack-val">${a}</td></tr>`

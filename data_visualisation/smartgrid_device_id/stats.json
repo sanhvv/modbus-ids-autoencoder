@@ -1,0 +1,24 @@
+{
+ "session_duration_sec": 5963.4,
+ "normal_fc43_rows": 0,
+ "attack_fc43_requests": 64,
+ "attack_fc43_responses": 64,
+ "distinct_mei_codes_probed": [
+  "0x0e0100",
+  "0x0e0200",
+  "0x0e0300"
+ ],
+ "fc43_rows_other_attack_types": {
+  "2.0": 18,
+  "1.0": 16
+ },
+ "n_rounds": 16,
+ "round_row_count": 8,
+ "attack_window_start_sec": 554.5,
+ "attack_window_end_sec": 5753.4,
+ "attack_window_span_sec": 5198.9,
+ "avg_seconds_between_rounds": 346.6,
+ "objects_returned_per_response": 0,
+ "normal_syn_rate": 0.412,
+ "attack_new_connections": 16
+}
