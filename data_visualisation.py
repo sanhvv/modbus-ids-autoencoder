@@ -40,9 +40,11 @@ from sklearn.metrics import roc_auc_score
 from retrain_ae_9dim import DATASET_FILENAMES, find_dataset_csv
 
 # Created at import time so a shell log redirect works from the first run
-# (same convention as the other scripts in this repo).
-OUTPUT_DIR = Path("data_visualisation")
-OUTPUT_DIR.mkdir(exist_ok=True)
+# (same convention as the other scripts in this repo). Lives in its own
+# subfolder (not directly under data_visualisation/) so it doesn't mix with
+# the per-attack-type packet_compare_smartgrid_*.py output folders.
+OUTPUT_DIR = Path("data_visualisation") / "attack_timing_overview"
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 ATTACKS = {
     1: "address scan",
