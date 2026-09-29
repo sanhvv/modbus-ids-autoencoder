@@ -396,6 +396,16 @@ HTML_TEMPLATE = r"""<title>Address Scan Diff</title>
     font-family: "IBM Plex Sans", sans-serif; font-weight: 500; color: var(--attack); opacity: .75; }
   .stats-wrap { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--surface-1); box-shadow: var(--shadow); overflow-x: auto; }
 
+  /* ---- protocol logic violation ---- */
+  .logic-grid { display: flex; flex-direction: column; gap: 12px; }
+  .logic-card { border: 1px solid var(--border); border-left: 3px solid var(--attack); border-radius: 8px;
+                background: var(--surface-1); box-shadow: var(--shadow); padding: 14px 16px;
+                display: flex; flex-direction: column; gap: 6px; }
+  .logic-card-title { font-family: "Archivo", sans-serif; font-weight: 700; font-size: 14px; color: var(--text-primary); }
+  .logic-card-rule { font-size: 11.5px; color: var(--text-muted); font-style: italic; line-height: 1.5; }
+  .logic-card-body { font-size: 12.5px; color: var(--text-secondary); line-height: 1.55; }
+  .logic-card-body b { color: var(--text-primary); }
+
   /* ---- detection signals ---- */
   .signal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
   @media (max-width: 860px) { .signal-grid { grid-template-columns: 1fr; } }
@@ -487,6 +497,16 @@ HTML_TEMPLATE = r"""<title>Address Scan Diff</title>
     </div>
     <div class="ip-grid" id="ip-grid"></div>
     <div class="shared-target-banner" id="shared-target-banner"></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Protocol logic violation: why this traffic could not be legitimate</h2>
+      <p style="margin-top:6px">Not "rare" or "different from baseline" - actually impossible under how
+        this deployment's fixed, small network topology works (see the Smart Grid
+        normal-behavior-baseline memory, Section 1).</p>
+    </div>
+    <div class="logic-grid" id="logic-grid"></div>
   </section>
 
   <section>
@@ -640,6 +660,38 @@ HTML_TEMPLATE = r"""<title>Address Scan Diff</title>
       `</div>`;
   }
   aCol.innerHTML = attackHtml;
+
+  // ---- protocol logic violation ----
+  const logicPoints = [
+    {
+      title: 'A fixed, small network does not "discover" new peers at runtime',
+      rule: 'This deployment has a small, fixed topology - one master, one RTU, and 192.168.0.1\'s own established session with 192.168.0.111. Legitimate devices don\'t probe for new neighbors during operation.',
+      body: `192.168.0.1 goes from <b>1</b> normal partner (192.168.0.111, passive ACK-only) to
+             <b>${s.attack_partners.length}</b> contacted hosts during this attack, <b>${s.new_partners.length}
+             of them never touched before</b> - including the RTU itself. No legitimate role for this
+             host involves finding new devices on the network.`,
+    },
+    {
+      title: 'Self-identification mid-scan is an engineering action, not reconnaissance follow-through',
+      rule: 'Asking a device to report its own identity (fc43) belongs to a commissioning/maintenance workflow performed by a known engineering workstation - never triggered automatically by a network scan.',
+      body: `Once the scan does reach Modbus, one of its first actions is a Report Device Identification
+             (fc43) probe - a request type that has no place in a routine value-monitoring pipeline
+             and no place following automatically from a host-discovery sweep either.`,
+    },
+    {
+      title: 'A bulk read has no monitoring purpose',
+      rule: 'Every real measurement point in this deployment is read one value at a time (quantity always 1) - a monitoring task never needs more than the single current reading.',
+      body: `The late read near the end of this scan's window returns a 259-byte reply vs. a 63-byte
+             normal maximum - reading far more data than any legitimate monitoring purpose requires,
+             the same "ask for far more than normal" pattern seen in naive-sensor-read.`,
+    },
+  ];
+  document.getElementById('logic-grid').innerHTML = logicPoints.map(p => `
+    <div class="logic-card">
+      <div class="logic-card-title">${esc(p.title)}</div>
+      <div class="logic-card-rule">${p.rule}</div>
+      <div class="logic-card-body">${p.body}</div>
+    </div>`).join('');
 
   // ---- IP highlight cards ----
   const ipGrid = document.getElementById('ip-grid');

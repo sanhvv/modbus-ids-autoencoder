@@ -340,6 +340,16 @@ HTML_TEMPLATE = r"""<title>Force Listen Mode Diff</title>
     font-family: "IBM Plex Sans", sans-serif; font-weight: 500; color: var(--attack); opacity: .75; }
   .stats-wrap { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--surface-1); box-shadow: var(--shadow); overflow-x: auto; }
 
+  /* ---- protocol logic violation ---- */
+  .logic-grid { display: flex; flex-direction: column; gap: 12px; }
+  .logic-card { border: 1px solid var(--border); border-left: 3px solid var(--attack); border-radius: 8px;
+                background: var(--surface-1); box-shadow: var(--shadow); padding: 14px 16px;
+                display: flex; flex-direction: column; gap: 6px; }
+  .logic-card-title { font-family: "Archivo", sans-serif; font-weight: 700; font-size: 14px; color: var(--text-primary); }
+  .logic-card-rule { font-size: 11.5px; color: var(--text-muted); font-style: italic; line-height: 1.5; }
+  .logic-card-body { font-size: 12.5px; color: var(--text-secondary); line-height: 1.55; }
+  .logic-card-body b { color: var(--text-primary); }
+
   /* ---- detection signals ---- */
   .signal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
   @media (max-width: 860px) { .signal-grid { grid-template-columns: 1fr; } }
@@ -423,6 +433,16 @@ HTML_TEMPLATE = r"""<title>Force Listen Mode Diff</title>
       DATA/WEBSOCKET/HTTP traffic with 192.168.0.111 - the same co-mingling pattern found in
       naive-sensor-read (30.8%) and sporadic injection (34.4%).
     </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Protocol logic violation: why this traffic could not be legitimate</h2>
+      <p style="margin-top:6px">Not "rare" or "different from baseline" - actually impossible under how
+        diagnostic administration is supposed to be used (see the Smart Grid
+        normal-behavior-baseline memory, Section 1).</p>
+    </div>
+    <div class="logic-grid" id="logic-grid"></div>
   </section>
 
   <section>
@@ -564,6 +584,35 @@ HTML_TEMPLATE = r"""<title>Force Listen Mode Diff</title>
       `</div>`;
   }
   aCol.innerHTML = attackHtml;
+
+  // ---- protocol logic violation ----
+  const logicPoints = [
+    {
+      title: 'Diagnostic administration is a maintenance action, not routine SCADA traffic',
+      rule: 'Diagnostics calls (fc8) are used by an authorized technician during commissioning or troubleshooting - never as a scheduled part of live measurement/control polling.',
+      body: `This attack repeats the identical diagnostics probe <b>${s.n_rounds}</b> times, roughly
+             every <b>${(s.avg_seconds_between_rounds/60).toFixed(1)}&nbsp;minutes</b> for over an hour
+             - a real technician troubleshoots once and moves on, not on a recurring schedule forever.`,
+    },
+    {
+      title: 'A diagnostic tool keeps its session open',
+      rule: 'A real engineering session issuing a diagnostic call reuses its connection for the whole troubleshooting task - it does not tear down and reopen a fresh TCP session for one single call.',
+      body: `Every one of the ${s.n_rounds} rounds opens a brand-new TCP connection just to send this
+             one probe, then closes it - not how an actual maintenance session behaves.`,
+    },
+    {
+      title: 'Only one master exists, and this is not it',
+      rule: 'The deployed topology has exactly one master (192.168.0.40) and one RTU (192.168.0.31) - no third party, technician tool or otherwise, is ever expected to speak Modbus to it directly.',
+      body: `Every probe comes from 192.168.0.1, a host that has never once been the known master or run
+             any engineering workflow against this device before this attack began.`,
+    },
+  ];
+  document.getElementById('logic-grid').innerHTML = logicPoints.map(p => `
+    <div class="logic-card">
+      <div class="logic-card-title">${esc(p.title)}</div>
+      <div class="logic-card-rule">${p.rule}</div>
+      <div class="logic-card-body">${p.body}</div>
+    </div>`).join('');
 
   // ---- detection signals ----
   const signals = [

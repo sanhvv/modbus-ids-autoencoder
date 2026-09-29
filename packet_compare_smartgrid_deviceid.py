@@ -352,6 +352,16 @@ HTML_TEMPLATE = r"""<title>Device ID Probe Diff</title>
     font-family: "IBM Plex Sans", sans-serif; font-weight: 500; color: var(--attack); opacity: .75; }
   .stats-wrap { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--surface-1); box-shadow: var(--shadow); overflow-x: auto; }
 
+  /* ---- protocol logic violation ---- */
+  .logic-grid { display: flex; flex-direction: column; gap: 12px; }
+  .logic-card { border: 1px solid var(--border); border-left: 3px solid var(--attack); border-radius: 8px;
+                background: var(--surface-1); box-shadow: var(--shadow); padding: 14px 16px;
+                display: flex; flex-direction: column; gap: 6px; }
+  .logic-card-title { font-family: "Archivo", sans-serif; font-weight: 700; font-size: 14px; color: var(--text-primary); }
+  .logic-card-rule { font-size: 11.5px; color: var(--text-muted); font-style: italic; line-height: 1.5; }
+  .logic-card-body { font-size: 12.5px; color: var(--text-secondary); line-height: 1.55; }
+  .logic-card-body b { color: var(--text-primary); }
+
   /* ---- detection signals ---- */
   .signal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
   @media (max-width: 860px) { .signal-grid { grid-template-columns: 1fr; } }
@@ -435,6 +445,16 @@ HTML_TEMPLATE = r"""<title>Device ID Probe Diff</title>
         <div class="col-body" id="attack-col"></div>
       </div>
     </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Protocol logic violation: why this traffic could not be legitimate</h2>
+      <p style="margin-top:6px">Not "rare" or "different from baseline" - actually impossible under how
+        an engineering-only action is supposed to be used (see the Smart Grid
+        normal-behavior-baseline memory, Section 1).</p>
+    </div>
+    <div class="logic-grid" id="logic-grid"></div>
   </section>
 
   <section>
@@ -623,6 +643,36 @@ HTML_TEMPLATE = r"""<title>Device ID Probe Diff</title>
       `</div>`;
   }
   aCol.innerHTML = attackHtml;
+
+  // ---- protocol logic violation ----
+  const logicPoints = [
+    {
+      title: 'Self-identification is a one-time commissioning action, not a repeated runtime one',
+      rule: 'Asking a device "who are you" (fc43) belongs to engineering/maintenance workflows, performed ONCE by a known technician during setup or an audit - never repeated systematically as part of live operation.',
+      body: `This attack repeats the identical probe <b>${s.n_rounds}</b> times, evenly spaced roughly
+             every <b>${(s.avg_seconds_between_rounds/60).toFixed(1)}&nbsp;minutes</b> across the whole
+             session - a real technician performing a one-off inventory check does not re-verify the
+             same device's identity on a fixed schedule forever.`,
+    },
+    {
+      title: 'A maintenance tool keeps its session open',
+      rule: 'A real engineering workstation doing a device audit reuses its connection for the whole task (identify the device, then usually read more) - it does not tear down and reopen a fresh TCP session for one single query.',
+      body: `Every one of the ${s.n_rounds} rounds opens a brand-new TCP connection just to ask this one
+             question, then closes it - inconsistent with how an actual maintenance session behaves.`,
+    },
+    {
+      title: 'Only one master exists, and this is not it',
+      rule: 'The deployed topology has exactly one master (192.168.0.40) and one RTU (192.168.0.31) - no third party is ever expected to speak Modbus at all, engineering tool or otherwise.',
+      body: `Every probe comes from 192.168.0.1, a host that has never once been the known master or run
+             any engineering workflow against this device before this attack began.`,
+    },
+  ];
+  document.getElementById('logic-grid').innerHTML = logicPoints.map(p => `
+    <div class="logic-card">
+      <div class="logic-card-title">${esc(p.title)}</div>
+      <div class="logic-card-rule">${p.rule}</div>
+      <div class="logic-card-body">${p.body}</div>
+    </div>`).join('');
 
   // ---- detection signals ----
   const signals = [

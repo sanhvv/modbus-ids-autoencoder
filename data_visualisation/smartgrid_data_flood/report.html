@@ -124,6 +124,16 @@
     font-family: "IBM Plex Sans", sans-serif; font-weight: 500; color: var(--attack); opacity: .75; }
   .stats-wrap { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--surface-1); box-shadow: var(--shadow); overflow-x: auto; }
 
+  /* ---- protocol logic violation ---- */
+  .logic-grid { display: flex; flex-direction: column; gap: 12px; }
+  .logic-card { border: 1px solid var(--border); border-left: 3px solid var(--attack); border-radius: 8px;
+                background: var(--surface-1); box-shadow: var(--shadow); padding: 14px 16px;
+                display: flex; flex-direction: column; gap: 6px; }
+  .logic-card-title { font-family: "Archivo", sans-serif; font-weight: 700; font-size: 14px; color: var(--text-primary); }
+  .logic-card-rule { font-size: 11.5px; color: var(--text-muted); font-style: italic; line-height: 1.5; }
+  .logic-card-body { font-size: 12.5px; color: var(--text-secondary); line-height: 1.55; }
+  .logic-card-body b { color: var(--text-primary); }
+
   /* ---- detection signals ---- */
   .signal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
   @media (max-width: 860px) { .signal-grid { grid-template-columns: 1fr; } }
@@ -192,6 +202,16 @@
         <div class="col-body" id="attack-col"></div>
       </div>
     </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Protocol logic violation: why this traffic could not be legitimate</h2>
+      <p style="margin-top:6px">Not "rare" or "different from baseline" - actually impossible under how
+        this system's small, fixed point map works (see the Smart Grid normal-behavior-baseline memory,
+        Section 2b).</p>
+    </div>
+    <div class="logic-grid" id="logic-grid"></div>
   </section>
 
   <section>
@@ -330,6 +350,38 @@
       `</div>`;
   }
   aCol.innerHTML = attackHtml;
+
+  // ---- protocol logic violation ----
+  const logicPoints = [
+    {
+      title: 'Sweeping addresses 0-100 reads memory that physically does not exist',
+      rule: 'This deployment has exactly 4 real points (address 9 = transfer switch, 19/20 = power meters, 39 = threshold - see the Smart Grid point map). Every other address in the coil/register space maps to nothing.',
+      body: `This attack reads <b>${s.address_distinct}</b> distinct addresses spanning 0-${s.address_max}
+             - the overwhelming majority of which correspond to no sensor, switch, or setpoint at all.
+             No monitoring or control purpose exists for reading memory that isn't wired to anything.`,
+    },
+    {
+      title: 'A random quantity per request matches no real measurement',
+      rule: 'Every real point here is a single value (one coil or one register) - a legitimate read never needs a variable, randomized block size.',
+      body: `Quantity is randomized <b>1-${s.quantity_max}</b> per request (${s.quantity_distinct}
+             distinct values seen) - there is no sensor whose reading is sometimes 1 register and
+             sometimes 100, because no sensor's value is spread across a variable-length block at all.`,
+    },
+    {
+      title: 'No control loop needs 6,000 reads a second',
+      rule: 'Real-world SCADA poll cadence is 1-5 seconds per point - a control loop or operator display updates on a human/process timescale, not thousands of times per second.',
+      body: `At <b>${s.attack_rate_per_sec.toLocaleString()}</b> requests/sec
+             (${s.rate_ratio.toLocaleString()}&times; normal), this vastly exceeds what any real
+             measurement, display, or control decision could ever use - the values would already be
+             stale before anything could act on them.`,
+    },
+  ];
+  document.getElementById('logic-grid').innerHTML = logicPoints.map(p => `
+    <div class="logic-card">
+      <div class="logic-card-title">${esc(p.title)}</div>
+      <div class="logic-card-rule">${p.rule}</div>
+      <div class="logic-card-body">${p.body}</div>
+    </div>`).join('');
 
   // ---- detection signals ----
   const signals = [

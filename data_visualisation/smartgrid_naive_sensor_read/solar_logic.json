@@ -1,0 +1,9 @@
+{
+ "switch_addr": 9,
+ "solar_addr": 19,
+ "mean_solar_when_switch_on": 665.5,
+ "mean_solar_when_switch_off": 553.0,
+ "first_on_command_time_sec": 5356.433,
+ "nearest_solar_reading": 527.0,
+ "nearest_solar_reading_time_sec": 5356.44
+}

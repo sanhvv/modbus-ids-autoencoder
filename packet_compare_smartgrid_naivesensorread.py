@@ -76,7 +76,85 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 ATTACKER_IP = "192.168.0.1"
 TARGET_IP = "192.168.0.31"
 PARTNER_IP = "192.168.0.111"
+MASTER_IP = "192.168.0.40"
+SWITCH_ADDR = 9         # transfer switch coil (verified point map, see memory Section 2b)
+SOLAR_ADDR = 19         # solar power output meter
 BURST_GAP_SEC = 5.0
+
+
+def _decode_pdu_addr(hexdata):
+    s = str(hexdata)[2:] if str(hexdata).startswith("0x") else str(hexdata)
+    return int(s[:4], 16) if len(s) >= 4 else None
+
+
+def _decode_reg_response_value(hexdata):
+    """Decode a single-register (fc3/fc4) response's value, e.g. "0x0200" -> 512."""
+    if hexdata is None:
+        return None
+    h = str(hexdata)
+    return int(h[2:6], 16) if len(h) >= 6 else None
+
+
+def compute_solar_logic_violation(df):
+    """Physical-logic check for the write-coda's first 'switch to solar'
+    command (see packets.json's write_burst example): what was the real
+    solar meter reading at that exact moment? Historical mean solar
+    readings (ON=665.5 / OFF=553.0) are shared with
+    packet_compare_smartgrid_sporadicinjection.py's fuller derivation
+    (same point map, see the Smart Grid baseline memory Section 2b) -
+    recomputed here from scratch so this script produces the same numbers
+    standalone.
+    """
+    n = df[df.attack_specific.isna() | (df.attack_specific == 0)]
+    mb = n[n.protocol == "MODBUS"].sort_values("frame_time_relative")
+    req = mb[mb.ip_src == MASTER_IP].copy()
+    req["addr"] = req.modbus_data.apply(_decode_pdu_addr)
+
+    def response_hex(row_idx):
+        r = df.iloc[int(row_idx) + 1]
+        return str(r.modbus_data) if r.ip_src == TARGET_IP else None
+
+    coil = req[(req.modbus_func_code == 1.0) & (req.addr == SWITCH_ADDR)][["row", "frame_time_relative"]].copy()
+    coil["coil_byte"] = coil.row.apply(lambda r: int(response_hex(r)[4:6], 16)
+                                        if response_hex(r) and len(response_hex(r)) >= 6 else None)
+    coil = coil[coil.coil_byte.isin([0, 128])]
+
+    solar = req[(req.modbus_func_code == 4.0) & (req.addr == SOLAR_ADDR)][["row", "frame_time_relative"]].copy()
+    solar["solar_val"] = solar.row.apply(lambda r: _decode_reg_response_value(response_hex(r)))
+    solar = solar[(solar.solar_val.notna()) & (solar.solar_val < 5000)]
+
+    coil_sorted = coil.sort_values("frame_time_relative")
+    solar_sorted = solar.sort_values("frame_time_relative")
+    merged = pd.merge_asof(coil_sorted, solar_sorted, on="frame_time_relative", direction="nearest",
+                            tolerance=1.0).dropna()
+    coil_on = merged.coil_byte == 128
+    mean_solar_on = float(merged[coil_on].solar_val.mean())
+    mean_solar_off = float(merged[~coil_on].solar_val.mean())
+
+    # this attack's own write-coda: attack_specific==4 rows on the shared
+    # TCP stream (see the sporadic-injection cross-label finding) - use
+    # ONLY the attack_specific==4-labeled portion, this script's own scope.
+    a4 = df[df.attack_specific == 4]
+    on_writes = a4[(a4.protocol == "MODBUS") & (a4.ip_src == ATTACKER_IP)
+                   & (a4.modbus_func_code == 5) & (a4.modbus_data == "0x0009ff00")]
+    first_on_time = float(on_writes.frame_time_relative.min()) if len(on_writes) else None
+
+    nearest_solar_reading = None
+    nearest_solar_time = None
+    if first_on_time is not None and len(solar):
+        cand = solar.iloc[(solar.frame_time_relative - first_on_time).abs().argsort()]
+        nearest_solar_reading = float(cand.iloc[0].solar_val)
+        nearest_solar_time = float(cand.iloc[0].frame_time_relative)
+
+    return {
+        "switch_addr": SWITCH_ADDR,
+        "solar_addr": SOLAR_ADDR,
+        "mean_solar_when_switch_on": round(mean_solar_on, 1),
+        "mean_solar_when_switch_off": round(mean_solar_off, 1),
+        "first_on_command_time_sec": round(first_on_time, 3) if first_on_time is not None else None,
+        "nearest_solar_reading": nearest_solar_reading,
+        "nearest_solar_reading_time_sec": round(nearest_solar_time, 2) if nearest_solar_time is not None else None,
+    }
 
 
 def load_dataset():
@@ -267,6 +345,8 @@ def main():
     stats = compute_stats(df)
     print("Computing request-rate time series (normal vs. attack, whole session)...")
     timeline = compute_timeline(df)
+    print("Checking transfer-switch command against the real solar meter reading...")
+    solar_logic = compute_solar_logic_violation(df)
 
     packets = {"normal_pair": normal_pair, "attack_examples": attack_examples}
     with open(path("packets.json"), "w") as f:
@@ -281,7 +361,11 @@ def main():
         json.dump(timeline, f, indent=1)
     print(f"Saved: {path('timeline.json')}")
 
-    payload = {**packets, "stats": stats, "timeline": timeline}
+    with open(path("solar_logic.json"), "w") as f:
+        json.dump(solar_logic, f, indent=1)
+    print(f"Saved: {path('solar_logic.json')}")
+
+    payload = {**packets, "stats": stats, "timeline": timeline, "solar_logic": solar_logic}
     report_path = path("report.html")
     report_path.write_text(render_html(payload), encoding="utf-8")
     print(f"Saved: {report_path}")
@@ -393,6 +477,23 @@ HTML_TEMPLATE = r"""<title>Naive Sensor Read Diff</title>
   .bar-legend .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--text-secondary); }
   .bar-legend .swatch { width: 9px; height: 9px; border-radius: 2px; }
 
+  /* ---- protocol logic violation ---- */
+  .logic-grid { display: flex; flex-direction: column; gap: 12px; }
+  .logic-card { border: 1px solid var(--border); border-left: 3px solid var(--attack); border-radius: 8px;
+                background: var(--surface-1); box-shadow: var(--shadow); padding: 14px 16px;
+                display: flex; flex-direction: column; gap: 6px; }
+  .logic-card-title { font-family: "Archivo", sans-serif; font-weight: 700; font-size: 14px; color: var(--text-primary); }
+  .logic-card-rule { font-size: 11.5px; color: var(--text-muted); font-style: italic; line-height: 1.5; }
+  .logic-card-body { font-size: 12.5px; color: var(--text-secondary); line-height: 1.55; }
+  .logic-card-body b { color: var(--text-primary); }
+  .logic-card.flagship { border-left-width: 4px; }
+  .logic-flow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-family: "IBM Plex Mono", monospace;
+                font-size: 12px; padding: 10px 12px; background: var(--surface-0); border-radius: 6px; margin-top: 4px; }
+  .logic-flow .step { padding: 4px 9px; border-radius: 5px; border: 1px solid var(--border); }
+  .logic-flow .step.low { color: var(--normal); border-color: var(--normal); background: var(--normal-bg); }
+  .logic-flow .step.cmd { color: var(--attack); border-color: var(--attack); background: var(--attack-bg); font-weight: 600; }
+  .logic-flow .arrow { color: var(--text-muted); }
+
   /* ---- detection signals ---- */
   .signal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
   @media (max-width: 860px) { .signal-grid { grid-template-columns: 1fr; } }
@@ -493,6 +594,16 @@ HTML_TEMPLATE = r"""<title>Naive Sensor Read Diff</title>
         <div class="col-body" id="attack-col"></div>
       </div>
     </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Protocol logic violation: why this traffic could not be legitimate</h2>
+      <p style="margin-top:6px">Not "rare" or "different from baseline" - a real, physical-logic
+        contradiction, checked against the actual sensor reading, not just against protocol rules (see
+        the Smart Grid normal-behavior-baseline memory, Section 2b).</p>
+    </div>
+    <div class="logic-grid" id="logic-grid"></div>
   </section>
 
   <section>
@@ -665,6 +776,52 @@ HTML_TEMPLATE = r"""<title>Naive Sensor Read Diff</title>
       `</div>`;
   }
   aCol.innerHTML = attackHtml;
+
+  // ---- protocol logic violation ----
+  const sl = DATA.solar_logic;
+  const logicPoints = [
+    {
+      flagship: true,
+      title: 'The write coda commanded solar while the real meter read low',
+      rule: `Per the deployment's control logic (address ${sl.switch_addr} = transfer switch, address
+             ${sl.solar_addr} = solar power meter): route power through solar when solar output is
+             high, mains when it's low. In 47,198 normal rows the switch is ON (solar) when the meter
+             averages <b>${sl.mean_solar_when_switch_on}</b> and OFF (mains) when it averages
+             <b>${sl.mean_solar_when_switch_off}</b> - a real, measured relationship, not assumed.`,
+      body: () => {
+        const flow = `<div class="logic-flow">
+          <span class="step low">solar meter &asymp; ${sl.nearest_solar_reading} (t=${sl.nearest_solar_reading_time_sec}s)</span>
+          <span class="arrow">&mdash; well below the ${sl.mean_solar_when_switch_on} average that
+          legitimately turns the switch ON &mdash;</span>
+          <span class="step cmd">yet: SWITCH TO SOLAR commanded (t=${sl.first_on_command_time_sec}s)</span>
+        </div>`;
+        return `The write-coda's very first request (fc5, address ${sl.switch_addr}, value 0xff00 -
+                see example 2 above) was sent at t=${sl.first_on_command_time_sec}s. The nearest genuine
+                solar reading (from the legitimate master's own polling,
+                ${sl.nearest_solar_reading_time_sec}s away) was only <b>${sl.nearest_solar_reading}</b> -
+                well below the ${sl.mean_solar_when_switch_on} average solar level historically
+                associated with a legitimate switch-to-solar condition. This same event continues (85
+                more toggles) under attack_specific=5 - see
+                <code class="mono">packet_compare_smartgrid_sporadicinjection.py</code> for the fuller
+                treatment.${flow}`;
+      },
+    },
+    {
+      title: 'A quantity of 2000/125 serves no monitoring purpose',
+      rule: 'Every real measurement point in this deployment is read one value at a time - a monitoring task never needs more than the single current reading, let alone the protocol\'s absolute maximum.',
+      body: () => `This attack requests ${s.attack_max_qty_fc1_fc2} coils (fc1/fc2) or
+                   ${s.attack_max_qty_fc3_fc4} registers (fc3/fc4) per request, starting at address 0 -
+                   not one of this deployment's 4 real points (9, 19, 20, 39) at all. There is no
+                   monitoring or control purpose for dumping a block of memory that includes no real
+                   sensor or switch.`,
+    },
+  ];
+  document.getElementById('logic-grid').innerHTML = logicPoints.map(p => `
+    <div class="logic-card${p.flagship ? ' flagship' : ''}">
+      <div class="logic-card-title">${esc(p.title)}</div>
+      <div class="logic-card-rule">${p.rule}</div>
+      <div class="logic-card-body">${p.body()}</div>
+    </div>`).join('');
 
   // ---- detection signals ----
   const signals = [
