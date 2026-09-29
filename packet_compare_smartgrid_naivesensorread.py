@@ -103,7 +103,9 @@ def compute_solar_logic_violation(df):
     packet_compare_smartgrid_sporadicinjection.py's fuller derivation
     (same point map, see the Smart Grid baseline memory Section 2b) -
     recomputed here from scratch so this script produces the same numbers
-    standalone.
+    standalone. Also returns the actual packed request/response packets
+    (both the attack's write and the normal solar-meter poll used for
+    comparison) so the report can show real frames, not just prose.
     """
     n = df[df.attack_specific.isna() | (df.attack_specific == 0)]
     mb = n[n.protocol == "MODBUS"].sort_values("frame_time_relative")
@@ -136,15 +138,36 @@ def compute_solar_logic_violation(df):
     # ONLY the attack_specific==4-labeled portion, this script's own scope.
     a4 = df[df.attack_specific == 4]
     on_writes = a4[(a4.protocol == "MODBUS") & (a4.ip_src == ATTACKER_IP)
-                   & (a4.modbus_func_code == 5) & (a4.modbus_data == "0x0009ff00")]
+                   & (a4.modbus_func_code == 5) & (a4.modbus_data == "0x0009ff00")].sort_values("row")
     first_on_time = float(on_writes.frame_time_relative.min()) if len(on_writes) else None
+
+    attack_request_pkt = None
+    attack_response_pkt = None
+    if len(on_writes):
+        req_row = on_writes.iloc[0]
+        attack_request_pkt = pack(req_row)
+        # the immediately-following row can be a bare TCP ACK (rapid-fire
+        # write toggling generates extra ACK-only rows) - search forward
+        # for the actual next MODBUS response instead of assuming row+1.
+        following = df[(df.row > req_row.row) & (df.row <= req_row.row + 5)
+                       & (df.protocol == "MODBUS") & (df.ip_src == TARGET_IP)]
+        if len(following):
+            attack_response_pkt = pack(following.iloc[0])
 
     nearest_solar_reading = None
     nearest_solar_time = None
+    normal_request_pkt = None
+    normal_response_pkt = None
     if first_on_time is not None and len(solar):
         cand = solar.iloc[(solar.frame_time_relative - first_on_time).abs().argsort()]
-        nearest_solar_reading = float(cand.iloc[0].solar_val)
-        nearest_solar_time = float(cand.iloc[0].frame_time_relative)
+        best = cand.iloc[0]
+        nearest_solar_reading = float(best.solar_val)
+        nearest_solar_time = float(best.frame_time_relative)
+        solar_req_row = req.loc[req.row == best.row].iloc[0]
+        normal_request_pkt = pack(solar_req_row)
+        solar_resp_row = df.iloc[int(best.row) + 1]
+        if solar_resp_row.ip_src == TARGET_IP:
+            normal_response_pkt = pack(solar_resp_row)
 
     return {
         "switch_addr": SWITCH_ADDR,
@@ -154,6 +177,10 @@ def compute_solar_logic_violation(df):
         "first_on_command_time_sec": round(first_on_time, 3) if first_on_time is not None else None,
         "nearest_solar_reading": nearest_solar_reading,
         "nearest_solar_reading_time_sec": round(nearest_solar_time, 2) if nearest_solar_time is not None else None,
+        "attack_request_pkt": attack_request_pkt,
+        "attack_response_pkt": attack_response_pkt,
+        "normal_request_pkt": normal_request_pkt,
+        "normal_response_pkt": normal_response_pkt,
     }
 
 
@@ -493,6 +520,12 @@ HTML_TEMPLATE = r"""<title>Naive Sensor Read Diff</title>
   .logic-flow .step.low { color: var(--normal); border-color: var(--normal); background: var(--normal-bg); }
   .logic-flow .step.cmd { color: var(--attack); border-color: var(--attack); background: var(--attack-bg); font-weight: 600; }
   .logic-flow .arrow { color: var(--text-muted); }
+  .logic-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+  @media (max-width: 700px) { .logic-compare { grid-template-columns: 1fr; } }
+  .logic-compare-head { font-family: "IBM Plex Mono", monospace; font-size: 10.5px; font-weight: 600;
+                         text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; }
+  .logic-compare-head.normal-label { color: var(--normal); }
+  .logic-compare-head.attack-label { color: var(--attack); }
 
   /* ---- detection signals ---- */
   .signal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
@@ -782,7 +815,7 @@ HTML_TEMPLATE = r"""<title>Naive Sensor Read Diff</title>
   const logicPoints = [
     {
       flagship: true,
-      title: 'The write coda commanded solar while the real meter read low',
+      title: 'A "switch to solar" command sent while the real meter read low',
       rule: `Per the deployment's control logic (address ${sl.switch_addr} = transfer switch, address
              ${sl.solar_addr} = solar power meter): route power through solar when solar output is
              high, mains when it's low. In 47,198 normal rows the switch is ON (solar) when the meter
@@ -795,15 +828,38 @@ HTML_TEMPLATE = r"""<title>Naive Sensor Read Diff</title>
           legitimately turns the switch ON &mdash;</span>
           <span class="step cmd">yet: SWITCH TO SOLAR commanded (t=${sl.first_on_command_time_sec}s)</span>
         </div>`;
-        return `The write-coda's very first request (fc5, address ${sl.switch_addr}, value 0xff00 -
-                see example 2 above) was sent at t=${sl.first_on_command_time_sec}s. The nearest genuine
-                solar reading (from the legitimate master's own polling,
+        const cmp = `<div class="logic-compare">
+          <div>
+            <div class="logic-compare-head normal-label">Normal &mdash; legitimate master's own solar-meter poll</div>
+            ${sl.normal_request_pkt ? frame('REQUEST', sl.normal_request_pkt, false,
+              `Read Input Registers (fc4), address ${sl.solar_addr}, quantity 1 &mdash; the master's own
+               routine poll, ${sl.nearest_solar_reading_time_sec}s away from the attack command below.`) : ''}
+            ${sl.normal_response_pkt ? frame('RESPONSE', sl.normal_response_pkt, false,
+              `Decodes to <b>${sl.nearest_solar_reading}</b> &mdash; below the ${sl.mean_solar_when_switch_on}
+               average that legitimately accompanies the switch being ON.`) : ''}
+          </div>
+          <div>
+            <div class="logic-compare-head attack-label">Attack &mdash; the "switch to solar" command itself</div>
+            ${sl.attack_request_pkt ? frame('REQUEST', sl.attack_request_pkt, true,
+              `Write Single Coil (fc5), address ${sl.switch_addr}, value 0xff00 (ON/solar) &mdash; sent at
+               t=${sl.first_on_command_time_sec}s, while the real meter (left) showed ${sl.nearest_solar_reading}.`) : ''}
+            ${sl.attack_response_pkt ? frame('RESPONSE', sl.attack_response_pkt, true,
+              `Echoed back &mdash; ACCEPTED, despite contradicting the real sensor reading at the same
+               moment.`) : ''}
+          </div>
+        </div>`;
+        return `This write's first request (fc5, address ${sl.switch_addr}, value 0xff00) was sent at
+                t=${sl.first_on_command_time_sec}s, visible within this attack's own labeled scope
+                (attack_specific=4) as the last 15 requests appended right after the final read burst -
+                described elsewhere on this page as a "coda" for that reason. That description is
+                accurate only within this narrow view: the SAME physical write event continues for 85
+                more toggles under attack_specific=5 instead (see
+                <code class="mono">packet_compare_smartgrid_sporadicinjection.py</code>), so it is really
+                the START of a longer 100-request, ~10-second sequence, not a short trailing flourish.
+                The nearest genuine solar reading (from the legitimate master's own polling,
                 ${sl.nearest_solar_reading_time_sec}s away) was only <b>${sl.nearest_solar_reading}</b> -
                 well below the ${sl.mean_solar_when_switch_on} average solar level historically
-                associated with a legitimate switch-to-solar condition. This same event continues (85
-                more toggles) under attack_specific=5 - see
-                <code class="mono">packet_compare_smartgrid_sporadicinjection.py</code> for the fuller
-                treatment.${flow}`;
+                associated with a legitimate switch-to-solar condition.${flow}${cmp}`;
       },
     },
     {
