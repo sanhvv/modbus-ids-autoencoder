@@ -1,4 +1,12 @@
 {
+ "normal_ips": [
+  "192.168.0.31",
+  "192.168.0.40"
+ ],
+ "attack_ips": [
+  "192.168.0.1",
+  "192.168.0.31"
+ ],
  "session_duration_sec": 5963.4,
  "normal_fc43_rows": 0,
  "attack_fc43_requests": 64,

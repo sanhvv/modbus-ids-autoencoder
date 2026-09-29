@@ -78,6 +78,39 @@ def extract_attack_examples(df):
     }
 
 
+def compute_timeline(df, bin_width=10.0):
+    """Per-bin fc43 request counts across the whole session, normal (always
+    0 - fc43 never occurs in normal traffic at all) vs. this attack's 16
+    rounds. Added 2026-09-29 per user request, same treatment as
+    packet_compare_smartgrid_naivesensorread.py. Unlike the other reports in
+    this series, the "normal" line here is a flat zero - there is no
+    normal-traffic equivalent to plot against (see the "Normal - no
+    equivalent exists" column above).
+    """
+    dur = float(df.frame_time_relative.max())
+    edges = np.arange(0, dur + bin_width, bin_width)
+    n = df[df.attack_specific.isna() | (df.attack_specific == 0)]
+    a3 = df[df.attack_specific == 3]
+
+    normal_times = n[(n.protocol == "MODBUS") & (n.modbus_func_code == DEVICE_ID_FC)].frame_time_relative.to_numpy()
+    attack_times = a3[(a3.protocol == "MODBUS") & (a3.modbus_func_code == DEVICE_ID_FC)
+                       & (a3.ip_src == ATTACKER_IP)].frame_time_relative.to_numpy()
+
+    normal_counts, _ = np.histogram(normal_times, bins=edges)
+    attack_counts, _ = np.histogram(attack_times, bins=edges)
+    bin_centers = (edges[:-1] + edges[1:]) / 2
+
+    return {
+        "bin_width_sec": bin_width,
+        "session_duration_sec": round(dur, 1),
+        "bin_centers": [round(float(x), 1) for x in bin_centers],
+        "normal_counts": [int(x) for x in normal_counts],
+        "attack_counts": [int(x) for x in attack_counts],
+        "attack_max_per_bin": int(attack_counts.max()),
+        "attack_active_bin_pct": round(float((attack_counts > 0).mean() * 100), 1),
+    }
+
+
 def compute_stats(df):
     n = df[df.attack_specific.isna() | (df.attack_specific == 0)]
     a3 = df[df.attack_specific == 3]
@@ -93,7 +126,13 @@ def compute_stats(df):
 
     n_syn = int(((n.protocol == "TCP") & (n.tcp_flags == "0x0002")).sum())
 
+    n_mb = n[n.protocol == "MODBUS"]
+    normal_ips = sorted(set(n_mb.ip_src.unique()) | set(n_mb.ip_dst.unique()))
+    attack_ips = sorted(set(mb.ip_src.unique()) | set(mb.ip_dst.unique()))
+
     return {
+        "normal_ips": normal_ips,
+        "attack_ips": attack_ips,
         "session_duration_sec": round(dur, 1),
         "normal_fc43_rows": int((n.modbus_func_code == DEVICE_ID_FC).sum()),
         "attack_fc43_requests": int(len(req)),
@@ -139,6 +178,8 @@ def main():
     attack_examples = extract_attack_examples(df)
     print("Computing comparison statistics...")
     stats = compute_stats(df)
+    print("Computing fc43-request time series (normal vs. attack, whole session)...")
+    timeline = compute_timeline(df)
 
     # No "normal_pair" here on purpose: this attack's request TYPE (asking a
     # device for its identity) has no normal-traffic equivalent at all - see
@@ -154,7 +195,11 @@ def main():
         json.dump(stats, f, indent=1)
     print(f"Saved: {path('stats.json')}")
 
-    payload = {**packets, "stats": stats}
+    with open(path("timeline.json"), "w") as f:
+        json.dump(timeline, f, indent=1)
+    print(f"Saved: {path('timeline.json')}")
+
+    payload = {**packets, "stats": stats, "timeline": timeline}
     report_path = path("report.html")
     report_path.write_text(render_html(payload), encoding="utf-8")
     print(f"Saved: {report_path}")
@@ -307,6 +352,28 @@ HTML_TEMPLATE = r"""<title>Device ID Probe Diff</title>
     font-family: "IBM Plex Sans", sans-serif; font-weight: 500; color: var(--attack); opacity: .75; }
   .stats-wrap { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--surface-1); box-shadow: var(--shadow); overflow-x: auto; }
 
+  /* ---- detection signals ---- */
+  .signal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  @media (max-width: 860px) { .signal-grid { grid-template-columns: 1fr; } }
+  .signal-card { border: 1px solid var(--border); border-radius: 10px; background: var(--surface-1);
+                 box-shadow: var(--shadow); padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+  .signal-card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .signal-title { font-family: "Archivo", sans-serif; font-weight: 700; font-size: 14px; }
+  .signal-tag { display: inline-block; font-size: 9.5px; font-weight: 600; padding: 2px 7px; border-radius: 4px;
+                font-family: "IBM Plex Mono", monospace; text-transform: uppercase; letter-spacing: .03em; white-space: nowrap; }
+  .signal-tag.categorical { background: var(--attack-bg); color: var(--attack); }
+  .signal-tag.statistical { background: var(--normal-bg); color: var(--normal); }
+  .signal-values { display: flex; gap: 18px; font-family: "IBM Plex Mono", monospace; font-size: 12.5px; }
+  .signal-values .val-label { color: var(--text-muted); font-size: 10px; display: block; text-transform: uppercase; letter-spacing: .03em; }
+  .signal-values .val-normal { color: var(--normal); font-weight: 600; }
+  .signal-values .val-attack { color: var(--attack); font-weight: 600; }
+  .signal-note { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+
+  /* ---- time series ---- */
+  .timeline-card { border: 1px solid var(--border); border-radius: 10px; background: var(--surface-1);
+                    box-shadow: var(--shadow); padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .timeline-card .chart-svg-box svg { overflow: visible; }
+
   footer { border-top: 1px solid var(--border); padding-top: 18px; }
   footer p { font-size: 12px; }
 </style>
@@ -367,6 +434,34 @@ HTML_TEMPLATE = r"""<title>Device ID Probe Diff</title>
         <div class="col-head attack">Attack &mdash; device identification (round 1 of 16)</div>
         <div class="col-body" id="attack-col"></div>
       </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Detection signals: what actually marks this traffic as an attack</h2>
+      <p style="margin-top:6px">Each signal below is checked directly against the whole session's
+        normal baseline, not assumed. <span class="signal-tag categorical" style="margin:0 4px">categorical</span>
+        means the value never occurs at all in normal traffic (zero-ambiguity); <span class="signal-tag statistical" style="margin:0 4px">statistical</span>
+        means normal traffic does have this value, but at a very different magnitude.</p>
+    </div>
+    <div class="signal-grid" id="signal-grid"></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Time series: fc43 requests across the whole session</h2>
+      <p style="margin-top:6px">Unlike the other reports in this series, the normal line here is a flat
+        zero &mdash; fc43 has no normal-traffic occurrence at all to plot. What the chart shows instead
+        is just how rare and isolated this attack's 16 rounds are against the entire session.</p>
+    </div>
+    <div class="bar-legend">
+      <span class="legend-item"><span class="swatch" style="background:var(--normal)"></span>Normal (always 0)</span>
+      <span class="legend-item"><span class="swatch" style="background:var(--attack)"></span>Device ID attack</span>
+    </div>
+    <div class="timeline-card">
+      <div class="chart-svg-box" id="timeline-chart"></div>
+      <p style="font-size:12px" id="timeline-caption"></p>
     </div>
   </section>
 
@@ -528,6 +623,129 @@ HTML_TEMPLATE = r"""<title>Device ID Probe Diff</title>
       `</div>`;
   }
   aCol.innerHTML = attackHtml;
+
+  // ---- detection signals ----
+  const signals = [
+    {
+      title: 'Function code 43 (Report Device ID)', tag: 'categorical',
+      normal: '0 requests', attack: `${s.attack_fc43_requests} requests`,
+      note: `Never appears in 47,198 normal rows. Also used (in passing) by 2 other attack types, so
+             its presence alone identifies an attack, not which one - see the section below.`,
+    },
+    {
+      title: 'Connections opened solely to ask for device ID', tag: 'categorical',
+      normal: '0', attack: `${s.attack_new_connections}`,
+      note: `Every one of the 16 rounds opens a brand-new TCP connection just to send this probe -
+             nothing is ever reused. Normal traffic has no equivalent "identity check" event at all.`,
+    },
+    {
+      title: 'MEI access codes probed per round', tag: 'categorical',
+      normal: '0', attack: `${s.distinct_mei_codes_probed.length} (all standard codes)`,
+      note: `Every round systematically tries all 3 standard access codes (basic/regular/extended) -
+             a complete, methodical sweep each time, not a single guess.`,
+    },
+    {
+      title: 'Request source identity', tag: 'categorical',
+      normal: s.normal_ips.join(', '), attack: s.attack_ips.filter(ip => !s.normal_ips.includes(ip)).join(', ') || s.attack_ips[0],
+      note: `Only ${s.normal_ips.join(' and ')} ever send/receive Modbus traffic in the normal baseline.
+             192.168.0.1 has never been a Modbus participant before this attack.`,
+    },
+    {
+      title: 'Identification objects returned', tag: 'categorical',
+      normal: 'n/a (never asked)', attack: `0 (every response)`,
+      note: `The device answers with a valid conformity byte every time - the request is understood -
+             but discloses nothing. A well-formed reply that still leaks zero data.`,
+    },
+    {
+      title: 'Rounds per hour (repeat cadence)', tag: 'statistical',
+      normal: `${(s.normal_syn_rate * 3600).toFixed(0)} SYN/hr (network-wide)`, attack: `${(3600 / s.avg_seconds_between_rounds).toFixed(1)}/hr`,
+      note: `Inverted from the naive-sensor-read and fc-scan signals: this attack is BELOW typical
+             connection-opening activity, not above it - a low-and-slow pattern by design, not a flood.`,
+    },
+  ];
+  document.getElementById('signal-grid').innerHTML = signals.map(sig => `
+    <div class="signal-card">
+      <div class="signal-card-head">
+        <span class="signal-title">${esc(sig.title)}</span>
+        <span class="signal-tag ${sig.tag}">${sig.tag}</span>
+      </div>
+      <div class="signal-values">
+        <span><span class="val-label">Normal</span><span class="val-normal">${esc(sig.normal)}</span></span>
+        <span><span class="val-label">Attack</span><span class="val-attack">${esc(sig.attack)}</span></span>
+      </div>
+      <div class="signal-note">${sig.note}</div>
+    </div>`).join('');
+
+  // ---- time series (fc43 requests across the whole session) ----
+  function drawTimeSeries(tl) {
+    const width = 1000, height = 260;
+    const pad = {top: 16, right: 16, bottom: 30, left: 40};
+    const innerW = width - pad.left - pad.right, innerH = height - pad.top - pad.bottom;
+    const dur = tl.session_duration_sec;
+    const maxV = Math.max(...tl.attack_counts, 1) * 1.3;
+    const x = t => pad.left + (t / dur) * innerW;
+    const y = v => pad.top + innerH - (v / maxV) * innerH;
+    const aColor = getComputedStyle(document.querySelector('.viz-root')).getPropertyValue('--attack').trim();
+
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+
+    [0, 0.5, 1].forEach(frac => {
+      const gy = pad.top + innerH - frac * innerH;
+      const gl = document.createElementNS(svg.namespaceURI, 'line');
+      gl.setAttribute('x1', pad.left); gl.setAttribute('x2', width - pad.right);
+      gl.setAttribute('y1', gy); gl.setAttribute('y2', gy);
+      gl.setAttribute('class', 'bar-gridline');
+      svg.appendChild(gl);
+      const lbl = document.createElementNS(svg.namespaceURI, 'text');
+      lbl.setAttribute('x', pad.left - 6); lbl.setAttribute('y', gy + 3);
+      lbl.setAttribute('text-anchor', 'end'); lbl.setAttribute('class', 'bar-axis-label');
+      lbl.textContent = Math.round(frac * maxV);
+      svg.appendChild(lbl);
+    });
+
+    for (let m = 0; m <= dur / 60; m += 10) {
+      const gx = x(m * 60);
+      const tick = document.createElementNS(svg.namespaceURI, 'text');
+      tick.setAttribute('x', gx); tick.setAttribute('y', height - 8);
+      tick.setAttribute('text-anchor', 'middle'); tick.setAttribute('class', 'bar-axis-label');
+      tick.textContent = m + 'm';
+      svg.appendChild(tick);
+    }
+
+    // Zero-line for normal (flat, since fc43 never occurs normally).
+    const zeroY = y(0);
+    const zline = document.createElementNS(svg.namespaceURI, 'line');
+    zline.setAttribute('x1', pad.left); zline.setAttribute('x2', width - pad.right);
+    zline.setAttribute('y1', zeroY); zline.setAttribute('y2', zeroY);
+    zline.setAttribute('stroke', getComputedStyle(document.querySelector('.viz-root')).getPropertyValue('--normal').trim());
+    zline.setAttribute('stroke-width', '1.75');
+    svg.appendChild(zline);
+
+    // Attack: thin vertical spikes, one per round (an area fill would be
+    // nearly invisible at this scale since each round is only ~1.9ms wide).
+    tl.bin_centers.forEach((t, i) => {
+      const v = tl.attack_counts[i];
+      if (v <= 0) return;
+      const line = document.createElementNS(svg.namespaceURI, 'line');
+      line.setAttribute('x1', x(t)); line.setAttribute('x2', x(t));
+      line.setAttribute('y1', zeroY); line.setAttribute('y2', y(v));
+      line.setAttribute('stroke', aColor); line.setAttribute('stroke-width', '2.5');
+      svg.appendChild(line);
+    });
+
+    return svg;
+  }
+
+  const tl = DATA.timeline;
+  document.getElementById('timeline-chart').appendChild(drawTimeSeries(tl));
+  document.getElementById('timeline-caption').innerHTML =
+    `Normal traffic never sends fc43 - <b class="mono" style="color:var(--normal)">0</b> occurrences
+     across the whole session. This attack's 16 rounds appear as
+     <b class="mono" style="color:var(--attack)">${tl.attack_active_bin_pct}%</b> of the session's bins
+     - <b class="mono" style="color:var(--attack)">${tl.attack_max_per_bin}</b> requests in a bin at
+     most, each one isolated and far apart, unlike naive-sensor-read's recurring 10-second bursts or
+     fc-scan's single dense spike.`;
 
   // ---- fc43 cross-attack banner ----
   const otherEntries = Object.entries(s.fc43_rows_other_attack_types)
