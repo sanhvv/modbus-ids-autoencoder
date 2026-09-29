@@ -76,6 +76,11 @@ def _decode_addr(hexdata):
     return int(s[:4], 16) if len(s) >= 4 else None
 
 
+def _decode_write_val(hexdata):
+    s = str(hexdata)[2:] if str(hexdata).startswith("0x") else str(hexdata)
+    return int(s[4:8], 16) if len(s) >= 8 else None
+
+
 def _decode_reg_value(hexdata):
     """Decode a single-register (fc3/fc4) response's value: response PDU
     hex string, e.g. "0x0200" -> 512. Chars [2:6] hold the value here."""
@@ -95,15 +100,24 @@ def _decode_coil_byte(hexdata):
 
 
 def compute_solar_logic_violation(df):
-    """Physical-logic check for the transfer-switch coil (address 9): per
-    the ICS-SimLab paper, the real control rule is "route power through
-    solar only when solar output is above a threshold, otherwise mains."
-    This computes (a) the real historical relationship between the switch
-    state and the solar meter reading from normal traffic, and (b) the
-    nearest real solar reading to this attack's first ON ("switch to
-    solar") command, to check whether that command actually matched real
-    conditions. See the Smart Grid normal-behavior-baseline memory,
-    Section 2b, for the full point-map derivation.
+    """Physical-logic check against the REAL PLC control rule, as given by
+    the user: the PLC reads solar_panel_power_meter (address 19) and
+    household_power_meter (address 20) continuously; if
+    solar_panel_power_meter > threshold (address 39, decoded live here,
+    not hardcoded), it commands the actuator (address 9) ON (route power
+    through solar) - otherwise it should not.
+
+    CORRECTED 2026-09-29: an earlier version of this check compared each
+    write's nearby solar reading against the historical MEAN of legitimate
+    ON/OFF periods (665.5 / 553.0), not the actual configured threshold
+    (512) - that flagged some writes as "low" that were still above the
+    real threshold and therefore not true rule violations. This version
+    uses the literal threshold value and checks BOTH violation directions:
+    (a) ON commanded while solar <= threshold (the direction the user's
+    own example described), and (b) OFF commanded while solar > threshold
+    (the direction actually found in this dataset). Every write to the
+    real switch coil (address 9) in this attack's own labeled scope
+    (all 185 of them) is checked, not just the first one.
     """
     n = df[df.attack_specific.isna() | (df.attack_specific == 0)]
     mb = n[n.protocol == "MODBUS"].sort_values("frame_time_relative")
@@ -114,52 +128,53 @@ def compute_solar_logic_violation(df):
         r = df.iloc[int(row_idx) + 1]
         return str(r.modbus_data) if r.ip_src == TARGET_IP else None
 
-    coil = req[(req.modbus_func_code == 1.0) & (req.addr == WRITE_ADDR)][["row", "frame_time_relative"]].copy()
-    coil["coil_byte"] = coil.row.apply(lambda r: _decode_coil_byte(response_hex(r)))
-    coil = coil[coil.coil_byte.isin([0, 128])]
-
     solar = req[(req.modbus_func_code == 4.0) & (req.addr == SOLAR_ADDR)][["row", "frame_time_relative"]].copy()
     solar["solar_val"] = solar.row.apply(lambda r: _decode_reg_value(response_hex(r)))
-    solar = solar[(solar.solar_val.notna()) & (solar.solar_val < 5000)]
-
-    coil = coil.sort_values("frame_time_relative")
-    solar_sorted = solar.sort_values("frame_time_relative")
-    merged = pd.merge_asof(coil, solar_sorted, on="frame_time_relative", direction="nearest", tolerance=1.0).dropna()
-    coil_on = merged.coil_byte == 128
-    mean_solar_on = float(merged[coil_on].solar_val.mean())
-    mean_solar_off = float(merged[~coil_on].solar_val.mean())
+    solar = solar[(solar.solar_val.notna()) & (solar.solar_val < 5000)].sort_values("frame_time_relative")
 
     thresh_req = req[(req.modbus_func_code == 3.0) & (req.addr == THRESHOLD_ADDR)][["row"]].copy()
     thresh_vals = thresh_req.row.apply(lambda r: _decode_reg_value(response_hex(r)))
-    threshold_mode = int(thresh_vals.mode().iloc[0]) if len(thresh_vals.dropna()) else None
+    threshold_value = int(thresh_vals.mode().iloc[0]) if len(thresh_vals.dropna()) else None
 
-    # nearest real solar reading to this attack's first ON command
-    a5 = df[df.attack_specific.isin([4, 5])]  # includes the cross-labeled first 15 requests
-    mb5 = a5[a5.protocol == "MODBUS"].sort_values("frame_time_relative")
-    on_writes = mb5[(mb5.ip_src == ATTACKER_IP) & (mb5.modbus_func_code == 5)
-                     & (mb5.modbus_data == "0x0009ff00")]
-    first_on_time = float(on_writes.frame_time_relative.min()) if len(on_writes) else None
+    # every write to the real switch coil (address 9) in THIS attack's own
+    # labeled scope (attack_specific==5) - not just the first request.
+    a5 = df[df.attack_specific == 5]
+    writes = a5[(a5.protocol == "MODBUS") & (a5.ip_src == ATTACKER_IP)
+               & (a5.modbus_func_code == 5)].copy()
+    writes["addr"] = writes.modbus_data.apply(_decode_addr)
+    writes = writes[writes.addr == WRITE_ADDR].copy()
+    writes["cmd_val"] = writes.modbus_data.apply(_decode_write_val)
+    writes = writes.sort_values("frame_time_relative")
 
-    nearest_solar_reading = None
-    nearest_solar_time = None
-    normal_request_pkt = None
-    normal_response_pkt = None
-    if first_on_time is not None:
-        cand = solar.iloc[(solar.frame_time_relative - first_on_time).abs().argsort()]
-        if len(cand):
-            best = cand.iloc[0]
-            nearest_solar_reading = float(best.solar_val)
-            nearest_solar_time = float(best.frame_time_relative)
-            solar_req_row = req.loc[req.row == best.row].iloc[0]
-            normal_request_pkt = pack(solar_req_row)
-            solar_resp_row = df.iloc[int(best.row) + 1]
-            if solar_resp_row.ip_src == TARGET_IP:
-                normal_response_pkt = pack(solar_resp_row)
+    merged = pd.merge_asof(writes[["row", "frame_time_relative", "cmd_val"]], solar[["frame_time_relative", "solar_val"]],
+                            on="frame_time_relative", direction="nearest", tolerance=2.0).dropna(subset=["solar_val"])
+    merged["cmd_on"] = merged.cmd_val == 0xff00
+    merged["solar_above"] = merged.solar_val > threshold_value
+
+    on_below = merged[merged.cmd_on & ~merged.solar_above]     # user's described violation type
+    off_above = merged[~merged.cmd_on & merged.solar_above]    # the type actually found here
+    on_above = merged[merged.cmd_on & merged.solar_above]      # consistent
+    off_below = merged[~merged.cmd_on & ~merged.solar_above]   # consistent
+
+    if len(on_below):
+        example = on_below.sort_values("solar_val").iloc[0]
+        violation_kind = "on_below"
+    elif len(off_above):
+        example = off_above.sort_values("solar_val", ascending=False).iloc[0]
+        violation_kind = "off_above"
+    else:
+        example = None
+        violation_kind = None
 
     attack_request_pkt = None
     attack_response_pkt = None
-    if len(on_writes):
-        req_row = on_writes.sort_values("frame_time_relative").iloc[0]
+    normal_request_pkt = None
+    normal_response_pkt = None
+    example_time = None
+    example_solar = None
+    example_solar_gap_sec = None
+    if example is not None:
+        req_row = writes.loc[writes.row == example.row].iloc[0]
         attack_request_pkt = pack(req_row)
         # the immediately-following row can be a bare TCP ACK (rapid-fire
         # write toggling generates extra ACK-only rows) - search forward
@@ -169,21 +184,35 @@ def compute_solar_logic_violation(df):
         if len(following):
             attack_response_pkt = pack(following.iloc[0])
 
+        example_time = float(example.frame_time_relative)
+        example_solar = float(example.solar_val)
+        cand = solar.iloc[(solar.frame_time_relative - example_time).abs().argsort()]
+        best = cand.iloc[0]
+        example_solar_gap_sec = round(float(best.frame_time_relative) - example_time, 3)
+        solar_req_row = req.loc[req.row == best.row].iloc[0]
+        normal_request_pkt = pack(solar_req_row)
+        solar_resp_row = df.iloc[int(best.row) + 1]
+        if solar_resp_row.ip_src == TARGET_IP:
+            normal_response_pkt = pack(solar_resp_row)
+
     return {
         "write_addr": WRITE_ADDR,
         "solar_addr": SOLAR_ADDR,
         "threshold_addr": THRESHOLD_ADDR,
-        "threshold_value": threshold_mode,
-        "mean_solar_when_switch_on": round(mean_solar_on, 1),
-        "mean_solar_when_switch_off": round(mean_solar_off, 1),
-        "first_on_command_time_sec": round(first_on_time, 3) if first_on_time is not None else None,
-        "nearest_solar_reading": nearest_solar_reading,
-        "nearest_solar_reading_time_sec": round(nearest_solar_time, 2) if nearest_solar_time is not None else None,
+        "threshold_value": threshold_value,
+        "n_writes_checked": int(len(merged)),
+        "n_on_below_violations": int(len(on_below)),
+        "n_off_above_violations": int(len(off_above)),
+        "n_on_above_consistent": int(len(on_above)),
+        "n_off_below_consistent": int(len(off_below)),
+        "violation_kind": violation_kind,
+        "example_time_sec": round(example_time, 3) if example_time is not None else None,
+        "example_solar_reading": example_solar,
+        "example_solar_gap_sec": example_solar_gap_sec,
         "attack_request_pkt": attack_request_pkt,
         "attack_response_pkt": attack_response_pkt,
         "normal_request_pkt": normal_request_pkt,
         "normal_response_pkt": normal_response_pkt,
-        "n_normal_coil_solar_pairs_matched": int(len(merged)),
     }
 
 
@@ -761,49 +790,54 @@ HTML_TEMPLATE = r"""<title>Sporadic Injection Diff</title>
   const logicPoints = [
     {
       flagship: true,
-      title: 'Switch commanded to solar while the real solar meter read low',
-      rule: `Per the deployment's control logic (address ${sl.write_addr} = transfer switch, address
-             ${sl.solar_addr} = solar power meter, address ${sl.threshold_addr} = switching threshold
-             &asymp; ${sl.threshold_value}): route power through solar when solar output is high, mains
-             when it's low. In 47,198 normal rows the switch is ON (solar) when the meter averages
-             <b>${sl.mean_solar_when_switch_on}</b> and OFF (mains) when it averages
-             <b>${sl.mean_solar_when_switch_off}</b> - a real, measured relationship, not assumed.`,
+      title: 'Switch commanded OFF while the real meter was above the switching threshold',
+      rule: `The PLC's real control rule (as specified by the user, verified against the ICS-SimLab
+             paper): continuously read solar_panel_power_meter (address ${sl.solar_addr}) and
+             household_power_meter (address 20); if solar_panel_power_meter &gt; threshold (address
+             ${sl.threshold_addr}, decoded live here as <b>${sl.threshold_value}</b>), command the
+             actuator (address ${sl.write_addr}) to route power through solar. Checked against EVERY
+             one of this attack's ${sl.n_writes_checked} writes to the real switch coil, not just one
+             example.`,
       body: () => {
         const flow = `<div class="logic-flow">
-          <span class="step low">solar meter &asymp; ${sl.nearest_solar_reading} (t=${sl.nearest_solar_reading_time_sec}s)</span>
-          <span class="arrow">&mdash; well below the ${sl.mean_solar_when_switch_on} average that
-          legitimately turns the switch ON &mdash;</span>
-          <span class="step cmd">yet: SWITCH TO SOLAR commanded (t=${sl.first_on_command_time_sec}s)</span>
+          <span class="step low">solar meter = ${sl.example_solar_reading} &mdash; ABOVE threshold ${sl.threshold_value}</span>
+          <span class="arrow">&mdash; rule says: should be routed to solar &mdash;</span>
+          <span class="step cmd">yet: SWITCH TO MAINS commanded (t=${sl.example_time_sec}s)</span>
         </div>`;
+        const gapWord = sl.example_solar_gap_sec >= 0 ? 'after' : 'before';
         const cmp = `<div class="logic-compare">
           <div>
             <div class="logic-compare-head normal-label">Normal &mdash; legitimate master's own solar-meter poll</div>
             ${sl.normal_request_pkt ? frame('REQUEST', sl.normal_request_pkt, false,
-              `Read Input Registers (fc4), address ${sl.solar_addr}, quantity 1 &mdash; the master's own
-               routine poll, ${sl.nearest_solar_reading_time_sec}s away from the attack command below.`) : ''}
+              `Read Input Registers (fc4), address ${sl.solar_addr}, quantity 1 &mdash; the closest real
+               poll in time to the attack command below (${Math.abs(sl.example_solar_gap_sec)}s ${gapWord}
+               it - real polling only happens every ~1s, so this is the nearest available ground truth,
+               not an exact-instant match).`) : ''}
             ${sl.normal_response_pkt ? frame('RESPONSE', sl.normal_response_pkt, false,
-              `Decodes to <b>${sl.nearest_solar_reading}</b> &mdash; below the ${sl.mean_solar_when_switch_on}
-               average that legitimately accompanies the switch being ON.`) : ''}
+              `Decodes to <b>${sl.example_solar_reading}</b> &mdash; clearly above the threshold of
+               ${sl.threshold_value}, meaning the rule calls for solar to be in use.`) : ''}
           </div>
           <div>
-            <div class="logic-compare-head attack-label">Attack &mdash; the "switch to solar" command itself</div>
+            <div class="logic-compare-head attack-label">Attack &mdash; the "switch to mains" command itself</div>
             ${sl.attack_request_pkt ? frame('REQUEST', sl.attack_request_pkt, true,
-              `Write Single Coil (fc5), address ${sl.write_addr}, value 0xff00 (ON/solar) &mdash; sent at
-               t=${sl.first_on_command_time_sec}s, while the real meter (left) showed ${sl.nearest_solar_reading}.`) : ''}
+              `Write Single Coil (fc5), address ${sl.write_addr}, value 0x0000 (OFF/mains) &mdash; sent
+               at t=${sl.example_time_sec}s, while the real meter (left) showed ${sl.example_solar_reading}
+               &mdash; above the ${sl.threshold_value} threshold.`) : ''}
             ${sl.attack_response_pkt ? frame('RESPONSE', sl.attack_response_pkt, true,
-              `Echoed back &mdash; ACCEPTED, despite contradicting the real sensor reading at the same
-               moment.`) : ''}
+              `Echoed back &mdash; ACCEPTED, despite contradicting the real sensor reading and the
+               PLC's own rule at the same moment.`) : ''}
           </div>
         </div>`;
-        return `This attack's very first "switch to solar" command (fc5, address ${sl.write_addr},
-                value 0xff00) was sent at t=${sl.first_on_command_time_sec}s. The nearest genuine solar
-                reading (from the legitimate master's own polling, ${sl.nearest_solar_reading_time_sec}s
-                away) was only <b>${sl.nearest_solar_reading}</b> - well below the
-                ${sl.mean_solar_when_switch_on} average solar level historically associated with a
-                legitimate switch-to-solar condition, and close to the ${sl.mean_solar_when_switch_off}
-                average for legitimate mains periods. The command doesn't just come from the wrong
-                source and repeat too fast - it tells the system to do the physically wrong thing given
-                what the sensors actually showed at that moment.${flow}${cmp}`;
+        return `Checked directly, not assumed: across all ${sl.n_writes_checked} writes to the real
+                switch coil under this attack's own labeled scope (attack_specific=5), NONE command
+                solar while the real meter reads at or below the ${sl.threshold_value} threshold (the
+                real solar reading never actually dips that low during either burst). But
+                <b>${sl.n_off_above_violations} of ${sl.n_writes_checked}</b> writes command
+                <b>MAINS (OFF)</b> while the real meter reads ABOVE the threshold - directly
+                contradicting the PLC's own rule in the opposite direction from what a first look might
+                suggest. Example: the meter read ${sl.example_solar_reading} (threshold
+                ${sl.threshold_value}) close in time to a switch-to-mains command that was sent and
+                accepted.${flow}${cmp}`;
       },
     },
     {

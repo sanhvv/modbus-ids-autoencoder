@@ -1,0 +1,21 @@
+/home/23532764/local-llms/modbus-ids-autoencoder/packet_compare_smartgrid_naivesensorread.py:68: DeprecationWarning: 
+Pyarrow will become a required dependency of pandas in the next major release of pandas (pandas 3.0),
+(to allow more performant data types, such as the Arrow string type, and better interoperability with other libraries)
+but was not found to be installed on your system.
+If this would cause problems for you,
+please provide us feedback at https://github.com/pandas-dev/pandas/issues/54466
+        
+  import pandas as pd
+Loading Smart Grid dataset...
+Extracting normal packet pair (reused from packet_compare_smartgrid_fcscan - apt here, same request type)...
+Extracting naive-sensor-read examples (max-quantity read, write burst, rejected probe)...
+Computing comparison statistics...
+Computing request-rate time series (normal vs. attack, whole session)...
+Checking transfer-switch command against the real solar meter reading...
+Saved: data_visualisation/smartgrid_naive_sensor_read/packets.json
+Saved: data_visualisation/smartgrid_naive_sensor_read/stats.json
+Saved: data_visualisation/smartgrid_naive_sensor_read/timeline.json
+Saved: data_visualisation/smartgrid_naive_sensor_read/solar_logic.json
+Saved: data_visualisation/smartgrid_naive_sensor_read/report.html
+Naive-sensor-read summary: 18 bursts of ~44 reads (10.0s each), 788 total read requests at max quantity, 15 write requests tacked onto the last burst, 30.8% of labeled rows are unrelated background traffic
+Total time consumed: 0.93s
