@@ -1,0 +1,36 @@
+{
+ "session_duration_sec": 5963.4,
+ "attack_total_rows": 1875,
+ "attack_noise_rows": 645,
+ "attack_noise_pct": 34.4,
+ "n_bursts": 2,
+ "burst_sizes": [
+  100,
+  85
+ ],
+ "burst_durations_sec": [
+  5.07,
+  4.29
+ ],
+ "n_write_requests": 185,
+ "on_count": 89,
+ "off_count": 96,
+ "write_address": 9,
+ "distinct_write_addresses": [
+  9
+ ],
+ "avg_interval_ms": 51.1,
+ "avg_rate_per_sec": 19.6,
+ "normal_write_count": 0,
+ "normal_mb_ips": [
+  "192.168.0.31",
+  "192.168.0.40"
+ ],
+ "attacker_ip": "192.168.0.1",
+ "cross_label_stream": 6823,
+ "cross_label_boundary_sec": 5357.196,
+ "cross_label_total_requests": 100,
+ "cross_label_attack4_requests": 15,
+ "cross_label_attack5_requests": 85,
+ "cross_label_total_span_sec": 10.08
+}

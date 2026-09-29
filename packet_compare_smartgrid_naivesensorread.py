@@ -38,6 +38,16 @@ doesn't normally touch (192.168.0.21/22/40) around t=2426s, each immediately
 RST-ACK'd (refused) - unlike address scan's SYN-ACK'd (accepted) probes to
 192.168.0.31. A minor, failed side-activity, not the main signature.
 
+CORRECTION (added 2026-09-29 while building the sporadic-injection report):
+the "write burst" example's 15 requests are not the whole event - they are
+the first 15% of ONE continuous 100-request, ~10-second write-toggle
+sequence on TCP stream 6823. The remaining 85 requests of that SAME
+physical event are labeled attack_specific=5 ("sporadic sensor measurement
+injection") instead - a single malicious action split across two different
+attack-type ground-truth labels, not two separate events. See
+packet_compare_smartgrid_sporadicinjection.py for the full sequence and a
+prominent callout of this finding.
+
 Output goes into data_visualisation/smartgrid_naive_sensor_read/ (all
 filenames get the optional --tag suffix so earlier results are not
 overwritten): packets.json, stats.json, timeline.json, report.html.
@@ -624,6 +634,15 @@ HTML_TEMPLATE = r"""<title>Naive Sensor Read Diff</title>
          function-code scan's fc5, but a short coda here rather than the main signature.`) +
       frame('RESPONSE', ex.write_burst.response, true,
         `Echoed back &mdash; ACCEPTED. 0 writes occur in normal traffic.`) +
+      `<div class="decoded" style="border:1px dashed var(--border); border-radius:8px; margin-top:6px">
+        <b>Correction (added after building the sporadic-injection report):</b> these 15 requests are
+        not the whole event &mdash; they are the first 15% of ONE continuous 100-request, ~10-second
+        write-toggle sequence on the same TCP connection (stream 6823). The remaining 85 requests of
+        that same physical event are labeled <code class="mono">attack_specific&nbsp;=&nbsp;5</code>
+        instead ("sporadic sensor measurement injection") - a single malicious action split across two
+        different attack-type ground-truth labels, not two separate events. See
+        <code class="mono">packet_compare_smartgrid_sporadicinjection.py</code> for the full sequence.
+      </div>` +
       `</div>`;
   }
   if (ex.rejected_probe && ex.rejected_probe.syn) {

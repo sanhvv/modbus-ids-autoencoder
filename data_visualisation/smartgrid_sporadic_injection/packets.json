@@ -1,0 +1,80 @@
+{
+ "attack_examples": {
+  "burst1_write_on": {
+   "request": {
+    "row": 198918,
+    "time": "17:23:14.661943",
+    "frame_time_relative": 4449.958579092,
+    "ip_src": "192.168.0.1",
+    "ip_dst": "192.168.0.31",
+    "ip_len": 64.0,
+    "ip_ttl": 64.0,
+    "ip_proto": 6.0,
+    "tcp_len": 12.0,
+    "tcp_flags": "0x0018",
+    "tcp_window_size": 502.0,
+    "tcp_analysis_ack_rtt": null,
+    "frame_time_delta": 9.041e-05,
+    "modbus_func_code": 5.0,
+    "modbus_data": "0x0009ff00",
+    "tcp_stream": 6680.0
+   },
+   "response": {
+    "row": 198920,
+    "time": "17:23:14.662441",
+    "frame_time_relative": 4449.959076782,
+    "ip_src": "192.168.0.31",
+    "ip_dst": "192.168.0.1",
+    "ip_len": 64.0,
+    "ip_ttl": 64.0,
+    "ip_proto": 6.0,
+    "tcp_len": 12.0,
+    "tcp_flags": "0x0018",
+    "tcp_window_size": 509.0,
+    "tcp_analysis_ack_rtt": null,
+    "frame_time_delta": 0.000484094,
+    "modbus_func_code": 5.0,
+    "modbus_data": "0x0009ff00",
+    "tcp_stream": 6680.0
+   }
+  },
+  "burst2_write_off": {
+   "request": {
+    "row": 214919,
+    "time": "17:38:22.103535",
+    "frame_time_relative": 5357.400171129,
+    "ip_src": "192.168.0.1",
+    "ip_dst": "192.168.0.31",
+    "ip_len": 64.0,
+    "ip_ttl": 64.0,
+    "ip_proto": 6.0,
+    "tcp_len": 12.0,
+    "tcp_flags": "0x0018",
+    "tcp_window_size": 502.0,
+    "tcp_analysis_ack_rtt": null,
+    "frame_time_delta": 0.050378624,
+    "modbus_func_code": 5.0,
+    "modbus_data": "0x00090000",
+    "tcp_stream": 6823.0
+   },
+   "response": {
+    "row": 214920,
+    "time": "17:38:22.104156",
+    "frame_time_relative": 5357.400791513,
+    "ip_src": "192.168.0.31",
+    "ip_dst": "192.168.0.1",
+    "ip_len": 64.0,
+    "ip_ttl": 64.0,
+    "ip_proto": 6.0,
+    "tcp_len": 12.0,
+    "tcp_flags": "0x0018",
+    "tcp_window_size": 509.0,
+    "tcp_analysis_ack_rtt": 0.000620384,
+    "frame_time_delta": 0.000620384,
+    "modbus_func_code": 5.0,
+    "modbus_data": "0x00090000",
+    "tcp_stream": 6823.0
+   }
+  }
+ }
+}

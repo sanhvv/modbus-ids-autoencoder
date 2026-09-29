@@ -347,6 +347,15 @@
          function-code scan's fc5, but a short coda here rather than the main signature.`) +
       frame('RESPONSE', ex.write_burst.response, true,
         `Echoed back &mdash; ACCEPTED. 0 writes occur in normal traffic.`) +
+      `<div class="decoded" style="border:1px dashed var(--border); border-radius:8px; margin-top:6px">
+        <b>Correction (added after building the sporadic-injection report):</b> these 15 requests are
+        not the whole event &mdash; they are the first 15% of ONE continuous 100-request, ~10-second
+        write-toggle sequence on the same TCP connection (stream 6823). The remaining 85 requests of
+        that same physical event are labeled <code class="mono">attack_specific&nbsp;=&nbsp;5</code>
+        instead ("sporadic sensor measurement injection") - a single malicious action split across two
+        different attack-type ground-truth labels, not two separate events. See
+        <code class="mono">packet_compare_smartgrid_sporadicinjection.py</code> for the full sequence.
+      </div>` +
       `</div>`;
   }
   if (ex.rejected_probe && ex.rejected_probe.syn) {

@@ -68,10 +68,12 @@ SMARTGRID_ATTACKS = [
     {
         "attack_specific": 5,
         "title": "Sporadic Sensor Measurement Injection",
-        "folder": None,
+        "folder": "smartgrid_sporadic_injection",
         "script": "packet_compare_smartgrid_sporadicinjection.py",
-        "summary": None,
-        "tag": None,
+        "summary": "Not scattered single injections - 2 dense write-toggle bursts (~100/~85 requests, "
+                   "~19.6/s) flipping coil 9 ON/OFF. Cross-label finding: burst 2 is the tail of the "
+                   "SAME event naive-sensor-read's write coda started, split across 2 attack labels.",
+        "tag": "cross-label event split",
     },
     {
         "attack_specific": 6,
