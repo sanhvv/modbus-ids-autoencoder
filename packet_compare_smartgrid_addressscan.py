@@ -100,6 +100,53 @@ def extract_attack_examples(df):
     return {"syn_probe": pack(syn), "device_id_probe": device_id, "late_read": late_read}
 
 
+def compute_timeline(df, bin_width=10.0):
+    """Per-bin ARP frame counts across the whole session, normal vs. this
+    attack - ARP, not Modbus, is where this attack's real signal lives
+    (94.3% of its rows), so this plots a different metric than the other
+    reports in this series. Added 2026-09-29 per user request, same
+    treatment as packet_compare_smartgrid_naivesensorread.py.
+    """
+    dur = float(df.frame_time_relative.max())
+    edges = np.arange(0, dur + bin_width, bin_width)
+    n = df[df.attack_specific.isna() | (df.attack_specific == 0)]
+    a1 = df[df.attack_specific == 1]
+
+    normal_times = n[n.protocol == "ARP"].frame_time_relative.to_numpy()
+    attack_times = a1[a1.protocol == "ARP"].frame_time_relative.to_numpy()
+
+    normal_counts, _ = np.histogram(normal_times, bins=edges)
+    attack_counts, _ = np.histogram(attack_times, bins=edges)
+    bin_centers = (edges[:-1] + edges[1:]) / 2
+
+    # This is not a sustained flood - it's a repeating cycle of short ARP
+    # sweeps. Cluster attack ARP frames by >5s gaps (same method used
+    # across this series) to measure that cycle precisely.
+    sorted_t = np.sort(attack_times)
+    gaps = np.diff(sorted_t)
+    cuts = np.where(gaps > 5.0)[0]
+    starts = np.r_[0, cuts + 1]
+    ends = np.r_[cuts, len(sorted_t) - 1]
+    n_bursts = len(starts)
+    burst_durs = sorted_t[ends] - sorted_t[starts]
+    gap_between = sorted_t[starts[1:]] - sorted_t[ends[:-1]] if n_bursts > 1 else np.array([0.0])
+
+    return {
+        "bin_width_sec": bin_width,
+        "session_duration_sec": round(dur, 1),
+        "bin_centers": [round(float(x), 1) for x in bin_centers],
+        "normal_counts": [int(x) for x in normal_counts],
+        "attack_counts": [int(x) for x in attack_counts],
+        "normal_avg_per_bin": round(float(normal_counts.mean()), 2),
+        "attack_avg_per_bin": round(float(attack_counts.mean()), 2),
+        "attack_max_per_bin": int(attack_counts.max()),
+        "attack_active_bin_pct": round(float((attack_counts > 0).mean() * 100), 1),
+        "n_arp_bursts": int(n_bursts),
+        "arp_burst_avg_dur_sec": round(float(burst_durs.mean()), 1),
+        "arp_burst_avg_gap_sec": round(float(gap_between.mean()), 1),
+    }
+
+
 def compute_stats(df):
     n = df[df.attack_specific.isna() | (df.attack_specific == 0)]
     a1 = df[df.attack_specific == 1]
@@ -180,6 +227,8 @@ def main():
     attack_examples = extract_attack_examples(df)
     print("Computing comparison statistics...")
     stats = compute_stats(df)
+    print("Computing ARP-frame-rate time series (normal vs. attack, whole session)...")
+    timeline = compute_timeline(df)
 
     packets = {"normal_example": normal_example, "attack_examples": attack_examples}
     with open(path("packets.json"), "w") as f:
@@ -190,7 +239,11 @@ def main():
         json.dump(stats, f, indent=1)
     print(f"Saved: {path('stats.json')}")
 
-    payload = {**packets, "stats": stats}
+    with open(path("timeline.json"), "w") as f:
+        json.dump(timeline, f, indent=1)
+    print(f"Saved: {path('timeline.json')}")
+
+    payload = {**packets, "stats": stats, "timeline": timeline}
     report_path = path("report.html")
     report_path.write_text(render_html(payload), encoding="utf-8")
     print(f"Saved: {report_path}")
@@ -343,6 +396,28 @@ HTML_TEMPLATE = r"""<title>Address Scan Diff</title>
     font-family: "IBM Plex Sans", sans-serif; font-weight: 500; color: var(--attack); opacity: .75; }
   .stats-wrap { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--surface-1); box-shadow: var(--shadow); overflow-x: auto; }
 
+  /* ---- detection signals ---- */
+  .signal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  @media (max-width: 860px) { .signal-grid { grid-template-columns: 1fr; } }
+  .signal-card { border: 1px solid var(--border); border-radius: 10px; background: var(--surface-1);
+                 box-shadow: var(--shadow); padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+  .signal-card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .signal-title { font-family: "Archivo", sans-serif; font-weight: 700; font-size: 14px; }
+  .signal-tag { display: inline-block; font-size: 9.5px; font-weight: 600; padding: 2px 7px; border-radius: 4px;
+                font-family: "IBM Plex Mono", monospace; text-transform: uppercase; letter-spacing: .03em; white-space: nowrap; }
+  .signal-tag.categorical { background: var(--attack-bg); color: var(--attack); }
+  .signal-tag.statistical { background: var(--normal-bg); color: var(--normal); }
+  .signal-values { display: flex; gap: 18px; font-family: "IBM Plex Mono", monospace; font-size: 12.5px; }
+  .signal-values .val-label { color: var(--text-muted); font-size: 10px; display: block; text-transform: uppercase; letter-spacing: .03em; }
+  .signal-values .val-normal { color: var(--normal); font-weight: 600; }
+  .signal-values .val-attack { color: var(--attack); font-weight: 600; }
+  .signal-note { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+
+  /* ---- time series ---- */
+  .timeline-card { border: 1px solid var(--border); border-radius: 10px; background: var(--surface-1);
+                    box-shadow: var(--shadow); padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .timeline-card .chart-svg-box svg { overflow: visible; }
+
   footer { border-top: 1px solid var(--border); padding-top: 18px; }
   footer p { font-size: 12px; }
 </style>
@@ -412,6 +487,35 @@ HTML_TEMPLATE = r"""<title>Address Scan Diff</title>
     </div>
     <div class="ip-grid" id="ip-grid"></div>
     <div class="shared-target-banner" id="shared-target-banner"></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Detection signals: what actually marks this traffic as an attack</h2>
+      <p style="margin-top:6px">Each signal below is checked directly against the whole session's
+        normal baseline, not assumed. <span class="signal-tag categorical" style="margin:0 4px">categorical</span>
+        means the value never occurs at all in normal traffic (zero-ambiguity); <span class="signal-tag statistical" style="margin:0 4px">statistical</span>
+        means normal traffic does have this value, but at a very different magnitude.</p>
+    </div>
+    <div class="signal-grid" id="signal-grid"></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Time series: ARP frame rate across the whole session</h2>
+      <p style="margin-top:6px">Modbus is nearly silent in this attack (0.075% of its rows), so ARP -
+        not Modbus request rate - is the metric that actually shows the difference. Not a sustained
+        flood either: <span id="bursts-inline"></span> short, periodic ARP sweeps repeat across almost
+        the entire session, roughly every 2 minutes.</p>
+    </div>
+    <div class="bar-legend">
+      <span class="legend-item"><span class="swatch" style="background:var(--normal)"></span>Normal ARP baseline</span>
+      <span class="legend-item"><span class="swatch" style="background:var(--attack)"></span>Address scan</span>
+    </div>
+    <div class="timeline-card">
+      <div class="chart-svg-box" id="timeline-chart"></div>
+      <p style="font-size:12px" id="timeline-caption"></p>
+    </div>
   </section>
 
   <section>
@@ -562,6 +666,133 @@ HTML_TEMPLATE = r"""<title>Address Scan Diff</title>
     `The degree of this host jumps from <b>1</b> normal partner to <b>${s.attack_partners.length}</b>
      during the scan &mdash; a fan-out, not a rate change. This is exactly what MITRE ATT&amp;CK for ICS
      <a href="https://attack.mitre.org/techniques/T0846/" target="_blank" rel="noopener" style="color:inherit">T0846 Remote System Discovery</a> describes.`;
+
+  // ---- detection signals ----
+  const signals = [
+    {
+      title: 'Host fan-out (distinct partners)', tag: 'categorical',
+      normal: `${s.normal_partners.length}`, attack: `${s.attack_partners.length}`,
+      note: `192.168.0.1 contacts exactly 1 host (192.168.0.111) in its entire normal baseline. During
+             this attack it reaches ${s.attack_partners.length}, ${s.new_partners.length} of them never
+             contacted before - a degree change, not a rate change.`,
+    },
+    {
+      title: 'SYN packets sent (this host)', tag: 'categorical',
+      normal: '0', attack: `${s.attack_syn_from_attacker}`,
+      note: `192.168.0.1 never initiates a connection in its normal traffic (purely passive - only
+             ACKs). This attack sends ${s.attack_syn_from_attacker} SYN packets across 5 targets.`,
+    },
+    {
+      title: 'ARP frame rate', tag: 'statistical',
+      normal: `${s.normal_arp_rate}/s`, attack: `${s.attack_arp_rate}/s`,
+      note: `${Math.round(s.attack_arp_rate / s.normal_arp_rate)}&times; the normal network-wide ARP
+             rate - this attack alone accounts for ${s.attack_arp_share_of_all_arp_pct}% of every ARP
+             frame captured in the whole session.`,
+    },
+    {
+      title: 'Modbus function codes touched', tag: 'categorical',
+      normal: `fc${s.normal_fc.join(', fc')}`, attack: `fc${s.attack_mb_function_codes.join(', fc')}`,
+      note: `fc2, fc8 and fc43 (Report Device Identification) never appear in 47,198 normal Modbus rows
+             - though this only covers the 0.075% of this attack that is Modbus at all (see the
+             pipeline blind-spot section above).`,
+    },
+    {
+      title: 'Modbus visibility to the pipeline', tag: 'statistical',
+      normal: '100%', attack: `${s.attack_modbus_pct}%`,
+      note: `The AE model and LLM prompt only ever see protocol=="MODBUS" rows. For normal traffic
+             that's everything; for this attack it's ${s.attack_n_modbus_rows} of ${s.attack_n_rows.toLocaleString()}
+             rows - the other 94.3% (ARP) is structurally invisible to the current pipeline.`,
+    },
+    {
+      title: 'Late read reply size', tag: 'statistical',
+      normal: 'max 63 bytes', attack: '259 bytes',
+      note: `Once the scan does touch Modbus, the same "ask for far more than normal" pattern from the
+             function-code-scan and naive-sensor-read attacks shows up again: a bulk read near the end
+             of the scan window, not a routine single-value poll.`,
+    },
+  ];
+  document.getElementById('signal-grid').innerHTML = signals.map(sig => `
+    <div class="signal-card">
+      <div class="signal-card-head">
+        <span class="signal-title">${esc(sig.title)}</span>
+        <span class="signal-tag ${sig.tag}">${sig.tag}</span>
+      </div>
+      <div class="signal-values">
+        <span><span class="val-label">Normal</span><span class="val-normal">${esc(sig.normal)}</span></span>
+        <span><span class="val-label">Attack</span><span class="val-attack">${esc(sig.attack)}</span></span>
+      </div>
+      <div class="signal-note">${sig.note}</div>
+    </div>`).join('');
+
+  // ---- time series (ARP frame rate across the whole session) ----
+  function drawTimeSeries(tl) {
+    const width = 1000, height = 260;
+    const pad = {top: 16, right: 16, bottom: 30, left: 40};
+    const innerW = width - pad.left - pad.right, innerH = height - pad.top - pad.bottom;
+    const dur = tl.session_duration_sec;
+    const maxV = Math.max(...tl.normal_counts, ...tl.attack_counts, 1) * 1.15;
+    const x = t => pad.left + (t / dur) * innerW;
+    const y = v => pad.top + innerH - (v / maxV) * innerH;
+    const nColor = getComputedStyle(document.querySelector('.viz-root')).getPropertyValue('--normal').trim();
+    const aColor = getComputedStyle(document.querySelector('.viz-root')).getPropertyValue('--attack').trim();
+
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+
+    [0, 0.5, 1].forEach(frac => {
+      const gy = pad.top + innerH - frac * innerH;
+      const gl = document.createElementNS(svg.namespaceURI, 'line');
+      gl.setAttribute('x1', pad.left); gl.setAttribute('x2', width - pad.right);
+      gl.setAttribute('y1', gy); gl.setAttribute('y2', gy);
+      gl.setAttribute('class', 'bar-gridline');
+      svg.appendChild(gl);
+      const lbl = document.createElementNS(svg.namespaceURI, 'text');
+      lbl.setAttribute('x', pad.left - 6); lbl.setAttribute('y', gy + 3);
+      lbl.setAttribute('text-anchor', 'end'); lbl.setAttribute('class', 'bar-axis-label');
+      lbl.textContent = Math.round(frac * maxV);
+      svg.appendChild(lbl);
+    });
+
+    for (let m = 0; m <= dur / 60; m += 10) {
+      const gx = x(m * 60);
+      const tick = document.createElementNS(svg.namespaceURI, 'text');
+      tick.setAttribute('x', gx); tick.setAttribute('y', height - 8);
+      tick.setAttribute('text-anchor', 'middle'); tick.setAttribute('class', 'bar-axis-label');
+      tick.textContent = m + 'm';
+      svg.appendChild(tick);
+    }
+
+    function areaPath(counts) {
+      const pts = tl.bin_centers.map((t, i) => `${x(t)},${y(counts[i])}`);
+      return `M${pad.left},${y(0)} L${pts.join(' L')} L${x(dur)},${y(0)} Z`;
+    }
+
+    const attackArea = document.createElementNS(svg.namespaceURI, 'path');
+    attackArea.setAttribute('d', areaPath(tl.attack_counts));
+    attackArea.setAttribute('fill', aColor); attackArea.setAttribute('fill-opacity', '0.55');
+    attackArea.setAttribute('stroke', aColor); attackArea.setAttribute('stroke-width', '1');
+    svg.appendChild(attackArea);
+
+    const normalArea = document.createElementNS(svg.namespaceURI, 'path');
+    normalArea.setAttribute('d', areaPath(tl.normal_counts));
+    normalArea.setAttribute('fill', nColor); normalArea.setAttribute('fill-opacity', '0.55');
+    normalArea.setAttribute('stroke', nColor); normalArea.setAttribute('stroke-width', '1.5');
+    svg.appendChild(normalArea);
+
+    return svg;
+  }
+
+  const tl = DATA.timeline;
+  document.getElementById('bursts-inline').innerHTML = `<b>${tl.n_arp_bursts}</b>`;
+  document.getElementById('timeline-chart').appendChild(drawTimeSeries(tl));
+  document.getElementById('timeline-caption').innerHTML =
+    `Normal ARP traffic averages <b class="mono" style="color:var(--normal)">${tl.normal_avg_per_bin}</b>
+     frames per 10s bin, network-wide - flat, essentially silent. This attack forms
+     <b class="mono" style="color:var(--attack)">${tl.n_arp_bursts}</b> distinct sweeps, each
+     ~<b class="mono" style="color:var(--attack)">${tl.arp_burst_avg_dur_sec}s</b> long, spaced
+     ~<b class="mono" style="color:var(--attack)">${tl.arp_burst_avg_gap_sec}s</b> apart - active in
+     <b class="mono" style="color:var(--attack)">${tl.attack_active_bin_pct}%</b> of the session's bins,
+     a repeating cycle, not a single burst (like the function-code scan) or a constant flood.`;
 
   // ---- bar charts ----
   function fmtNum(v) { return v >= 1000 ? Math.round(v).toLocaleString() : (Number.isInteger(v) ? v : v.toFixed(1)); }
