@@ -1,0 +1,36 @@
+/home/23532764/local-llms/modbus-ids-autoencoder/packet_compare_smartgrid_sporadicinjection.py:56: DeprecationWarning: 
+Pyarrow will become a required dependency of pandas in the next major release of pandas (pandas 3.0),
+(to allow more performant data types, such as the Arrow string type, and better interoperability with other libraries)
+but was not found to be installed on your system.
+If this would cause problems for you,
+please provide us feedback at https://github.com/pandas-dev/pandas/issues/54466
+        
+  import pandas as pd
+Loading Smart Grid dataset...
+Extracting write-toggle examples (burst 1 ON, burst 2 OFF)...
+Computing comparison statistics...
+Computing write-request time series (normal vs. attack, whole session)...
+Checking transfer-switch command against the real solar meter reading...
+Traceback (most recent call last):
+  File "/home/23532764/local-llms/modbus-ids-autoencoder/packet_compare_smartgrid_sporadicinjection.py", line 982, in <module>
+    main()
+  File "/home/23532764/local-llms/modbus-ids-autoencoder/packet_compare_smartgrid_sporadicinjection.py", line 299, in main
+    solar_logic = compute_solar_logic_violation(df)
+  File "/home/23532764/local-llms/modbus-ids-autoencoder/packet_compare_smartgrid_sporadicinjection.py", line 105, in compute_solar_logic_violation
+    coil["coil_byte"] = coil.row.apply(lambda r: _decode_reg_value(response_hex(r)))
+  File "/usr/local/lib/python3.10/dist-packages/pandas/core/series.py", line 4904, in apply
+    ).apply()
+  File "/usr/local/lib/python3.10/dist-packages/pandas/core/apply.py", line 1427, in apply
+    return self.apply_standard()
+  File "/usr/local/lib/python3.10/dist-packages/pandas/core/apply.py", line 1507, in apply_standard
+    mapped = obj._map_values(
+  File "/usr/local/lib/python3.10/dist-packages/pandas/core/base.py", line 921, in _map_values
+    return algorithms.map_array(arr, mapper, na_action=na_action, convert=convert)
+  File "/usr/local/lib/python3.10/dist-packages/pandas/core/algorithms.py", line 1743, in map_array
+    return lib.map_infer(values, mapper, convert=convert)
+  File "lib.pyx", line 2972, in pandas._libs.lib.map_infer
+  File "/home/23532764/local-llms/modbus-ids-autoencoder/packet_compare_smartgrid_sporadicinjection.py", line 105, in <lambda>
+    coil["coil_byte"] = coil.row.apply(lambda r: _decode_reg_value(response_hex(r)))
+  File "/home/23532764/local-llms/modbus-ids-autoencoder/packet_compare_smartgrid_sporadicinjection.py", line 81, in _decode_reg_value
+    return int(s[:4], 16) if len(s) >= 4 else None
+ValueError: invalid literal for int() with base 16: 'None'

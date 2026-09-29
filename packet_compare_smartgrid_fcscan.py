@@ -416,6 +416,16 @@ HTML_TEMPLATE = r"""<title>Modbus Packet Diff</title>
     font-family: "IBM Plex Sans", sans-serif; font-weight: 500; color: var(--attack); opacity: .75; }
   .stats-wrap { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--surface-1); box-shadow: var(--shadow); overflow-x: auto; }
 
+  /* ---- protocol logic violation ---- */
+  .logic-grid { display: flex; flex-direction: column; gap: 12px; }
+  .logic-card { border: 1px solid var(--border); border-left: 3px solid var(--attack); border-radius: 8px;
+                background: var(--surface-1); box-shadow: var(--shadow); padding: 14px 16px;
+                display: flex; flex-direction: column; gap: 6px; }
+  .logic-card-title { font-family: "Archivo", sans-serif; font-weight: 700; font-size: 14px; color: var(--text-primary); }
+  .logic-card-rule { font-size: 11.5px; color: var(--text-muted); font-style: italic; line-height: 1.5; }
+  .logic-card-body { font-size: 12.5px; color: var(--text-secondary); line-height: 1.55; }
+  .logic-card-body b { color: var(--text-primary); }
+
   /* ---- detection signals ---- */
   .signal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
   @media (max-width: 860px) { .signal-grid { grid-template-columns: 1fr; } }
@@ -479,6 +489,17 @@ HTML_TEMPLATE = r"""<title>Modbus Packet Diff</title>
     </div>
     <div class="ip-grid" id="ip-grid"></div>
     <div class="shared-target-banner" id="shared-target-banner"></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Protocol logic violation: why this traffic could not be legitimate</h2>
+      <p style="margin-top:6px">Not "rare" or "different from baseline" - actually impossible under how
+        this SCADA system's master-slave polling logic works (see the Smart Grid normal-behavior-baseline
+        memory, Section 1). Distinct from the "Detection signals" checklist below, which is data-driven
+        magnitude/presence comparisons; this section is about causal, operational reasoning.</p>
+    </div>
+    <div class="logic-grid" id="logic-grid"></div>
   </section>
 
   <section>
@@ -645,6 +666,49 @@ HTML_TEMPLATE = r"""<title>Modbus Packet Diff</title>
   document.getElementById('shared-target-banner').innerHTML =
     `Only <b>${s.shared_target_ip}</b> (the RTU) appears on both sides &mdash; it is the one constant:
      everyone talks to it, but who talks TO it is the tell.`;
+
+  // ---- protocol logic violation ----
+  const logicPoints = [
+    {
+      title: 'A value poll never enumerates instructions',
+      rule: 'Real SCADA/Modbus is a polled master-slave protocol - the master has a fixed, engineered purpose for each request (read this specific point). It does not try every possible instruction to see what happens.',
+      body: `This round tries <b>${s.round1_distinct_fc}</b> distinct function codes - including
+             <b>${s.round1_nonstd_fc.length}</b> outside the standard public range - in
+             <b>${s.round1_dur_ms}&nbsp;ms</b>. No legitimate monitoring or control task requires
+             probing instructions the requester doesn't already know are supported; this is
+             fingerprinting, not operation.`,
+    },
+    {
+      title: 'Only one master exists, and this is not it',
+      rule: 'The deployed topology has exactly one master (192.168.0.40) and one RTU (192.168.0.31) - no third party is ever expected to speak Modbus at all.',
+      body: `Every request in this round comes from 192.168.0.1, a host that has never once been the
+             known master in 47,198 normal rows. There is no legitimate role this host could be
+             playing.`,
+    },
+    {
+      title: 'A write to address 0 targets a point that does not exist',
+      rule: `This deployment has exactly 4 real points (addresses 9, 19, 20, 39 - see the Smart Grid
+             point map: address 9 is the solar/mains transfer switch, 19/20 are power meters, 39 is
+             the switching threshold). Address 0 is not one of them.`,
+      body: `The fc5 write in this round targets address <b>0</b>, value <code class="mono">0x0000</code>
+             - not the real transfer-switch coil (address 9). This is a blind write to whatever the
+             scanner's generic zero-valued probe happened to hit, not a considered command aimed at an
+             actual control point - still accepted by the target regardless.`,
+    },
+    {
+      title: 'Self-identification is an engineering action, not a runtime one',
+      rule: 'Asking a device to report its own software identity (fc17) belongs to commissioning/maintenance workflows performed by a known engineering workstation - never part of a live measurement/control cycle.',
+      body: `fc17 was probed mid-sweep and decoded to the string <b>"Pymodbus"</b> - disclosed to a host
+             with no prior legitimate interaction with this device at all, inside an anonymous
+             22&nbsp;ms fingerprinting burst.`,
+    },
+  ];
+  document.getElementById('logic-grid').innerHTML = logicPoints.map(p => `
+    <div class="logic-card">
+      <div class="logic-card-title">${esc(p.title)}</div>
+      <div class="logic-card-rule">${p.rule}</div>
+      <div class="logic-card-body">${p.body}</div>
+    </div>`).join('');
 
   // ---- detection signals ----
   const signals = [

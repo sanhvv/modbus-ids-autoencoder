@@ -1,0 +1,12 @@
+{
+ "write_addr": 9,
+ "solar_addr": 19,
+ "threshold_addr": 39,
+ "threshold_value": 512,
+ "mean_solar_when_switch_on": 665.5,
+ "mean_solar_when_switch_off": 553.0,
+ "first_on_command_time_sec": 4449.959,
+ "nearest_solar_reading": 563.0,
+ "nearest_solar_reading_time_sec": 4449.55,
+ "n_normal_coil_solar_pairs_matched": 5866
+}
