@@ -98,10 +98,12 @@ SMARTGRID_ATTACKS = [
     {
         "attack_specific": 8,
         "title": "Data Flood Attack",
-        "folder": None,
+        "folder": "smartgrid_data_flood",
         "script": "packet_compare_smartgrid_dataflood.py",
-        "summary": None,
-        "tag": None,
+        "summary": "42,465 requests in 7.02s (~6,052/s, 1,528x normal) - the most extreme rate of any "
+                   "attack here. Address AND quantity are both randomized (0-100, 1-100), unlike every "
+                   "fixed-target attack earlier. Also the only one with 0% background-noise co-mingling.",
+        "tag": "most extreme rate",
     },
 ]
 

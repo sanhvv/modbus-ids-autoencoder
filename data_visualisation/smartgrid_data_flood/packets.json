@@ -1,0 +1,118 @@
+{
+ "normal_pair": {
+  "request": {
+   "row": 172569,
+   "time": "16:58:49.701189",
+   "frame_time_relative": 2984.997825008,
+   "ip_src": "192.168.0.40",
+   "ip_dst": "192.168.0.31",
+   "ip_len": 64.0,
+   "ip_ttl": 64.0,
+   "ip_proto": 6.0,
+   "tcp_len": 12.0,
+   "tcp_flags": "0x0018",
+   "tcp_window_size": 502.0,
+   "tcp_analysis_ack_rtt": null,
+   "frame_time_delta": 0.909001651,
+   "modbus_func_code": 1.0,
+   "modbus_data": "0x000901",
+   "tcp_stream": 6412.0
+  },
+  "response": {
+   "row": 172570,
+   "time": "16:58:49.701756",
+   "frame_time_relative": 2984.99839159,
+   "ip_src": "192.168.0.31",
+   "ip_dst": "192.168.0.40",
+   "ip_len": 62.0,
+   "ip_ttl": 64.0,
+   "ip_proto": 6.0,
+   "tcp_len": 10.0,
+   "tcp_flags": "0x0018",
+   "tcp_window_size": 509.0,
+   "tcp_analysis_ack_rtt": 0.000566582,
+   "frame_time_delta": 0.000566582,
+   "modbus_func_code": 1.0,
+   "modbus_data": "0x0100",
+   "tcp_stream": 6412.0
+  }
+ },
+ "attack_examples": {
+  "early_example": {
+   "request": {
+    "row": 37461,
+    "time": "16:09:51.603641",
+    "frame_time_relative": 46.9002767,
+    "ip_src": "192.168.0.1",
+    "ip_dst": "192.168.0.31",
+    "ip_len": 64.0,
+    "ip_ttl": 64.0,
+    "ip_proto": 6.0,
+    "tcp_len": 12.0,
+    "tcp_flags": "0x0018",
+    "tcp_window_size": 502.0,
+    "tcp_analysis_ack_rtt": null,
+    "frame_time_delta": 3.5355e-05,
+    "modbus_func_code": 3.0,
+    "modbus_data": "0x0046001f",
+    "tcp_stream": 5985.0
+   },
+   "response": {
+    "row": 37463,
+    "time": "16:09:51.603872",
+    "frame_time_relative": 46.900507661,
+    "ip_src": "192.168.0.31",
+    "ip_dst": "192.168.0.1",
+    "ip_len": 157.0,
+    "ip_ttl": 64.0,
+    "ip_proto": 6.0,
+    "tcp_len": 105.0,
+    "tcp_flags": "0x0018",
+    "tcp_window_size": 509.0,
+    "tcp_analysis_ack_rtt": null,
+    "frame_time_delta": 0.000222795,
+    "modbus_func_code": 3.0,
+    "modbus_data": "0x60000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+    "tcp_stream": 5983.0
+   }
+  },
+  "mid_example": {
+   "request": {
+    "row": 80005,
+    "time": "16:09:55.116183",
+    "frame_time_relative": 50.412818919,
+    "ip_src": "192.168.0.1",
+    "ip_dst": "192.168.0.31",
+    "ip_len": 64.0,
+    "ip_ttl": 64.0,
+    "ip_proto": 6.0,
+    "tcp_len": 12.0,
+    "tcp_flags": "0x0018",
+    "tcp_window_size": 5433.0,
+    "tcp_analysis_ack_rtt": 0.002020689,
+    "frame_time_delta": 4.6797e-05,
+    "modbus_func_code": 4.0,
+    "modbus_data": "0x001c0029",
+    "tcp_stream": 5983.0
+   },
+   "response": {
+    "row": 80006,
+    "time": "16:09:55.116236",
+    "frame_time_relative": 50.412872098,
+    "ip_src": "192.168.0.31",
+    "ip_dst": "192.168.0.1",
+    "ip_len": 68.0,
+    "ip_ttl": 64.0,
+    "ip_proto": 6.0,
+    "tcp_len": 16.0,
+    "tcp_flags": "0x0018",
+    "tcp_window_size": 509.0,
+    "tcp_analysis_ack_rtt": 0.000196677,
+    "frame_time_delta": 5.3179e-05,
+    "modbus_func_code": 1.0,
+    "modbus_data": "0x0700000000000000",
+    "tcp_stream": 5985.0
+   }
+  }
+ }
+}

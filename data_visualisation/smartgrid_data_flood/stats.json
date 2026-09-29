@@ -1,0 +1,38 @@
+{
+ "session_duration_sec": 5963.4,
+ "attack_total_rows": 85010,
+ "attack_noise_rows": 0,
+ "attack_noise_pct": 0.0,
+ "n_requests": 42465,
+ "n_responses": 42465,
+ "attack_window_start_sec": 46.9,
+ "attack_window_end_sec": 53.9,
+ "attack_duration_sec": 7.02,
+ "attack_rate_per_sec": 6051.7,
+ "normal_rate_per_sec": 3.96,
+ "rate_ratio": 1528.2,
+ "n_tcp_connections": 10,
+ "requests_per_connection": 4246.5,
+ "address_min": 0,
+ "address_max": 100,
+ "address_distinct": 101,
+ "quantity_min": 1,
+ "quantity_max": 100,
+ "quantity_distinct": 100,
+ "distinct_pdus": 17735,
+ "normal_addresses": [
+  9,
+  19,
+  20,
+  39
+ ],
+ "normal_max_qty": 1,
+ "normal_max_resp_bytes": 63,
+ "attack_max_resp_bytes": 261,
+ "function_codes_used": {
+  "3": 10765,
+  "4": 10727,
+  "2": 10565,
+  "1": 10408
+ }
+}
