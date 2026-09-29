@@ -1,0 +1,28 @@
+{
+ "session_duration_sec": 5963.4,
+ "normal_fc8_rows": 0,
+ "attack_fc8_requests": 8,
+ "attack_fc8_responses": 8,
+ "n_rounds": 8,
+ "attack_window_start_sec": 684.0,
+ "attack_window_end_sec": 4763.3,
+ "attack_window_span_sec": 4079.3,
+ "avg_seconds_between_rounds": 582.8,
+ "this_response_len_bytes": 10,
+ "other_fc8_response_len_bytes": 12,
+ "fc8_rows_other_attack_types": {
+  "7.0": 198,
+  "2.0": 18,
+  "1.0": 4
+ },
+ "normal_syn_rate": 0.412,
+ "attack_new_connections": 8,
+ "attack_total_rows": 962,
+ "attack_noise_rows": 388,
+ "attack_noise_pct": 40.3,
+ "normal_mb_ips": [
+  "192.168.0.31",
+  "192.168.0.40"
+ ],
+ "attacker_ip": "192.168.0.1"
+}

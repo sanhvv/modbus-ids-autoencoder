@@ -1,0 +1,60 @@
+{
+ "attack_examples": {
+  "syn": {
+   "row": 133255,
+   "time": "16:20:28.725192",
+   "frame_time_relative": 684.02182769,
+   "ip_src": "192.168.0.1",
+   "ip_dst": "192.168.0.31",
+   "ip_len": 60.0,
+   "ip_ttl": 64.0,
+   "ip_proto": 6.0,
+   "tcp_len": 0.0,
+   "tcp_flags": "0x0002",
+   "tcp_window_size": 64240.0,
+   "tcp_analysis_ack_rtt": null,
+   "frame_time_delta": 0.353872846,
+   "modbus_func_code": null,
+   "modbus_data": null,
+   "tcp_stream": 6084.0
+  },
+  "probe": {
+   "request": {
+    "row": 133258,
+    "time": "16:20:28.725328",
+    "frame_time_relative": 684.021963606,
+    "ip_src": "192.168.0.1",
+    "ip_dst": "192.168.0.31",
+    "ip_len": 64.0,
+    "ip_ttl": 64.0,
+    "ip_proto": 6.0,
+    "tcp_len": 12.0,
+    "tcp_flags": "0x0018",
+    "tcp_window_size": 502.0,
+    "tcp_analysis_ack_rtt": null,
+    "frame_time_delta": 7.1415e-05,
+    "modbus_func_code": 8.0,
+    "modbus_data": "0x0000",
+    "tcp_stream": 6084.0
+   },
+   "response": {
+    "row": 133260,
+    "time": "16:20:28.725907",
+    "frame_time_relative": 684.022542697,
+    "ip_src": "192.168.0.31",
+    "ip_dst": "192.168.0.1",
+    "ip_len": 62.0,
+    "ip_ttl": 64.0,
+    "ip_proto": 6.0,
+    "tcp_len": 10.0,
+    "tcp_flags": "0x0018",
+    "tcp_window_size": 509.0,
+    "tcp_analysis_ack_rtt": null,
+    "frame_time_delta": 0.000569032,
+    "modbus_func_code": 8.0,
+    "modbus_data": "0x",
+    "tcp_stream": 6084.0
+   }
+  }
+ }
+}

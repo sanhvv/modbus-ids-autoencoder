@@ -78,10 +78,12 @@ SMARTGRID_ATTACKS = [
     {
         "attack_specific": 6,
         "title": "Force Listen Mode",
-        "folder": None,
+        "folder": "smartgrid_force_listen",
         "script": "packet_compare_smartgrid_forcelisten.py",
-        "summary": None,
-        "tag": None,
+        "summary": "8 low-and-slow fc8 (Diagnostics) rounds, ~9.7min apart, each a new TCP connection. "
+                   "The sub-function byte can't be confirmed from this dataset, but the response is "
+                   "measurably 2 bytes shorter than fc8's shape everywhere else - the real signal.",
+        "tag": "shorter response",
     },
     {
         "attack_specific": 7,
