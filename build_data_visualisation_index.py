@@ -88,10 +88,12 @@ SMARTGRID_ATTACKS = [
     {
         "attack_specific": 7,
         "title": "Restart Communication",
-        "folder": None,
+        "folder": "smartgrid_restart_comm",
         "script": "packet_compare_smartgrid_restartcomm.py",
-        "summary": None,
-        "tag": None,
+        "summary": "10 rounds of 10 identical fc8 requests at a near-perfectly regular 3.004s interval "
+                   "(std 0.0008s - machine-timed, not organic). Response is the standard 12-byte "
+                   "shape, cross-validating that force-listen's shortened response is attack-specific.",
+        "tag": "clockwork cadence",
     },
     {
         "attack_specific": 8,

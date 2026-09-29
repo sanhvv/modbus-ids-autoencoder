@@ -1,0 +1,43 @@
+{
+ "session_duration_sec": 5963.4,
+ "normal_fc8_rows": 0,
+ "attack_fc8_requests": 99,
+ "attack_fc8_responses": 99,
+ "n_rounds": 10,
+ "requests_per_round": [
+  10,
+  10,
+  10,
+  10,
+  10,
+  10,
+  9,
+  10,
+  10,
+  10
+ ],
+ "round_duration_sec_median": 27.0,
+ "within_round_interval_median_sec": 3.004,
+ "within_round_interval_std_sec": 0.0008,
+ "attack_window_start_sec": 354.4,
+ "attack_window_end_sec": 5889.1,
+ "attack_window_span_sec": 5534.7,
+ "attack_window_span_pct": 92.8,
+ "this_response_len_bytes": 12,
+ "other_fc8_response_len_bytes": 12,
+ "fc8_rows_other_attack_types": {
+  "2.0": 18,
+  "6.0": 16,
+  "1.0": 4
+ },
+ "normal_syn_rate": 0.412,
+ "attack_new_connections": 10,
+ "attack_total_rows": 2818,
+ "attack_noise_rows": 1218,
+ "attack_noise_pct": 43.2,
+ "normal_mb_ips": [
+  "192.168.0.31",
+  "192.168.0.40"
+ ],
+ "attacker_ip": "192.168.0.1"
+}
