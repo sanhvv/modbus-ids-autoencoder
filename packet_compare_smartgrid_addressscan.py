@@ -504,7 +504,11 @@ HTML_TEMPLATE = r"""<title>Address Scan Diff</title>
       <h2>Protocol logic violation: why this traffic could not be legitimate</h2>
       <p style="margin-top:6px">Not "rare" or "different from baseline" - actually impossible under how
         this deployment's fixed, small network topology works (see the Smart Grid
-        normal-behavior-baseline memory, Section 1).</p>
+        normal-behavior-baseline memory, Section 1). Checked but doesn't apply here: the
+        "commanded-state-contradicts-reality" check used elsewhere in this series (naive-sensor-read's
+        solar switch, force-listen's communication check) needs a WRITE or a claimed behavioral effect
+        to falsify - this attack's Modbus tail is read-only (fc43, fc1), so there is no false command to
+        check against real sensor readings.</p>
     </div>
     <div class="logic-grid" id="logic-grid"></div>
   </section>

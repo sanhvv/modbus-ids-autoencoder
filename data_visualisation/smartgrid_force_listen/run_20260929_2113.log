@@ -1,0 +1,20 @@
+/home/23532764/local-llms/modbus-ids-autoencoder/packet_compare_smartgrid_forcelisten.py:65: DeprecationWarning: 
+Pyarrow will become a required dependency of pandas in the next major release of pandas (pandas 3.0),
+(to allow more performant data types, such as the Arrow string type, and better interoperability with other libraries)
+but was not found to be installed on your system.
+If this would cause problems for you,
+please provide us feedback at https://github.com/pandas-dev/pandas/issues/54466
+        
+  import pandas as pd
+Loading Smart Grid dataset...
+Extracting force-listen-mode examples (SYN, diagnostics probe)...
+Computing comparison statistics...
+Computing fc8-request time series (normal vs. attack, whole session)...
+Checking whether real polling continuity survives each probe...
+Saved: data_visualisation/smartgrid_force_listen/packets.json
+Saved: data_visualisation/smartgrid_force_listen/stats.json
+Saved: data_visualisation/smartgrid_force_listen/timeline.json
+Saved: data_visualisation/smartgrid_force_listen/comms_check.json
+Saved: data_visualisation/smartgrid_force_listen/report.html
+Force-listen-mode summary: 8 rounds, spread across 4079.3s (avg 582.8s between rounds), response 10 bytes vs. 12 bytes for fc8 elsewhere in the dataset, 40.3% of labeled rows are unrelated background traffic
+Total time consumed: 0.47s

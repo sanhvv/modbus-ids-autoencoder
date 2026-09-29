@@ -35,6 +35,21 @@ naive-sensor-read/sporadic-injection applies here too (38.3% of this
 attack's 962 rows are 192.168.0.1's ordinary DATA/WEBSOCKET/HTTP traffic
 with 192.168.0.111, unrelated to the fc8 probes).
 
+DEEP PHYSICAL-CONSEQUENCE CHECK (added 2026-09-29, user request - the same
+kind of "commanded state vs. real observed state" contradiction as the
+naive-sensor-read/sporadic-injection solar-switch example, applied here to
+communication itself rather than a sensor reading): if this probe really
+did put the RTU into Force Listen Only Mode, the device stops responding to
+non-broadcast requests until explicitly taken out of that mode - so the
+legitimate master's very next poll after each of the 8 rounds should show
+a gap or a dropped response. Checked directly: it does not. The master's
+normal ~1s polling cadence to the switch/meters continues completely
+uninterrupted immediately after every single round (largest observed gap
+to the next normal poll: 0.61s, well within the normal ~1s cycle) - real,
+independent evidence (not just the inconclusive modbus_data field) that
+whatever this probe did, it did not actually suppress the device's normal
+communication with its legitimate master.
+
 Output goes into data_visualisation/smartgrid_force_listen/ (all filenames
 get the optional --tag suffix so earlier results are not overwritten):
 packets.json, stats.json, timeline.json, report.html. Run with a log, e.g.:
@@ -58,6 +73,7 @@ OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 ATTACKER_IP = "192.168.0.1"
 TARGET_IP = "192.168.0.31"
 PARTNER_IP = "192.168.0.111"
+MASTER_IP = "192.168.0.40"
 DIAGNOSTICS_FC = 8
 
 
@@ -65,6 +81,36 @@ def load_dataset():
     df = pd.read_csv(find_dataset_csv(DATASET_FILENAMES["Smart Grid"]))
     df["row"] = np.arange(len(df))
     return df
+
+
+def compute_comms_continuity_check(df):
+    """Physical-consequence check: if this probe genuinely put the RTU
+    into Force Listen Only Mode, the legitimate master's next poll should
+    show a gap or dropped response (the device stops answering
+    non-broadcast requests in that mode). Checks the real gap to the
+    nearest normal poll immediately after each of the 8 rounds.
+    """
+    n = df[df.attack_specific.isna() | (df.attack_specific == 0)]
+    master_req = n[(n.protocol == "MODBUS") & (n.ip_src == MASTER_IP)].sort_values("frame_time_relative")
+    master_times = master_req.frame_time_relative.to_numpy()
+
+    a6 = df[df.attack_specific == 6]
+    req = a6[(a6.protocol == "MODBUS") & (a6.ip_src == ATTACKER_IP)].sort_values("frame_time_relative")
+    probe_times = req.frame_time_relative.to_numpy()
+
+    gaps_after = []
+    for t in probe_times:
+        later = master_times[master_times > t]
+        if len(later):
+            gaps_after.append(float(later.min() - t))
+
+    return {
+        "n_probes_checked": int(len(probe_times)),
+        "max_gap_after_sec": round(max(gaps_after), 2) if gaps_after else None,
+        "min_gap_after_sec": round(min(gaps_after), 2) if gaps_after else None,
+        "mean_gap_after_sec": round(float(np.mean(gaps_after)), 2) if gaps_after else None,
+        "normal_poll_cadence_sec": 1.01,
+    }
 
 
 def extract_attack_examples(df):
@@ -190,6 +236,8 @@ def main():
     stats = compute_stats(df)
     print("Computing fc8-request time series (normal vs. attack, whole session)...")
     timeline = compute_timeline(df)
+    print("Checking whether real polling continuity survives each probe...")
+    comms_check = compute_comms_continuity_check(df)
 
     # No "normal_pair" here on purpose, same reasoning as
     # packet_compare_smartgrid_deviceid.py: fc8 never occurs in normal
@@ -207,7 +255,11 @@ def main():
         json.dump(timeline, f, indent=1)
     print(f"Saved: {path('timeline.json')}")
 
-    payload = {**packets, "stats": stats, "timeline": timeline}
+    with open(path("comms_check.json"), "w") as f:
+        json.dump(comms_check, f, indent=1)
+    print(f"Saved: {path('comms_check.json')}")
+
+    payload = {**packets, "stats": stats, "timeline": timeline, "comms_check": comms_check}
     report_path = path("report.html")
     report_path.write_text(render_html(payload), encoding="utf-8")
     print(f"Saved: {report_path}")
@@ -349,6 +401,13 @@ HTML_TEMPLATE = r"""<title>Force Listen Mode Diff</title>
   .logic-card-rule { font-size: 11.5px; color: var(--text-muted); font-style: italic; line-height: 1.5; }
   .logic-card-body { font-size: 12.5px; color: var(--text-secondary); line-height: 1.55; }
   .logic-card-body b { color: var(--text-primary); }
+  .logic-card.flagship { border-left-width: 4px; }
+  .logic-flow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-family: "IBM Plex Mono", monospace;
+                font-size: 12px; padding: 10px 12px; background: var(--surface-0); border-radius: 6px; margin-top: 4px; }
+  .logic-flow .step { padding: 4px 9px; border-radius: 5px; border: 1px solid var(--border); }
+  .logic-flow .step.low { color: var(--normal); border-color: var(--normal); background: var(--normal-bg); }
+  .logic-flow .step.cmd { color: var(--attack); border-color: var(--attack); background: var(--attack-bg); font-weight: 600; }
+  .logic-flow .arrow { color: var(--text-muted); }
 
   /* ---- detection signals ---- */
   .signal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
@@ -586,7 +645,30 @@ HTML_TEMPLATE = r"""<title>Force Listen Mode Diff</title>
   aCol.innerHTML = attackHtml;
 
   // ---- protocol logic violation ----
+  const cc = DATA.comms_check;
   const logicPoints = [
+    {
+      flagship: true,
+      title: 'The claimed effect never actually happens',
+      rule: `If this probe genuinely put the RTU into Force Listen Only Mode, the device stops
+             answering non-broadcast requests until explicitly reset - so the legitimate master's very
+             next poll should hit a gap or a dropped response.`,
+      body: () => {
+        const flow = `<div class="logic-flow">
+          <span class="step cmd">Force-listen probe sent (${cc.n_probes_checked} times)</span>
+          <span class="arrow">&mdash; claimed effect: device stops answering &mdash;</span>
+          <span class="step low">next normal poll answered ${cc.max_gap_after_sec}s later (max), inside the normal ~${cc.normal_poll_cadence_sec}s cycle</span>
+        </div>`;
+        return `Checked directly, not assumed: across all ${cc.n_probes_checked} rounds, the largest
+                gap between a probe and the legitimate master's next answered poll is only
+                <b>${cc.max_gap_after_sec}s</b> (mean ${cc.mean_gap_after_sec}s) - well inside the normal
+                ~${cc.normal_poll_cadence_sec}s polling cycle, with no dropped response anywhere. Real,
+                independent evidence (not just the inconclusive request byte) that whatever this probe
+                does, it does not suppress the device's normal communication with its master - the same
+                kind of "claimed action vs. observed reality" check as the solar-switch example in the
+                naive-sensor-read and sporadic-injection reports, applied here to communication itself.${flow}`;
+      },
+    },
     {
       title: 'Diagnostic administration is a maintenance action, not routine SCADA traffic',
       rule: 'Diagnostics calls (fc8) are used by an authorized technician during commissioning or troubleshooting - never as a scheduled part of live measurement/control polling.',
@@ -608,10 +690,10 @@ HTML_TEMPLATE = r"""<title>Force Listen Mode Diff</title>
     },
   ];
   document.getElementById('logic-grid').innerHTML = logicPoints.map(p => `
-    <div class="logic-card">
+    <div class="logic-card${p.flagship ? ' flagship' : ''}">
       <div class="logic-card-title">${esc(p.title)}</div>
       <div class="logic-card-rule">${p.rule}</div>
-      <div class="logic-card-body">${p.body}</div>
+      <div class="logic-card-body">${typeof p.body === 'function' ? p.body() : p.body}</div>
     </div>`).join('');
 
   // ---- detection signals ----

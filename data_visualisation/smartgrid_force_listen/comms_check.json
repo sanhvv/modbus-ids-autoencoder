@@ -1,0 +1,7 @@
+{
+ "n_probes_checked": 8,
+ "max_gap_after_sec": 0.61,
+ "min_gap_after_sec": 0.01,
+ "mean_gap_after_sec": 0.24,
+ "normal_poll_cadence_sec": 1.01
+}

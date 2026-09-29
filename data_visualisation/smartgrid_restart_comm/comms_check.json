@@ -1,0 +1,7 @@
+{
+ "n_rounds_checked": 10,
+ "max_gap_after_sec": 0.91,
+ "min_gap_after_sec": 0.01,
+ "mean_gap_after_sec": 0.56,
+ "normal_poll_cadence_sec": 1.01
+}

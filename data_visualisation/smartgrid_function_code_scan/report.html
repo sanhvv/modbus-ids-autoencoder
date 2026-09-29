@@ -421,10 +421,12 @@
       rule: `This deployment has exactly 4 real points (addresses 9, 19, 20, 39 - see the Smart Grid
              point map: address 9 is the solar/mains transfer switch, 19/20 are power meters, 39 is
              the switching threshold). Address 0 is not one of them.`,
-      body: `The fc5 write in this round targets address <b>0</b>, value <code class="mono">0x0000</code>
-             - not the real transfer-switch coil (address 9). This is a blind write to whatever the
-             scanner's generic zero-valued probe happened to hit, not a considered command aimed at an
-             actual control point - still accepted by the target regardless.`,
+      body: `Both writes in this round (fc5 AND fc6) target address <b>0</b>, value <code class="mono">0x0000</code>
+             - not the real transfer-switch coil (address 9, see naive-sensor-read/sporadic-injection
+             for the write attacks that DO hit it). Checked directly: unlike those two attacks, there is
+             no "commanded state contradicts reality" story to tell here, because this write never
+             reaches a real actuator at all - it's a blind write to whatever the scanner's generic
+             zero-valued probe happened to hit, still accepted by the target regardless.`,
     },
     {
       title: 'Self-identification is an engineering action, not a runtime one',

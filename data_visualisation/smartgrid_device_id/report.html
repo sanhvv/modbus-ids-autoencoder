@@ -154,6 +154,13 @@
   .logic-card-rule { font-size: 11.5px; color: var(--text-muted); font-style: italic; line-height: 1.5; }
   .logic-card-body { font-size: 12.5px; color: var(--text-secondary); line-height: 1.55; }
   .logic-card-body b { color: var(--text-primary); }
+  .logic-card.flagship { border-left-width: 4px; }
+  .logic-flow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-family: "IBM Plex Mono", monospace;
+                font-size: 12px; padding: 10px 12px; background: var(--surface-0); border-radius: 6px; margin-top: 4px; }
+  .logic-flow .step { padding: 4px 9px; border-radius: 5px; border: 1px solid var(--border); }
+  .logic-flow .step.low { color: var(--normal); border-color: var(--normal); background: var(--normal-bg); }
+  .logic-flow .step.cmd { color: var(--attack); border-color: var(--attack); background: var(--attack-bg); font-weight: 600; }
+  .logic-flow .arrow { color: var(--text-muted); }
 
   /* ---- detection signals ---- */
   .signal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
@@ -442,6 +449,26 @@
   // ---- protocol logic violation ----
   const logicPoints = [
     {
+      flagship: true,
+      title: 'The device contradicts its own claim of having no identity to report',
+      rule: `A device either supports self-identification or it doesn't. fc43's conformity byte
+             (0x83) explicitly claims MEI/identification support - a device that claims support and
+             then reports nothing is internally inconsistent, not just unhelpful.`,
+      body: () => {
+        const flow = `<div class="logic-flow">
+          <span class="step cmd">fc43: conformity 0x83 (claims support)</span>
+          <span class="arrow">&mdash; yet returns 0 identification objects, every round &mdash;</span>
+          <span class="step low">fc17 (same device, function-code scan): decodes to "Pymodbus"</span>
+        </div>`;
+        return `This isn't just "the probe found nothing" - the SAME physical device, asked about its
+                identity through a DIFFERENT Modbus mechanism (fc17, Report Slave ID, in the
+                function-code-scan report), DOES disclose real identity information ("Pymodbus"). So the
+                device has identity data to give; fc43's handler on this device just never returns any,
+                despite its own conformity byte claiming it should. Whatever this attack learns from
+                fc43 alone is misleading about what the device is actually capable of disclosing.${flow}`;
+      },
+    },
+    {
       title: 'Self-identification is a one-time commissioning action, not a repeated runtime one',
       rule: 'Asking a device "who are you" (fc43) belongs to engineering/maintenance workflows, performed ONCE by a known technician during setup or an audit - never repeated systematically as part of live operation.',
       body: `This attack repeats the identical probe <b>${s.n_rounds}</b> times, evenly spaced roughly
@@ -463,10 +490,10 @@
     },
   ];
   document.getElementById('logic-grid').innerHTML = logicPoints.map(p => `
-    <div class="logic-card">
+    <div class="logic-card${p.flagship ? ' flagship' : ''}">
       <div class="logic-card-title">${esc(p.title)}</div>
       <div class="logic-card-rule">${p.rule}</div>
-      <div class="logic-card-body">${p.body}</div>
+      <div class="logic-card-body">${typeof p.body === 'function' ? p.body() : p.body}</div>
     </div>`).join('');
 
   // ---- detection signals ----

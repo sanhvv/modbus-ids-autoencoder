@@ -449,7 +449,11 @@ HTML_TEMPLATE = r"""<title>Data Flood Diff</title>
       <h2>Protocol logic violation: why this traffic could not be legitimate</h2>
       <p style="margin-top:6px">Not "rare" or "different from baseline" - actually impossible under how
         this system's small, fixed point map works (see the Smart Grid normal-behavior-baseline memory,
-        Section 2b).</p>
+        Section 2b). Checked but doesn't apply here: the "commanded-state-contradicts-reality" check
+        used elsewhere in this series (naive-sensor-read's solar switch, force-listen's communication
+        check) needs a WRITE or a claimed behavioral effect to falsify - this attack is read-only
+        (fc1-4), so there is no false command to check against real sensor readings; its incoherence is
+        about volume and address-space randomization instead.</p>
     </div>
     <div class="logic-grid" id="logic-grid"></div>
   </section>
