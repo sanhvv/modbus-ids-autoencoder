@@ -96,6 +96,51 @@ def extract_attack_examples(df):
     return examples
 
 
+def compute_timeline(df, bin_width=10.0):
+    """Per-bin Modbus request counts across the whole session, normal
+    (master -> RTU) vs. this attack round (attacker -> RTU) - shows how
+    hyper-localized the scan is (one spike in one bin) against the
+    continuous normal baseline. Added 2026-09-29 per user request, same
+    treatment as packet_compare_smartgrid_naivesensorread.py.
+    """
+    dur = float(df.frame_time_relative.max())
+    edges = np.arange(0, dur + bin_width, bin_width)
+    n = df[(df.protocol == "MODBUS") & (df.attack_specific.isna() | (df.attack_specific == 0))]
+    a = df[(df.attack_specific == 2) & (df.protocol == "MODBUS") & (df.ip_src == ATTACKER_IP)]
+
+    normal_times = n[n.ip_src == "192.168.0.40"].frame_time_relative.to_numpy()
+    attack_times = a.frame_time_relative.to_numpy()
+
+    normal_counts, _ = np.histogram(normal_times, bins=edges)
+    attack_counts, _ = np.histogram(attack_times, bins=edges)
+    bin_centers = (edges[:-1] + edges[1:]) / 2
+
+    # This attack is NOT a one-off: it repeats as several identical rounds
+    # across the whole session (found while building this time-series
+    # chart - the original version of this report only ever described
+    # "round 1" as if it were the only occurrence). Cluster attacker
+    # requests by >5s gaps to count them, same method used across this
+    # series (packet_compare_smartgrid_naivesensorread.py etc.).
+    sorted_t = np.sort(attack_times)
+    gaps = np.diff(sorted_t)
+    cuts = np.where(gaps > 5.0)[0]
+    round_starts = sorted_t[np.r_[0, cuts + 1]]
+    n_rounds = len(round_starts)
+
+    return {
+        "bin_width_sec": bin_width,
+        "session_duration_sec": round(dur, 1),
+        "bin_centers": [round(float(x), 1) for x in bin_centers],
+        "normal_counts": [int(x) for x in normal_counts],
+        "attack_counts": [int(x) for x in attack_counts],
+        "normal_avg_per_bin": round(float(normal_counts.mean()), 1),
+        "attack_max_per_bin": int(attack_counts.max()),
+        "attack_active_bin_pct": round(float((attack_counts > 0).mean() * 100), 1),
+        "n_rounds": int(n_rounds),
+        "round_start_times_sec": [round(float(x), 1) for x in round_starts],
+    }
+
+
 def compute_stats(df):
     n = df[(df.protocol == "MODBUS") & (df.attack_specific.isna() | (df.attack_specific == 0))]
     a_all = df[(df.protocol == "MODBUS") & df.attack_specific.notna() & (df.attack_specific != 0)]
@@ -203,6 +248,8 @@ def main():
     attack_examples = extract_attack_examples(df)
     print("Computing comparison statistics...")
     stats = compute_stats(df)
+    print("Computing request-rate time series (normal vs. attack, whole session)...")
+    timeline = compute_timeline(df)
 
     packets = {"normal_pair": normal_pair, "attack_examples": attack_examples}
     with open(path("packets.json"), "w") as f:
@@ -213,7 +260,11 @@ def main():
         json.dump(stats, f, indent=1)
     print(f"Saved: {path('stats.json')}")
 
-    payload = {**packets, "stats": stats}
+    with open(path("timeline.json"), "w") as f:
+        json.dump(timeline, f, indent=1)
+    print(f"Saved: {path('timeline.json')}")
+
+    payload = {**packets, "stats": stats, "timeline": timeline}
     report_path = path("report.html")
     report_path.write_text(render_html(payload), encoding="utf-8")
     print(f"Saved: {report_path}")
@@ -365,6 +416,28 @@ HTML_TEMPLATE = r"""<title>Modbus Packet Diff</title>
     font-family: "IBM Plex Sans", sans-serif; font-weight: 500; color: var(--attack); opacity: .75; }
   .stats-wrap { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--surface-1); box-shadow: var(--shadow); overflow-x: auto; }
 
+  /* ---- detection signals ---- */
+  .signal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  @media (max-width: 860px) { .signal-grid { grid-template-columns: 1fr; } }
+  .signal-card { border: 1px solid var(--border); border-radius: 10px; background: var(--surface-1);
+                 box-shadow: var(--shadow); padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+  .signal-card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .signal-title { font-family: "Archivo", sans-serif; font-weight: 700; font-size: 14px; }
+  .signal-tag { display: inline-block; font-size: 9.5px; font-weight: 600; padding: 2px 7px; border-radius: 4px;
+                font-family: "IBM Plex Mono", monospace; text-transform: uppercase; letter-spacing: .03em; white-space: nowrap; }
+  .signal-tag.categorical { background: var(--attack-bg); color: var(--attack); }
+  .signal-tag.statistical { background: var(--normal-bg); color: var(--normal); }
+  .signal-values { display: flex; gap: 18px; font-family: "IBM Plex Mono", monospace; font-size: 12.5px; }
+  .signal-values .val-label { color: var(--text-muted); font-size: 10px; display: block; text-transform: uppercase; letter-spacing: .03em; }
+  .signal-values .val-normal { color: var(--normal); font-weight: 600; }
+  .signal-values .val-attack { color: var(--attack); font-weight: 600; }
+  .signal-note { font-size: 12px; color: var(--text-secondary); line-height: 1.5; }
+
+  /* ---- time series ---- */
+  .timeline-card { border: 1px solid var(--border); border-radius: 10px; background: var(--surface-1);
+                    box-shadow: var(--shadow); padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .timeline-card .chart-svg-box svg { overflow: visible; }
+
   footer { border-top: 1px solid var(--border); padding-top: 18px; }
   footer p { font-size: 12px; }
 </style>
@@ -378,8 +451,10 @@ HTML_TEMPLATE = r"""<title>Modbus Packet Diff</title>
     <p style="margin-top:10px">Every field below is copied verbatim from the raw CSV &mdash; nothing is
       illustrative. Left: a routine read from the known SCADA master (<code class="mono">192.168.0.40</code>)
       to the RTU (<code class="mono">192.168.0.31</code>), picked from the middle of the session.
-      Right: 3 packets from the same 22&nbsp;ms attack burst (<code class="mono">192.168.0.1</code>,
-      not the known master), each illustrating a different thing the attacker learned.</p>
+      Right: 3 packets from one 22&nbsp;ms attack round (<code class="mono">192.168.0.1</code>,
+      not the known master), each illustrating a different thing the attacker learned &mdash; this round
+      (t&nbsp;=&nbsp;549.46s) is one of <span id="rounds-inline-header"></span> identical rounds
+      repeated across the whole session (see the time-series chart below).</p>
   </header>
 
   <section>
@@ -404,6 +479,36 @@ HTML_TEMPLATE = r"""<title>Modbus Packet Diff</title>
     </div>
     <div class="ip-grid" id="ip-grid"></div>
     <div class="shared-target-banner" id="shared-target-banner"></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Detection signals: what actually marks this traffic as an attack</h2>
+      <p style="margin-top:6px">Each signal below is checked directly against the whole session's
+        normal baseline (47,198 rows), not assumed. <span class="signal-tag categorical" style="margin:0 4px">categorical</span>
+        means the value never occurs at all in normal traffic (zero-ambiguity); <span class="signal-tag statistical" style="margin:0 4px">statistical</span>
+        means normal traffic does have this value, but at a very different magnitude.</p>
+    </div>
+    <div class="signal-grid" id="signal-grid"></div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Time series: request rate across the whole session</h2>
+      <p style="margin-top:6px">Same metric (Modbus requests per 10-second bin), plotted across the
+        whole session for both traffic types. <b>This attack is not a one-off</b>: it repeats as
+        <span id="rounds-inline"></span> identical ~20&nbsp;ms bursts scattered across the session
+        (round&nbsp;1, shown throughout this page as the representative example, is just the first) -
+        each one a hard spike against normal's steady, continuous rate.</p>
+    </div>
+    <div class="bar-legend">
+      <span class="legend-item"><span class="swatch" style="background:var(--normal)"></span>Normal (master &rarr; RTU)</span>
+      <span class="legend-item"><span class="swatch" style="background:var(--attack)"></span>Function code scan</span>
+    </div>
+    <div class="timeline-card">
+      <div class="chart-svg-box" id="timeline-chart"></div>
+      <p style="font-size:12px" id="timeline-caption"></p>
+    </div>
   </section>
 
   <section>
@@ -540,6 +645,140 @@ HTML_TEMPLATE = r"""<title>Modbus Packet Diff</title>
   document.getElementById('shared-target-banner').innerHTML =
     `Only <b>${s.shared_target_ip}</b> (the RTU) appears on both sides &mdash; it is the one constant:
      everyone talks to it, but who talks TO it is the tell.`;
+
+  // ---- detection signals ----
+  const signals = [
+    {
+      title: 'Non-standard function codes', tag: 'categorical',
+      normal: '0', attack: `${s.round1_nonstd_fc.length} of ${s.round1_distinct_fc}`,
+      note: `Codes like fc${s.round1_nonstd_fc.slice(0,3).join(', fc')}... fall in reserved/user-defined
+             ranges that never appear in 47,198 normal rows (only fc${s.normal_fc.join(', fc')} are ever
+             used) - this network's normal vocabulary is 3 codes, this round tries 45.`,
+    },
+    {
+      title: 'Response size', tag: 'statistical',
+      normal: `max ${s.normal_max_resp} bytes`, attack: `${s.round1_max_resp} bytes`,
+      note: `A modest deviation compared to other findings on this page (${(s.round1_max_resp / s.normal_max_resp).toFixed(2)}&times;
+             the normal max) - the fc17 (Report Slave ID) reply is what pushes it past 63 bytes.`,
+    },
+    {
+      title: 'Request source identity', tag: 'categorical',
+      normal: s.normal_ips.join(', '), attack: s.attack_ips[0],
+      note: `Only ${s.normal_ips.join(' and ')} ever send/receive Modbus traffic in the normal baseline
+             (see the Source IP section above). 192.168.0.1 has never been a Modbus participant before
+             this attack.`,
+    },
+    {
+      title: 'Read quantity requested', tag: 'categorical',
+      normal: '1', attack: `${s.round1_maxq}`,
+      note: `Normal always asks for exactly 1 value. This round's read probes (fc1-4) ask for
+             <b>quantity 0</b> at address 0 - a malformed, meaningless request that isn't really trying
+             to read data at all, just to see which function codes the target accepts vs. rejects.
+             Different shape from the naive-sensor-read attack, which asks for the protocol MAXIMUM
+             instead of an invalid 0 - both deviate from normal's constant 1, in opposite directions.`,
+    },
+    {
+      title: 'Write command acceptance (fc5/fc6)', tag: 'categorical',
+      normal: '0 writes', attack: `fc${s.round1_writes_accepted.join(', fc')}, ACCEPTED`,
+      note: `0% of normal traffic is a write. Both write codes probed in this round were executed by the
+             target (echoed back), not rejected - MITRE ATT&CK T0855 Unauthorized Command Message.`,
+    },
+    {
+      title: 'New TCP connections', tag: 'statistical',
+      normal: `${s.normal_conn_rate}/s`, attack: `${s.attack_conn_rate}/s`,
+      note: `${Math.round(s.attack_conn_rate / s.normal_conn_rate)}&times; the normal connection-opening
+             rate - 5 new connections opened within ${s.round1_dur_ms}&nbsp;ms, one per function-code
+             probe batch.`,
+    },
+  ];
+  document.getElementById('signal-grid').innerHTML = signals.map(sig => `
+    <div class="signal-card">
+      <div class="signal-card-head">
+        <span class="signal-title">${esc(sig.title)}</span>
+        <span class="signal-tag ${sig.tag}">${sig.tag}</span>
+      </div>
+      <div class="signal-values">
+        <span><span class="val-label">Normal</span><span class="val-normal">${esc(sig.normal)}</span></span>
+        <span><span class="val-label">Attack</span><span class="val-attack">${esc(sig.attack)}</span></span>
+      </div>
+      <div class="signal-note">${sig.note}</div>
+    </div>`).join('');
+
+  // ---- time series (request rate across the whole session) ----
+  function drawTimeSeries(tl) {
+    const width = 1000, height = 260;
+    const pad = {top: 16, right: 16, bottom: 30, left: 40};
+    const innerW = width - pad.left - pad.right, innerH = height - pad.top - pad.bottom;
+    const dur = tl.session_duration_sec;
+    const maxV = Math.max(...tl.normal_counts, ...tl.attack_counts, 1) * 1.15;
+    const x = t => pad.left + (t / dur) * innerW;
+    const y = v => pad.top + innerH - (v / maxV) * innerH;
+    const nColor = getComputedStyle(document.querySelector('.viz-root')).getPropertyValue('--normal').trim();
+    const aColor = getComputedStyle(document.querySelector('.viz-root')).getPropertyValue('--attack').trim();
+
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+
+    [0, 0.5, 1].forEach(frac => {
+      const gy = pad.top + innerH - frac * innerH;
+      const gl = document.createElementNS(svg.namespaceURI, 'line');
+      gl.setAttribute('x1', pad.left); gl.setAttribute('x2', width - pad.right);
+      gl.setAttribute('y1', gy); gl.setAttribute('y2', gy);
+      gl.setAttribute('class', 'bar-gridline');
+      svg.appendChild(gl);
+      const lbl = document.createElementNS(svg.namespaceURI, 'text');
+      lbl.setAttribute('x', pad.left - 6); lbl.setAttribute('y', gy + 3);
+      lbl.setAttribute('text-anchor', 'end'); lbl.setAttribute('class', 'bar-axis-label');
+      lbl.textContent = Math.round(frac * maxV);
+      svg.appendChild(lbl);
+    });
+
+    for (let m = 0; m <= dur / 60; m += 10) {
+      const gx = x(m * 60);
+      const tick = document.createElementNS(svg.namespaceURI, 'text');
+      tick.setAttribute('x', gx); tick.setAttribute('y', height - 8);
+      tick.setAttribute('text-anchor', 'middle'); tick.setAttribute('class', 'bar-axis-label');
+      tick.textContent = m + 'm';
+      svg.appendChild(tick);
+    }
+
+    function areaPath(counts) {
+      const pts = tl.bin_centers.map((t, i) => `${x(t)},${y(counts[i])}`);
+      return `M${pad.left},${y(0)} L${pts.join(' L')} L${x(dur)},${y(0)} Z`;
+    }
+    function linePath(counts) {
+      const pts = tl.bin_centers.map((t, i) => `${x(t)},${y(counts[i])}`);
+      return `M${pts.join(' L')}`;
+    }
+
+    const attackArea = document.createElementNS(svg.namespaceURI, 'path');
+    attackArea.setAttribute('d', areaPath(tl.attack_counts));
+    attackArea.setAttribute('fill', aColor); attackArea.setAttribute('fill-opacity', '0.55');
+    attackArea.setAttribute('stroke', aColor); attackArea.setAttribute('stroke-width', '1');
+    svg.appendChild(attackArea);
+
+    const normalLine = document.createElementNS(svg.namespaceURI, 'path');
+    normalLine.setAttribute('d', linePath(tl.normal_counts));
+    normalLine.setAttribute('fill', 'none');
+    normalLine.setAttribute('stroke', nColor); normalLine.setAttribute('stroke-width', '1.75');
+    svg.appendChild(normalLine);
+
+    return svg;
+  }
+
+  const tl = DATA.timeline;
+  document.getElementById('rounds-inline').innerHTML = `<b>${tl.n_rounds}</b>`;
+  document.getElementById('rounds-inline-header').textContent = tl.n_rounds;
+  document.getElementById('timeline-chart').appendChild(drawTimeSeries(tl));
+  document.getElementById('timeline-caption').innerHTML =
+    `Normal traffic averages <b class="mono" style="color:var(--normal)">${tl.normal_avg_per_bin}</b>
+     requests per 10s bin, essentially unbroken across the whole session. This attack sits at
+     <b class="mono" style="color:var(--attack)">0</b> almost everywhere, then spikes to
+     <b class="mono" style="color:var(--attack)">${tl.attack_max_per_bin}</b> requests in a single bin
+     &mdash; active in only <b class="mono" style="color:var(--attack)">${tl.attack_active_bin_pct}%</b>
+     of the session's bins, across <b class="mono" style="color:var(--attack)">${tl.n_rounds}</b>
+     separate rounds (t &asymp; ${tl.round_start_times_sec.map(t => (t/60).toFixed(1)).join(', ')}
+     minutes).`;
 
   // ---- bar charts ----
   function fmtNum(v) { return v >= 1000 ? Math.round(v).toLocaleString() : (Number.isInteger(v) ? v : v.toFixed(1)); }
